@@ -1,0 +1,57 @@
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+ext {
+    //Android
+    androidBuildToolsVersion = "23.0.2"
+    androidMinSdkVersion = 14
+    androidTargetSdkVersion = 23
+    androidCompileSdkVersion = 23
+
+    //Testing
+    jUnitVersion = '4.12'
+
+    //Libraries
+    supportVersion = '23.2.0'
+
+    appDependencies = [
+            supportAppcompat:  "com.android.support:appcompat-v7:${supportVersion}",
+    ]
+
+    appTestDependencies = [
+            junit          : "junit:junit:${jUnitVersion}",
+//            dagger         : "com.google.dagger:dagger:${daggerVersion}",
+//            daggerCompiler : "com.google.dagger:dagger-compiler:${daggerVersion}",
+//            javaxAnnotation: "org.glassfish:javax.annotation:${javaxAnnotationVersion}",
+//            mockito:            "org.mockito:mockito-core:${mockitoVersion}",
+//            dexmaker:           "com.google.dexmaker:dexmaker:${dexmakerVersion}",
+//            dexmakerMockito:    "com.google.dexmaker:dexmaker-mockito:${dexmakerVersion}",
+//            espresso:           "com.android.support.test.espresso:espresso-core:${espressoVersion}",
+//            testingSupportLib:  "com.android.support.test:testing-support-lib:${testingSupportLibVersion}",
+//            assertj:            "org.assertj:assertj-core:${assertJVersion}",
+    ]
+
+    dataDependencies = [
+//            daggerCompiler : "com.google.dagger:dagger-compiler:${daggerVersion}",
+//            dagger         : "com.google.dagger:dagger:${daggerVersion}",
+//            retrofit       : "com.squareup.retrofit:retrofit:${retrofitVersion}",
+//            retrofitGson   : "com.squareup.retrofit:converter-gson:${retrofitVersion}",
+//            retrofitMock   : "com.squareup.retrofit:retrofit-mock:${retrofitVersion}",
+//            retrofitAdapter: "com.squareup.retrofit:adapter-rxjava-mock:${retrofitVersion}",
+//            gson           : "com.google.code.gson:gson:${gsonVersion}",
+//            rxJava         : "io.reactivex:rxjava:${rxJavaVersion}",
+//            rxPreferences  : "com.f2prateek.rx.preferences:rx-preferences:${rxPreferencesVersion}",
+//            javaxAnnotation: "org.glassfish:javax.annotation:${javaxAnnotationVersion}",
+//            androidAnnotations: "com.android.support:support-annotations:${androidAnnotationsVersion}",
+    ]
+
+    dataTestDependencies = [
+            junit:              "junit:junit:${jUnitVersion}",
+//            assertj:            "org.assertj:assertj-core:${assertJVersion}",
+//            mockito:            "org.mockito:mockito-core:${mockitoVersion}",
+//            robolectric:        "org.robolectric:robolectric:${robolectricVersion}",
+    ]
+}
