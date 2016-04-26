@@ -1,7 +1,10 @@
 package com.gsbelarus.gedemin.skeleton.base;
 
+import android.database.ContentObserver;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -14,9 +17,9 @@ public abstract class BaseCursorRecyclerFragment extends BaseFragment implements
 
     public static final int LOADER_ID = 0;
 
+    private ContentObserver contentObserver;
     protected DatabaseManager databaseManager;
     private RecyclerView.LayoutManager layoutManager;
-
 
     protected abstract BaseCursorRecyclerViewAdapter getAdapter();
     protected abstract RecyclerView.LayoutManager createLayoutManager();
@@ -54,14 +57,20 @@ public abstract class BaseCursorRecyclerFragment extends BaseFragment implements
         super.onDestroy();
 
         databaseManager.close();
+
+//        if (cursor != null && !cursor.isClosed()) {
+//            cursor.unregisterContentObserver(contentObserver);
+//            cursor.close();
+//        }
     }
 
     @Override
     public abstract CommonCursorLoader onCreateLoader(int id, Bundle args);
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        getAdapter().swapCursor(data);
+    public void onLoadFinished(Loader<Cursor> loader, final Cursor cursor) {
+        getAdapter().swapCursor(cursor);
+        registerContentObserver(); // TODO выше?
         //TODO updateEmptyView();
     }
 
@@ -70,9 +79,6 @@ public abstract class BaseCursorRecyclerFragment extends BaseFragment implements
         getAdapter().swapCursor(null);
     }
 
-
-
-    //onCreateView
     protected void setupRecyclerView(RecyclerView recyclerView) {
         layoutManager = createLayoutManager();
 //        if (savedLayoutManagerState != null) {
@@ -83,4 +89,49 @@ public abstract class BaseCursorRecyclerFragment extends BaseFragment implements
         recyclerView.setAdapter(getAdapter());
     }
 
+    private void registerContentObserver() { //TODO проверить
+        if (contentObserver == null) {
+            contentObserver = new CursorAdapterContentObserver(new Handler());
+        }
+        if (getAdapter().getDataCursor() != null) {
+            getAdapter().getDataCursor().registerContentObserver(contentObserver);
+        }
+    }
+
+    private void unregisterContentObserver() {      //TODO проверить
+        if (getAdapter().getDataCursor() != null) {
+            if (contentObserver != null) {
+                getAdapter().getDataCursor().unregisterContentObserver(contentObserver);
+            }
+            getAdapter().getDataCursor().close();
+        }
+    }
+
+    private void onContentChanged() {
+        unregisterContentObserver();
+        getLoaderManager().restartLoader(LOADER_ID, null, this);
+    }
+
+
+    private class CursorAdapterContentObserver extends ContentObserver {
+
+        public CursorAdapterContentObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public boolean deliverSelfNotifications() {
+            return true;
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            onContentChanged();
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            onContentChanged();
+        }
+    }
 }

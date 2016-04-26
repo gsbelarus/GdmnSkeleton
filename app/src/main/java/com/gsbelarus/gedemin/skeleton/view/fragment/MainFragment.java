@@ -30,13 +30,21 @@ public class MainFragment extends BaseCursorRecyclerFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        cursorAdapter = new CoreCursorRecyclerViewAdapter(null);
+        cursorAdapter = new CoreCursorRecyclerViewAdapter(null, getContext());
     }
 
     @Override
     protected void doOnCreateView(View rootView, @Nullable Bundle savedInstanceState) {
         RecyclerView rv = (RecyclerView) rootView.findViewById(R.id.recycler_view);
         setupRecyclerView(rv);
+    }
+
+    @Override
+    protected void setupRecyclerView(RecyclerView recyclerView) {
+        super.setupRecyclerView(recyclerView);
+
+// TODO       recyclerView.addItemDecoration(new DividerItemDecoration(getActivity()));
+        recyclerView.setHasFixedSize(true);
     }
 
     @Override

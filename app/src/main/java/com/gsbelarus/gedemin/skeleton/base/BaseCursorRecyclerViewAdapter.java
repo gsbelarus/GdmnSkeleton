@@ -6,11 +6,13 @@ import android.database.DataSetObservable;
 import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Handler;
+import android.provider.BaseColumns;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
+// TODO: 1. from[] columns, labels  2. onItemClickListener,onItemLongClickListener  3. emptyVIew
 
 public abstract class BaseCursorRecyclerViewAdapter
         extends RecyclerView.Adapter<BaseCursorRecyclerViewAdapter.BaseCursorItemViewHolder> {
@@ -23,14 +25,14 @@ public abstract class BaseCursorRecyclerViewAdapter
     private int idColumnIndex;
     private boolean dataValid;
     private DataSetObserver dataSetObserver;
-    private ContentObserver contentObserver;
+//    private ContentObserver contentObserver;
     private final DataSetObservable dataSetObservable = new DataSetObservable();
 
 
     public BaseCursorRecyclerViewAdapter(@Nullable Cursor dataCursor) {
         this.dataCursor = dataCursor;
         dataValid = dataCursor != null;
-        idColumnIndex = dataValid ? this.dataCursor.getColumnIndexOrThrow("_id") : -1;
+        idColumnIndex = dataValid ? this.dataCursor.getColumnIndexOrThrow(BaseColumns._ID) : -1;
 
         registerObservers(dataCursor);
     }
@@ -101,13 +103,14 @@ public abstract class BaseCursorRecyclerViewAdapter
         if (dataSetObserver == null) {
             dataSetObserver = new CursorAdapterDataSetObserver();
         }
-        if (contentObserver == null) {
-            contentObserver = new CursorAdapterContentObserver(new Handler());
-        }
+//        if (contentObserver == null) {
+//            contentObserver = new CursorAdapterContentObserver(new Handler());
+//        }
 
         if (cursor != null) {
             cursor.registerDataSetObserver(dataSetObserver);
-            cursor.registerContentObserver(contentObserver);
+            registerDataSetObserver(dataSetObserver);
+//            cursor.registerContentObserver(contentObserver);
         }
     }
 
@@ -115,10 +118,11 @@ public abstract class BaseCursorRecyclerViewAdapter
         if (cursor != null) {
             if (dataSetObserver != null) {
                 cursor.unregisterDataSetObserver(dataSetObserver);
+                unregisterDataSetObserver(dataSetObserver);
             }
-            if (contentObserver != null) {
-                cursor.unregisterContentObserver(contentObserver);
-            }
+//            if (contentObserver != null) {
+//                cursor.unregisterContentObserver(contentObserver);
+//            }
         }
     }
 
@@ -129,13 +133,13 @@ public abstract class BaseCursorRecyclerViewAdapter
         }
 
         final Cursor oldCursor = dataCursor;
-        unregisterObservers(oldCursor);
+        unregisterObservers(oldCursor);     //TODO вынести
 
         dataCursor = newCursor;
         if (dataCursor != null) {
-            registerObservers(dataCursor);
+            registerObservers(dataCursor);  //TODO вынести
 
-            idColumnIndex = newCursor.getColumnIndexOrThrow("_id");
+            idColumnIndex = newCursor.getColumnIndexOrThrow(BaseColumns._ID);
             dataValid = true;
 
             if (oldCursor != null) notifyItemRangeRemoved(0, oldCursor.getCount());
@@ -149,10 +153,6 @@ public abstract class BaseCursorRecyclerViewAdapter
         }
 
         return oldCursor;
-    }
-
-    protected void onContentChanged() {
-        //TODO swapCursor
     }
 
 //////// test
@@ -186,29 +186,6 @@ public abstract class BaseCursorRecyclerViewAdapter
 
             dataValid = false;
             notifyDataSetInvalidated(); //notifyDataSetChanged();
-        }
-    }
-
-
-    private class CursorAdapterContentObserver extends ContentObserver {
-
-        public CursorAdapterContentObserver(Handler handler) {
-            super(handler);
-        }
-
-        @Override
-        public boolean deliverSelfNotifications() {
-            return true;
-        }
-
-        @Override
-        public void onChange(boolean selfChange) {
-            onContentChanged();
-        }
-
-        @Override
-        public void onChange(boolean selfChange, Uri uri) {
-            onContentChanged();
         }
     }
 

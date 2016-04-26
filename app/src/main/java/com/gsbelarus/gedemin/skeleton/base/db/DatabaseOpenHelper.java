@@ -12,7 +12,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     public interface DBOpenHelperCallback {
         void onCreateDatabase(SQLiteDatabase db);
         void onUpgradeDatabase(SQLiteDatabase db);
-        //todo ondelete
+        void onConfigure(SQLiteDatabase db);
     }
 
 
@@ -38,8 +38,28 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         if (dbOpenHelperCallback != null) {
             dbOpenHelperCallback.onUpgradeDatabase(db);
         }
+//        onCreate(db);
+    }
 
-        onCreate(db);
+    @Override
+    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        //TODO
+        if (newVersion != 1) super.onDowngrade(db, oldVersion, newVersion);
+    }
+
+    @Override
+    public void onConfigure(SQLiteDatabase db) {
+        super.onConfigure(db);
+
+        if (dbOpenHelperCallback != null) {
+            dbOpenHelperCallback.onConfigure(db);
+        }
+    }
+
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+        db.enableWriteAheadLogging(); //TODO  ??
     }
 
     public void addConnection() {
