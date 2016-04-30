@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.support.annotation.NonNull;
 
-import com.gsbelarus.gedemin.skeleton.data.DatabaseManager;
-
 import java.util.Locale;
 
 abstract public class BaseApplication extends Application {
