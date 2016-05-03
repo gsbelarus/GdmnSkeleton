@@ -1,5 +1,6 @@
 package com.gsbelarus.gedemin.skeleton.app.view.fragment;
 
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -8,15 +9,15 @@ import android.view.View;
 
 import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.app.view.component.decorator.DividerItemDecoration;
-import com.gsbelarus.gedemin.skeleton.base.data.loader.BasicCursorLoader;
-import com.gsbelarus.gedemin.skeleton.base.view.BaseCursorRecyclerFragment;
+import com.gsbelarus.gedemin.skeleton.base.data.loader.BasicTableCursorLoader;
+import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseRecyclerCursorFragment;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.BasicCursorRecyclerViewAdapter;
 import com.gsbelarus.gedemin.skeleton.core.CoreCursorRecyclerAdapterViewHandler;
 import com.gsbelarus.gedemin.skeleton.core.CoreCursorRecyclerItemViewTypeModel;
 import com.gsbelarus.gedemin.skeleton.core.CoreDatabaseManager;
 
 
-public class MainFragment extends BaseCursorRecyclerFragment {
+public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment {
 
     /**
      * Сonfiguration
@@ -69,10 +70,15 @@ public class MainFragment extends BaseCursorRecyclerFragment {
         return CoreDatabaseManager.getInstance(getContext());
     }
 
+    @Override
+    protected Cursor getDataCursor() {
+        return getAdapter().getDataCursor();
+    }
+
 
     @Override
-    public BasicCursorLoader onCreateLoader(int id, Bundle args) {
-        return new BasicCursorLoader(getContext(), getDatabaseManager(), "table1", null, null, null, null);
+    public BasicTableCursorLoader onCreateLoader(int id, Bundle args) {
+        return new BasicTableCursorLoader(getContext(), getDatabaseManager(), "table1", null, null, null, null);
     }
 
 }

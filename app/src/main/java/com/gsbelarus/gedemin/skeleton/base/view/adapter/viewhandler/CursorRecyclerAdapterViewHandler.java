@@ -18,7 +18,7 @@ import java.util.Map;
 
 
 public class CursorRecyclerAdapterViewHandler
-        implements RecyclerAdapterViewHandler<CursorRecyclerAdapterViewHandler.BasicCursorItemViewHolder, Cursor> {
+        implements RecyclerAdapterViewHandler<CursorRecyclerAdapterViewHandler.BasicCursorItemViewHolder, Cursor> {   //TODO <V extends ViewType, VH>
 
     private Map<Integer, CursorRecyclerItemViewTypeModel> viewTypeModelMap = new HashMap<>();
 

@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 
-import com.gsbelarus.gedemin.skeleton.base.data.loader.BasicCursorLoader;
+import com.gsbelarus.gedemin.skeleton.base.data.loader.BasicTableCursorLoader;
 import com.gsbelarus.gedemin.skeleton.core.CoreDatabaseManager;
 
 //TODO support Loader ?
@@ -52,7 +52,7 @@ public class CommonLoaderCallbacks implements LoaderManager.LoaderCallbacks<Curs
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new BasicCursorLoader(context, coreDatabaseManager, tableName, projection, selection, selectionArgs, sortOrder);
+        return new BasicTableCursorLoader(context, coreDatabaseManager, tableName, projection, selection, selectionArgs, sortOrder);
     }
 
     @Override

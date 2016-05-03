@@ -21,7 +21,7 @@ import java.util.Map;
 
 abstract public class BaseDatabaseManager implements BasicDatabaseOpenHelper.DBOpenHelperCallback {
 
-    private static BaseDatabaseManager instance = null;
+    private static BaseDatabaseManager instance = null; //TODO singleton factory
 
     protected int dbVersion;
     protected String dbName;
@@ -144,7 +144,7 @@ abstract public class BaseDatabaseManager implements BasicDatabaseOpenHelper.DBO
     }
 
 
-    ////////////// TODO
+    //////////////
 
 
     public void dropAll() {

@@ -1,4 +1,4 @@
-package com.gsbelarus.gedemin.skeleton.base.view;
+package com.gsbelarus.gedemin.skeleton.base.view.fragment;
 
 import android.content.Context;
 import android.os.Bundle;

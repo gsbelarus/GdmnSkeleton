@@ -3,6 +3,7 @@ package com.gsbelarus.gedemin.skeleton.base.data;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -38,7 +39,6 @@ public class BasicDatabaseOpenHelper extends SQLiteOpenHelper {
         if (dbOpenHelperCallback != null) {
             dbOpenHelperCallback.onUpgradeDatabase(db);
         }
-//        onCreate(db);
     }
 
     @Override
@@ -54,12 +54,6 @@ public class BasicDatabaseOpenHelper extends SQLiteOpenHelper {
         if (dbOpenHelperCallback != null) {
             dbOpenHelperCallback.onConfigure(db);
         }
-    }
-
-    @Override
-    public void onOpen(SQLiteDatabase db) {
-        super.onOpen(db);
-        db.enableWriteAheadLogging(); //TODO  ??
     }
 
     public void addConnection() {

@@ -2,6 +2,7 @@ package com.gsbelarus.gedemin.skeleton.core;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.provider.BaseColumns;
 
 import com.alexfu.sqlitequerybuilder.api.Column;
@@ -35,6 +36,8 @@ public class CoreDatabaseManager extends BaseDatabaseManager implements BasicDat
     private CoreDatabaseManager(Context context) {
         super(context, DATABASE_NAME, DATABASE_VERSION);
     }
+
+
 
     @Override
     public void onCreateDatabase(SQLiteDatabase db) {
@@ -89,12 +92,21 @@ public class CoreDatabaseManager extends BaseDatabaseManager implements BasicDat
     @Override
     public void onUpgradeDatabase(SQLiteDatabase db) {
         if (db.getVersion() != DATABASE_VERSION) {
+            dropAll();
             onCreateDatabase(db);
         }
     }
 
     @Override
     public void onConfigure(SQLiteDatabase db) {
+        db.enableWriteAheadLogging(); //TODO
+//        if (!db.isReadOnly()) {
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//                db.setForeignKeyConstraintsEnabled(true);
+//            } else {
+//                db.execSQL("PRAGMA foreign_keys=ON");
+//            }
+//        }
     }
 
 }

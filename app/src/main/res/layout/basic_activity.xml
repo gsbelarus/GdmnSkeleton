@@ -9,8 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?android:windowBackground"
-        android:fitsSystemWindows="true"
-        tools:appContext=".view.activity.MainActivity">
+        android:fitsSystemWindows="true">
 
         <include layout="@layout/appbar" />
 

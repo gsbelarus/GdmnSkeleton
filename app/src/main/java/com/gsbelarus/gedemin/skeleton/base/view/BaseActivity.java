@@ -1,8 +1,6 @@
 package com.gsbelarus.gedemin.skeleton.base.view;
 
 import android.content.Context;
-import android.databinding.DataBindingUtil;
-import android.databinding.ViewDataBinding;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
@@ -15,7 +13,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 
-abstract public class BaseActivity<T_ActivityDataBinding extends ViewDataBinding> extends AppCompatActivity {
+abstract public class BaseActivity extends AppCompatActivity {
 
     public enum ActivityType {
         HIGH_LEVEL, SUB_LEVEL, TITLED_SUB_LEVEL
@@ -41,7 +39,6 @@ abstract public class BaseActivity<T_ActivityDataBinding extends ViewDataBinding
     }
 
 
-    protected T_ActivityDataBinding activityDataBinding;
     protected Context context;
     private Toolbar toolbar;
 
@@ -50,7 +47,7 @@ abstract public class BaseActivity<T_ActivityDataBinding extends ViewDataBinding
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        initDataBinding();
+        setContentView(getLayoutResource());
 
         context = getBaseContext();
 //        setupContentFragment();
@@ -65,17 +62,7 @@ abstract public class BaseActivity<T_ActivityDataBinding extends ViewDataBinding
                 setupSubActivityWithTitle();
                 break;
         }
-
-        initViews();
-
-        activityDataBinding.executePendingBindings();
     }
-
-    protected void initDataBinding() {
-        activityDataBinding = DataBindingUtil.setContentView(this, getLayoutResource());
-    }
-
-    protected abstract void initViews();
 
     protected void setupHighLevelActivity() {
         if (hasAppBar()) {
