@@ -26,28 +26,28 @@ android {
     productFlavors {
     }
 
-    signingConfigs {
-        release {
-            storeFile     file(RELEASE_STORE_FILE)
-            storePassword RELEASE_STORE_PASSWORD
-            keyAlias      RELEASE_KEY_ALIAS
-            keyPassword   RELEASE_KEY_PASSWORD
-        }
-    }
+//    signingConfigs {
+//        release {
+//            storeFile     file(RELEASE_STORE_FILE)
+//            storePassword RELEASE_STORE_PASSWORD
+//            keyAlias      RELEASE_KEY_ALIAS
+//            keyPassword   RELEASE_KEY_PASSWORD
+//        }
+//    }
 
     buildTypes {
-        release {
-            debuggable false
-            minifyEnabled false
-            shrinkResources true
-            signingConfig signingConfigs.release
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-        debug {
-            debuggable true
-            minifyEnabled false
-            signingConfig signingConfigs.release
-        }
+//        release {
+//            debuggable false
+//            minifyEnabled false
+//            shrinkResources true
+//            signingConfig signingConfigs.release
+//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+//        }
+//        debug {
+//            debuggable true
+//            minifyEnabled false
+//            signingConfig signingConfigs.release
+//        }
     }
 
     packagingOptions {

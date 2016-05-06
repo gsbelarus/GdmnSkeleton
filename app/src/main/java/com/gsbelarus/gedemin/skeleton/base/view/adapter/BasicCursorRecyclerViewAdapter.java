@@ -1,41 +1,47 @@
 package com.gsbelarus.gedemin.skeleton.base.view.adapter;
 
 import android.database.Cursor;
-import android.database.DataSetObservable;
-import android.database.DataSetObserver;
-import android.provider.BaseColumns;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
-import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.FilterQueryProvider;
+import android.widget.Filterable;
 
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.datasource.CursorRecyclerAdapterDataSource;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.item.CursorRecyclerItemViewTypeModel;
-import com.gsbelarus.gedemin.skeleton.base.view.adapter.item.ItemViewTypes;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.viewhandler.CursorRecyclerAdapterViewHandler;
 
 // TODO: 1. extends CursorAdapter  2. <T>
 
-public class BasicCursorRecyclerViewAdapter extends BasicRecyclerViewAdapter {
+public class BasicCursorRecyclerViewAdapter extends BasicRecyclerViewAdapter implements Filterable,
+        CursorFilter.CursorFilterClient {
 
+    private Cursor cursor;
+    private CursorFilter cursorFilter;
+    private FilterQueryProvider filterQueryProvider;
+    private Callback callback;
+
+    public interface Callback {
+        void updateDataCursor(Cursor cursor);
+    }
 
     public BasicCursorRecyclerViewAdapter(@Nullable Cursor cursor,
-                                           @LayoutRes int layout,
-                                           String[] from,
-                                           int[] to) {
+                                          @LayoutRes int layout,
+                                          String[] from,
+                                          int[] to,
+                                          Callback callback) {
 
+        this.cursor = cursor;
         CursorRecyclerAdapterDataSource dataSource = new CursorRecyclerAdapterDataSource(cursor);
         setAdapterDataSource(dataSource);
 
         CursorRecyclerAdapterViewHandler viewHandler = new CursorRecyclerAdapterViewHandler(new CursorRecyclerItemViewTypeModel(layout, from, to));
         setAdapterViewHandler(viewHandler);
 
+        this.callback = callback;
         //registerObservers(getDataCursor());
-    }
-
-    public Cursor getDataCursor() {
-        return getAdapterDataSource().getDataCursor();
     }
 
     @Override
@@ -70,7 +76,44 @@ public class BasicCursorRecyclerViewAdapter extends BasicRecyclerViewAdapter {
         } else {
             notifyDataSetChanged();
         }
+
+
         return oldCursor;
     }
 
+    @Override
+    public Cursor getDataCursor() {
+        return getAdapterDataSource().getDataCursor();
+    }
+
+    @Override
+    public CharSequence convertToString(Cursor cursor) {
+        return cursor == null ? "" : cursor.toString();
+    }
+
+    @Override
+    public Cursor runQueryOnBackgroundThread(CharSequence constraint) {
+        if (filterQueryProvider != null) {
+            return filterQueryProvider.runQuery(constraint);
+        }
+
+        return cursor;
+    }
+
+    @Override
+    public Filter getFilter() {
+        if (cursorFilter == null) {
+            cursorFilter = new CursorFilter(this);
+        }
+        return cursorFilter;
+    }
+
+    public void setFilterQueryProvider(FilterQueryProvider filterQueryProvider) {
+        this.filterQueryProvider = filterQueryProvider;
+    }
+
+    @Override
+    public void updateCursor(@Nullable Cursor cursor) {
+        callback.updateDataCursor(cursor);
+    }
 }
