@@ -1,5 +1,6 @@
 package com.gsbelarus.gedemin.skeleton.app.view.activity;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.os.Bundle;
 
@@ -28,6 +29,12 @@ public class MainActivity extends BaseActivity {
     protected Integer getToolbarIdResource() {
         return R.id.toolbar;
     }
+
+    @Override
+    protected void handleSavedInstanceState(@NonNull Bundle savedInstanceState) {}
+
+    @Override
+    protected void handleIntentExtras(@NonNull Bundle extras) {}
 
 
     MainRecyclerCursorFragment fragment;

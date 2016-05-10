@@ -9,6 +9,11 @@ import android.support.v4.view.ViewCompat;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
 import android.util.DisplayMetrics;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.LinearLayout;
+
+import com.gsbelarus.gedemin.skeleton.R;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

@@ -1,6 +1,7 @@
 package com.gsbelarus.gedemin.skeleton.base.view;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
@@ -11,6 +12,8 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+
+import com.gsbelarus.gedemin.skeleton.app.view.activity.DetailActivity;
 
 
 abstract public class BaseActivity extends AppCompatActivity {
@@ -43,6 +46,9 @@ abstract public class BaseActivity extends AppCompatActivity {
     private Toolbar toolbar;
 
 
+    protected abstract void handleSavedInstanceState(@NonNull Bundle savedInstanceState);
+    protected abstract void handleIntentExtras(@NonNull Bundle extras);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +68,13 @@ abstract public class BaseActivity extends AppCompatActivity {
                 setupSubActivityWithTitle();
                 break;
         }
+
+        // restore saved state
+        if(savedInstanceState != null) handleSavedInstanceState(savedInstanceState);
+
+        // handle intent extras
+        Bundle extras = getIntent().getExtras();
+        if(extras != null) handleIntentExtras(extras);
     }
 
     protected void setupHighLevelActivity() {
@@ -143,4 +156,11 @@ abstract public class BaseActivity extends AppCompatActivity {
         return (T) getSupportFragmentManager().findFragmentByTag(tag);
     }
 
+
+    public static <T extends AppCompatActivity> Intent newStartIntent(Context context, Class<T> cl, Bundle extrasBundle) {
+        Intent intent = new Intent(context, cl);
+        intent.putExtras(extrasBundle);
+
+        return intent;
+    }
 }

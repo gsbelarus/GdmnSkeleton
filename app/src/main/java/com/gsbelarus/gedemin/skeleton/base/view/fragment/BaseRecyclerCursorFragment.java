@@ -4,7 +4,6 @@ import android.database.Cursor;
 import android.database.DataSetObservable;
 import android.database.DataSetObserver;
 import android.support.annotation.Nullable;
-import android.support.v4.app.LoaderManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.BasicCursorRecyclerViewAdapter;
@@ -37,7 +36,8 @@ public abstract class BaseRecyclerCursorFragment extends BaseCursorFragment {
         getAdapter().swapCursor(cursor);
     }
 
-
+    @Override
+    protected void bindViewOnCursorLoaded() {}
 
 
 /////////

@@ -2,8 +2,6 @@ package com.gsbelarus.gedemin.skeleton.base.view.fragment;
 
 import android.database.ContentObserver;
 import android.database.Cursor;
-import android.database.DataSetObservable;
-import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -37,10 +35,8 @@ abstract public class BaseCursorFragment extends BaseFragment implements LoaderM
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) { //TODO onPostCreate?
+    public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        getLoaderManager().initLoader(0, null, this);
 
         if (getLoaderManager().getLoader(LOADER_ID) == null) {
             getLoaderManager().initLoader(LOADER_ID, null, this);
@@ -69,7 +65,11 @@ abstract public class BaseCursorFragment extends BaseFragment implements LoaderM
     @Override
     public void onLoadFinished(Loader<Cursor> loader, final Cursor cursor) {
         swapCursor(cursor);
+        bindViewOnCursorLoaded();
     }
+
+    abstract protected void bindViewOnCursorLoaded();
+
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
