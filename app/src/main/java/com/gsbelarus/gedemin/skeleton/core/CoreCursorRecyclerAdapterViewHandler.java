@@ -16,6 +16,7 @@ import com.gsbelarus.gedemin.skeleton.base.view.adapter.item.ItemViewTypes;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.viewhandler.CursorRecyclerAdapterViewHandler;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -33,7 +34,7 @@ public class CoreCursorRecyclerAdapterViewHandler extends CursorRecyclerAdapterV
     @Override
     public CoreCursorItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) { //TODO ItemViewTypes.DEFAULT_VIEW_TYPE
         View view = createItemView(parent, viewType); //inflater.inflate(itemViewTypeModel.getLayoutResource(), parent, false);
-        return new CoreCursorItemViewHolder(view, coreViewHelper.getValueViewLabelViewMap());
+        return new CoreCursorItemViewHolder(view,  new LinkedHashMap<>(coreViewHelper.getValueViewLabelViewMap()));
     }
 
     private View createItemView(ViewGroup parent, int viewType) {
@@ -58,7 +59,6 @@ public class CoreCursorRecyclerAdapterViewHandler extends CursorRecyclerAdapterV
 
         @Override
         public void bindView(@Nullable Cursor cursor, final int[] from, final int[] to) {
-
             CoreViewHelper.bindViews(cursor, from, valueViewLabelViewMap);
         }
     }

@@ -18,7 +18,6 @@ public abstract class BaseRecyclerCursorFragment extends BaseCursorFragment {
     private RecyclerView.LayoutManager layoutManager;
 
     protected abstract BasicCursorRecyclerViewAdapter getAdapter();
-
     protected abstract RecyclerView.LayoutManager createLayoutManager();
 
 
@@ -87,6 +86,7 @@ public abstract class BaseRecyclerCursorFragment extends BaseCursorFragment {
 
 //            getAdapter().getAdapterDataSource().setDataValid(false);
 //            notifyDataSetInvalidated();
+            getAdapter().notifyDataSetChanged();
         }
     }
 }
