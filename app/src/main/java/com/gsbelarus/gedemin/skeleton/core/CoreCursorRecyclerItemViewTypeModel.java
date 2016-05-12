@@ -7,6 +7,9 @@ import com.gsbelarus.gedemin.skeleton.base.view.adapter.item.CursorRecyclerItemV
 
 public class CoreCursorRecyclerItemViewTypeModel extends CursorRecyclerItemViewTypeModel {
 
+    public CoreCursorRecyclerItemViewTypeModel(@LayoutRes int layoutResource){
+        super(layoutResource, null, null);
+   }
 
     public CoreCursorRecyclerItemViewTypeModel(@LayoutRes int layoutResource, String[] originalFrom) {
         super(layoutResource, originalFrom, null);

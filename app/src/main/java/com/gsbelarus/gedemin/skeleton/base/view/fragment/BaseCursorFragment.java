@@ -10,6 +10,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 
 import com.gsbelarus.gedemin.skeleton.base.data.BaseDatabaseManager;
+import com.gsbelarus.gedemin.skeleton.core.LogUtil;
 
 
 abstract public class BaseCursorFragment extends BaseFragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -105,14 +106,16 @@ abstract public class BaseCursorFragment extends BaseFragment implements LoaderM
     protected void unregisterObservers(@Nullable Cursor cursor) {
         if (cursor != null) {
             if (contentObserver != null) {
-                cursor.unregisterContentObserver(contentObserver);
+                try {
+                    cursor.unregisterContentObserver(contentObserver);
+                } catch (Exception e) {
+                    LogUtil.d(e);
+                }
             }
 //            if (dataSetObserver != null) {
 //                cursor.unregisterDataSetObserver(dataSetObserver);
 //                dataSetObservable.unregisterObserver(dataSetObserver);
 //            }
-
-            cursor.close(); //TODO !
         }
     }
 

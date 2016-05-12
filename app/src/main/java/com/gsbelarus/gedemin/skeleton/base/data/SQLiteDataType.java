@@ -1,7 +1,10 @@
 package com.gsbelarus.gedemin.skeleton.base.data;
 
-
 public class SQLiteDataType {
+
+    public static String getDataTypeString(int columnType) {
+        return SQLiteDataTypes.values()[columnType].getStorageDataTypeString();
+    }
 
     public enum SQLiteStorageTypes {
 
@@ -19,7 +22,7 @@ public class SQLiteDataType {
 
         public String getStorageDataTypeString() {
 
-            switch (values()[ordinal()]) {
+            switch (this) {
                 case STRING:
                     return SQLiteStorageTypes.TEXT.name();
                 case FLOAT:
@@ -33,9 +36,4 @@ public class SQLiteDataType {
             }
         }
     }
-
-    public static String getDataTypeString(int columnType) {
-        return SQLiteDataTypes.values()[columnType].getStorageDataTypeString();
-    }
-
 }

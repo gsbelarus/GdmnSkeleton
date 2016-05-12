@@ -23,7 +23,7 @@ import java.util.Map;
 public class CoreCursorRecyclerAdapterViewHandler extends CursorRecyclerAdapterViewHandler {
 
     private CoreViewHelper coreViewHelper;
-
+    private int fieldsCount;
 
     public CoreCursorRecyclerAdapterViewHandler(CoreCursorRecyclerItemViewTypeModel... cursorViewTypeModelMap) {
         super(cursorViewTypeModelMap);
@@ -37,13 +37,17 @@ public class CoreCursorRecyclerAdapterViewHandler extends CursorRecyclerAdapterV
         return new CoreCursorItemViewHolder(view,  new LinkedHashMap<>(coreViewHelper.getValueViewLabelViewMap()));
     }
 
-    private View createItemView(ViewGroup parent, int viewType) {
+    public View createItemView(ViewGroup parent, int viewType) {
         CoreCursorRecyclerItemViewTypeModel itemViewTypeModel = (CoreCursorRecyclerItemViewTypeModel) getViewTypeModel(viewType);
 
-        View itemView = coreViewHelper.generateCoreItemView(parent, itemViewTypeModel.getOriginalFrom().length);
+        View itemView = coreViewHelper.generateCoreItemView(parent, fieldsCount);//itemViewTypeModel.getOriginalFrom().length);
 
         itemViewTypeModel.setTo(coreViewHelper.getTo());
         return itemView;
+    }
+
+    public void setFieldsCount(int fieldsCount) {
+        this.fieldsCount = fieldsCount;
     }
 
 

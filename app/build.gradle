@@ -36,18 +36,18 @@ android {
 //    }
 
     buildTypes {
-//        release {
-//            debuggable false
-//            minifyEnabled false
-//            shrinkResources true
+        release {
+            debuggable false
+            minifyEnabled false
+            shrinkResources true
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+            minifyEnabled false
 //            signingConfig signingConfigs.release
-//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-//        }
-//        debug {
-//            debuggable true
-//            minifyEnabled false
-//            signingConfig signingConfigs.release
-//        }
+        }
     }
 
     packagingOptions {
@@ -72,6 +72,8 @@ android {
 }
 
 dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
     def appDependencies = rootProject.ext.appDependencies
     def appTestDependencies = rootProject.ext.appTestDependencies
 

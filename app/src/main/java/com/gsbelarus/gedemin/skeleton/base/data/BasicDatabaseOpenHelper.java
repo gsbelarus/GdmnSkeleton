@@ -3,23 +3,13 @@ package com.gsbelarus.gedemin.skeleton.base.data;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Build;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 public class BasicDatabaseOpenHelper extends SQLiteOpenHelper {
-
-    public interface DBOpenHelperCallback {
-        void onCreateDatabase(SQLiteDatabase db);
-        void onUpgradeDatabase(SQLiteDatabase db);
-        void onConfigure(SQLiteDatabase db);
-    }
-
 
     private DBOpenHelperCallback dbOpenHelperCallback = null;
     private AtomicInteger connectCounter = new AtomicInteger(0);
-
 
     public BasicDatabaseOpenHelper(Context context, String dbName, int dbVersion, DBOpenHelperCallback dbOpenHelperCallback) {
         super(context, dbName, null, dbVersion);
@@ -37,7 +27,7 @@ public class BasicDatabaseOpenHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (dbOpenHelperCallback != null) {
-            dbOpenHelperCallback.onUpgradeDatabase(db);
+            dbOpenHelperCallback.onUpgradeDatabase(db, oldVersion, newVersion);
         }
     }
 
@@ -66,6 +56,14 @@ public class BasicDatabaseOpenHelper extends SQLiteOpenHelper {
 
     public int getConnectCounter() {
         return connectCounter.get();
+    }
+
+    public interface DBOpenHelperCallback {
+        void onCreateDatabase(SQLiteDatabase db);
+
+        void onUpgradeDatabase(SQLiteDatabase db, int oldVersion, int newVersion);
+
+        void onConfigure(SQLiteDatabase db);
     }
 
 }

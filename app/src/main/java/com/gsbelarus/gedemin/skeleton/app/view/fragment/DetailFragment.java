@@ -3,7 +3,6 @@ package com.gsbelarus.gedemin.skeleton.app.view.fragment;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.BaseColumns;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.Loader;
@@ -29,48 +28,45 @@ public class DetailFragment extends BaseCursorFragment {
     private String[] originalFrom;
     private Map<View, View> valueViewLabelViewMap; //TODO LinkedHashMap
 
+    public static <T extends Fragment> T newInstance(long dataId) {
+        Bundle argsBundle = new Bundle();
+        argsBundle.putLong(ARGUMENT_KEY_DATA_ID, dataId);
+
+        return (T) newInstance(DetailFragment.class, argsBundle);
+    }
+
     @Override
     protected int getLayoutResource() {
         return R.layout.fragment_detail;
     }
 
+//    @Override
+//    public void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//
+//        originalFrom = new String[]{
+//                BaseColumns._ID,
+//                "column1_BIGINT",
+//                "column2_CHAR_32767",
+//                "column3_DATE",
+//                "column4_DECIMAL_18_18",
+//                "column5_FLOAT",
+//                "column6_INTEGER",
+//                "column7_NUMERIC_18_18",
+//                "column8_SMALLINT",
+//                "column9_TIME",
+//                "column10_TIMESTAMP",
+//                "column11_VARCHAR_32765"}; //TODO
+//    }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        originalFrom = new String[] {
-                BaseColumns._ID,
-                "column1_BIGINT",
-                "column2_CHAR_32767",
-                "column3_DATE",
-                "column4_DECIMAL_18_18",
-                "column5_FLOAT",
-                "column6_INTEGER",
-                "column7_NUMERIC_18_18",
-                "column8_SMALLINT",
-                "column9_TIME",
-                "column10_TIMESTAMP",
-                "column11_VARCHAR_32765"}; //TODO
-    }
-
-    @Override
-    protected void handleFragmentArguments(@NonNull Bundle arguments) {
-        if (arguments.containsKey(ARGUMENT_KEY_DATA_ID)) {
-            dataId = arguments.getLong(ARGUMENT_KEY_DATA_ID);
+    protected void onCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
+        if (getArguments().containsKey(ARGUMENT_KEY_DATA_ID)) {
+            dataId = getArguments().getLong(ARGUMENT_KEY_DATA_ID);
         }
-    }
 
-    @Override
-    protected void handleSavedInstanceState(@NonNull Bundle savedInstanceState) {}
-
-    @Override
-    protected void handleIntentExtras(@NonNull Bundle extras) {}
-
-    @Override
-    protected void doOnCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
         CoreViewHelper coreViewHelper = new CoreViewHelper();
-        View detailView = coreViewHelper.generateCoreDetailView(rootView, originalFrom.length);
+        View detailView = coreViewHelper.generateCoreDetailView(rootView, 0);
 
         valueViewLabelViewMap = coreViewHelper.getValueViewLabelViewMap();
         rootView.addView(detailView);
@@ -94,20 +90,24 @@ public class DetailFragment extends BaseCursorFragment {
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new BasicTableCursorLoader(getContext(), getDatabaseManager(), "table1", null, BaseColumns._ID + " = ?", new String[] {String.valueOf(dataId)}, null);
+        return new BasicTableCursorLoader(getContext(), getDatabaseManager(), "Products", null, BaseColumns._ID + " = ?", new String[]{String.valueOf(dataId)}, null);
     }
 
     @Override
     protected void bindViewOnCursorLoaded() {
+        if (originalFrom == null)
+            originalFrom = getDataCursor().getColumnNames();
 
-        CoreViewHelper.bindViews(getDataCursor(), originalFrom, valueViewLabelViewMap);
-    }
+        ViewGroup rootView = (ViewGroup) getView();
+        if (rootView != null) {
+            rootView.removeAllViews();
+            CoreViewHelper coreViewHelper = new CoreViewHelper();
+            View detailView = coreViewHelper.generateCoreDetailView(rootView, originalFrom.length);
 
+            valueViewLabelViewMap = coreViewHelper.getValueViewLabelViewMap();
+            rootView.addView(detailView);
 
-    public static <T extends Fragment> T newInstance(long dataId) {
-        Bundle argsBundle = new Bundle();
-        argsBundle.putLong(ARGUMENT_KEY_DATA_ID, dataId);
-
-        return (T) newInstance(DetailFragment.class, argsBundle);
+            CoreViewHelper.bindViews(getDataCursor(), originalFrom, valueViewLabelViewMap);
+        }
     }
 }

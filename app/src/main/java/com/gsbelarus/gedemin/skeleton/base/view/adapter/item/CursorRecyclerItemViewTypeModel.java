@@ -13,7 +13,7 @@ public class CursorRecyclerItemViewTypeModel {
     @LayoutRes
     private final int layoutResource;
 
-    private final String[] originalFrom;
+    private  String[] originalFrom;
     @IdRes
     protected int[] to;
     private int[] from;
@@ -38,6 +38,10 @@ public class CursorRecyclerItemViewTypeModel {
     }
 
     private void findColumns(@NonNull Cursor cursor) {
+        if(originalFrom==null)  {
+            originalFrom = cursor.getColumnNames();
+        }
+
         int[] columns = new int[originalFrom.length];
 
         for (int i = 0; i < originalFrom.length; i++) {
