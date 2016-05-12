@@ -40,31 +40,30 @@ public abstract class BaseRecyclerCursorFragment extends BaseCursorFragment {
     protected void bindViewOnCursorLoaded() {}
 
 
-/////////
-//    @Override
-//    protected void registerObservers(@Nullable Cursor cursor) {
-//        super.registerObservers(cursor);
-//
-//        if (dataSetObserver == null) {
-//            dataSetObserver = new CursorDataSetObserver();
-//        }
-//        if (cursor != null) {
-//            cursor.registerDataSetObserver(dataSetObserver);
-//            dataSetObservable.registerObserver(dataSetObserver);
-//        }
-//    }
-//
-//    @Override
-//    protected void unregisterObservers(@Nullable Cursor cursor) {
-//        super.unregisterObservers(cursor);
-//
-//        if (cursor != null) {
-//            if (dataSetObserver != null) {
-//                cursor.unregisterDataSetObserver(dataSetObserver);
-//                dataSetObservable.unregisterObserver(dataSetObserver);
-//            }
-//        }
-//    }
+    @Override
+    protected void registerObservers(@Nullable Cursor cursor) {
+        super.registerObservers(cursor);
+
+        if (dataSetObserver == null) {
+            dataSetObserver = new CursorDataSetObserver();
+        }
+        if (cursor != null) {
+            cursor.registerDataSetObserver(dataSetObserver);
+            dataSetObservable.registerObserver(dataSetObserver);
+        }
+    }
+
+    @Override
+    protected void unregisterObservers(@Nullable Cursor cursor) {
+        super.unregisterObservers(cursor);
+
+        if (cursor != null) {
+            if (dataSetObserver != null) {
+                cursor.unregisterDataSetObserver(dataSetObserver);
+                dataSetObservable.unregisterObserver(dataSetObserver);
+            }
+        }
+    }
 
     protected void notifyDataSetInvalidated() { //TODO test
         dataSetObservable.notifyInvalidated();

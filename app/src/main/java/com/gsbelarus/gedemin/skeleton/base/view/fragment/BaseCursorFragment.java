@@ -106,11 +106,7 @@ abstract public class BaseCursorFragment extends BaseFragment implements LoaderM
     protected void unregisterObservers(@Nullable Cursor cursor) {
         if (cursor != null) {
             if (contentObserver != null) {
-                try {
-                    cursor.unregisterContentObserver(contentObserver);
-                } catch (Exception e) {
-                    LogUtil.d(e);
-                }
+                cursor.unregisterContentObserver(contentObserver);
             }
 //            if (dataSetObserver != null) {
 //                cursor.unregisterDataSetObserver(dataSetObserver);
@@ -124,7 +120,6 @@ abstract public class BaseCursorFragment extends BaseFragment implements LoaderM
 //    }
 
     private void onContentChanged() {
-        unregisterObservers(getDataCursor());
         getLoaderManager().restartLoader(LOADER_ID, null, this);
     }
 
