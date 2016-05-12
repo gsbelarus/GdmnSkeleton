@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
@@ -68,7 +69,17 @@ abstract public class BaseDatabaseManager implements BasicDatabaseOpenHelper.DBO
         return false;
     }
 
+    @Override
+    public void onDowngradeDatabase(SQLiteDatabase db, int oldVersion, int newVersion) {
+        throw new SQLiteException("Can't downgrade database from version " +
+                oldVersion + " to " + newVersion);
+    }
+
     public void beginTransaction() {
+        db.beginTransaction();
+    }
+
+    public void beginTransactionNonExclusive() {
         db.beginTransactionNonExclusive();
     }
 

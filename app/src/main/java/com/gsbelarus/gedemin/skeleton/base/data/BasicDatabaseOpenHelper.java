@@ -33,8 +33,9 @@ public class BasicDatabaseOpenHelper extends SQLiteOpenHelper {
 
     @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        //TODO
-        if (newVersion != 1) super.onDowngrade(db, oldVersion, newVersion);
+        if (dbOpenHelperCallback != null) {
+            dbOpenHelperCallback.onDowngradeDatabase(db, oldVersion, newVersion);
+        }
     }
 
     @Override
@@ -59,11 +60,13 @@ public class BasicDatabaseOpenHelper extends SQLiteOpenHelper {
     }
 
     public interface DBOpenHelperCallback {
+
         void onCreateDatabase(SQLiteDatabase db);
 
         void onUpgradeDatabase(SQLiteDatabase db, int oldVersion, int newVersion);
 
+        void onDowngradeDatabase(SQLiteDatabase db, int oldVersion, int newVersion);
+
         void onConfigure(SQLiteDatabase db);
     }
-
 }

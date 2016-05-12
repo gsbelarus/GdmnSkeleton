@@ -1,5 +1,6 @@
 package com.gsbelarus.gedemin.skeleton.app.view.fragment;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.BaseColumns;
@@ -28,6 +29,8 @@ import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseRecyclerCursorFragm
 import com.gsbelarus.gedemin.skeleton.core.CoreCursorRecyclerAdapterViewHandler;
 import com.gsbelarus.gedemin.skeleton.core.CoreCursorRecyclerItemViewTypeModel;
 import com.gsbelarus.gedemin.skeleton.core.CoreDatabaseManager;
+
+import java.util.Date;
 
 import java.util.Arrays;
 
@@ -185,6 +188,17 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
         switch (item.getItemId()) {
             case R.id.action_sync:
                 BaseSyncService.startSync(getContext(), SyncService.class, BaseSyncService.TypeTask.FOREGROUND);
+                break;
+            case R.id.action_add:
+                ContentValues cv = new ContentValues();
+                cv.put("ID", -1);
+                cv.put("Name", "testName");
+                cv.put("Description", "testDescription");
+                cv.put("ReleaseDate", CoreDatabaseManager.getDateTime(new Date()));
+                cv.put("Rating", 123);
+                cv.put("Price", 99.9);
+                getDatabaseManager().insert("Products", null, cv);
+                getDatabaseManager().notifyDataChanged();
                 break;
         }
         return super.onOptionsItemSelected(item);

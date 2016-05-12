@@ -102,8 +102,10 @@ abstract public class BaseActivity extends AppCompatActivity {
     }
 
     private void disconnectService() {
-        if (syncBinder != null) {
+        if (syncBinder != null && onSyncListener != null) {
             syncBinder.removeOnSyncListener(onSyncListener);
+        }
+        if (serviceConnection != null) {
             getApplicationContext().unbindService(serviceConnection);
         }
     }

@@ -19,6 +19,7 @@ import org.apache.olingo.commons.api.edm.EdmEntityType;
 import org.apache.olingo.commons.api.edm.EdmProperty;
 import org.apache.olingo.commons.api.edm.EdmSchema;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,7 +45,7 @@ public class CoreSyncService extends BaseSyncService {
     @Override
     protected void handleIntentBackground(Intent intent) {
         String url = "http://services.odata.org/V4/(S(5i2qvfszd0uktnpibrgfu2qs))/OData/OData.svc/";
-        databaseManager.beginTransaction();
+        databaseManager.beginTransactionNonExclusive();
         try {
             int version = 32;
             LogUtil.d("server db version: " + version);
@@ -54,21 +55,20 @@ public class CoreSyncService extends BaseSyncService {
 
             publishProcess(100, 0);
             createDatabase(edm);
-            publishProcess(100, 50);
             pullData(edm, url);
-            if (pushData(edm, url)) {
-                try {
-//                    pullData(edm, url);
-                } catch (Exception e) {
-                    LogUtil.d(e);
-                }
+            publishProcess(100, 50);
+
+            pushUpdatedData(edm, url);
+            pushDeletedData(url);
+            if (pushInsertedData(edm, url)) {
+//                startSync(getApplicationContext(), this.getClass(), getTypeTask(intent));
             }
 
             publishProcess(100, 100);
-            databaseManager.notifyDataChanged();
             databaseManager.transactionSuccessful();
         } finally {
             databaseManager.endTransaction();
+            databaseManager.notifyDataChanged();
         }
     }
 
@@ -143,39 +143,71 @@ public class CoreSyncService extends BaseSyncService {
         }
     }
 
-    private boolean pushData(Edm metadata, String url) {
-//        for (Map.Entry<String, List<Map<String, String>>> tableEntry : getDatabaseManager().getInsertedRows().entrySet()) {
-//            LogUtil.d("insert", tableEntry);
-//            getDatabaseManager().dropLogChangesTriggers(tableEntry.getKey());
-//            try {
-//                for (Map<String, String> row : tableEntry.getValue()) {
+    private boolean pushInsertedData(Edm metadata, String url) {
+        boolean isPush = false;
+        for (Map.Entry<String, List<Map<String, String>>> tableEntry : getDatabaseManager().getInsertedRows().entrySet()) {
+            LogUtil.d("insert", tableEntry);
+            EdmEntityType entityType = null;
+            for (EdmSchema edmSchema : metadata.getSchemas()) {
+                for (EdmEntitySet edmEntitySet : edmSchema.getEntityContainer().getEntitySets()) {
+                    EdmEntityType edmEntityType = metadata.getEntityType(edmEntitySet.getEntityType().getFullQualifiedName());
+                    if (edmEntitySet.getName().equals(tableEntry.getKey())) {
+                        entityType = edmEntityType;
+                        break;
+                    }
+                }
+                if (entityType != null) break;
+            }
+            if (entityType == null) continue;
+            getDatabaseManager().dropLogChangesTriggers(tableEntry.getKey());
+            try {
+                for (Map<String, String> row : tableEntry.getValue()) {
+                    List<ClientProperty> properties = new ArrayList<>();
+                    for (Map.Entry<String, String> value : row.entrySet()) {
+                        if (!value.getKey().equals(BaseColumns._ID)) {
+                            properties.add(TypeProvider.getProperty(
+                                    oDataClient,
+                                    entityType.getStructuralProperty(value.getKey()),
+                                    value.getValue()));
+                        }
+                    }
+//                    ClientEntity entity = oDataClient.getObjectFactory().newEntity(entityType.getFullQualifiedName());
+//                    entity.getProperties().addAll(properties);
+//                    ODataEntityCreateResponse insertResponse = oDataClient.getCUDRequestFactory().getEntityCreateRequest(
+//                            oDataClient.newURIBuilder(url).appendEntitySetSegment(tableEntry.getKey()).build(),
+//                            entity
+//                    ).execute();
 //
-//
-//                    ArrayList<OProperty<?>> properties = new ArrayList<>();
-//                    for (Map.Entry<String, Object> value : row.entrySet()) {
-//                        if (!value.getKey().equals(BaseColumns._ID)) {
-//                            properties.add(ODataSqLiteTypeConverter.convertToODataProperty(
-//                                    entityType.findProperty(value.getKey()).getType(), value.getKey(), value.getValue()));
+//                    if (insertResponse.getStatusCode() == 201) {
+//                        getDatabaseManager().beginTransaction();
+//                        try {
+//                            getDatabaseManager().delete(CoreContract.TableLogChanges.TABLE_NAME,
+//                                    CoreContract.TableLogChanges.COLUMN_INTERNAL_ID + "=" + row.get(BaseColumns._ID),
+//                                    null);
+//                            getDatabaseManager().delete(tableEntry.getKey(),
+//                                    BaseColumns._ID + "=" + row.get(BaseColumns._ID),
+//                                    null);
+//                            isPush = true;
+//                            getDatabaseManager().transactionSuccessful();
+//                        } finally {
+//                            getDatabaseManager().endTransaction();
 //                        }
 //                    }
-//                    consumer.createEntity(tableEntry.getKey()).properties(properties).execute();
-//                    oDataClient.getCUDRequestFactory().getEntityCreateRequest()
-//
-//                    getDatabaseManager().beginTransaction();
-//                    getDatabaseManager().delete(CoreContract.TableLogChanges.TABLE_NAME,
-//                            CoreContract.TableLogChanges.COLUMN_INTERNAL_ID + "=" + row.get(BaseColumns._ID),
-//                            null);
-//                    getDatabaseManager().delete(tableEntry.getKey(),
-//                            BaseColumns._ID + "=" + row.get(BaseColumns._ID),
-//                            null);
-//                    getDatabaseManager().transactionSuccessful();
-//                    getDatabaseManager().endTransaction();
-//                }
-//            } finally {
-//                getDatabaseManager().createLogChangesTriggers(tableEntry.getKey(), entityType.getKeys().get(0));
-//            }
-//        }
+                }
+            } finally {
+                getDatabaseManager().createLogChangesTriggers(tableEntry.getKey(), entityType.getKeyPropertyRefs().get(0).getName());
+            }
+        }
+        return isPush;
+    }
 
+    private void pushUpdatedData(Edm metadata, String url) {
+        for (Map.Entry<String, List<Map<String, String>>> tableEntry : getDatabaseManager().getUpdatedRows().entrySet()) {
+            LogUtil.d("update", tableEntry);
+        }
+    }
+
+    private void pushDeletedData(String url) {
         for (Map.Entry<String, List<Object>> tableEntry : getDatabaseManager().getDeletedRowsId().entrySet()) {
             LogUtil.d("delete", tableEntry);
             for (Object value : tableEntry.getValue()) {
@@ -192,56 +224,7 @@ public class CoreSyncService extends BaseSyncService {
                 }
             }
         }
-        return false;
     }
-
-//    private void pushData(ODataConsumer consumer) {
-//        EdmDataServices metadata = consumer.getMetadata();
-//
-//        for (Map.Entry<String, List<Map<String, Object>>> tableEntry : dbHelper.getInsertedRows().entrySet()) {
-//            LogUtil.d("insert", tableEntry);
-//            EdmEntityType entityType = metadata.findEdmEntitySet(tableEntry.getKey()).getType();
-//            dbHelper.dropLogChangesTriggers(tableEntry.getKey());
-//            try {
-//                for (Map<String, Object> row : tableEntry.getValue()) {
-//                    ArrayList<OProperty<?>> properties = new ArrayList<>();
-//                    for (Map.Entry<String, Object> value : row.entrySet()) {
-//                        if (!value.getKey().equals(BaseColumns._ID)) {
-//                            properties.add(ODataSqLiteTypeConverter.convertToODataProperty(
-//                                    entityType.findProperty(value.getKey()).getType(), value.getKey(), value.getValue()));
-//                        }
-//                    }
-//                    consumer.createEntity(tableEntry.getKey()).properties(properties).execute();
-//
-//                    dbHelper.beginTransaction();
-//                    dbHelper.delete(GdmnContract.TableLogChanges.TABLE_NAME,
-//                            GdmnContract.TableLogChanges.COLUMN_INTERNAL_ID + "=" + row.get(BaseColumns._ID),
-//                            null);
-//                    dbHelper.delete(tableEntry.getKey(),
-//                            BaseColumns._ID + "=" + row.get(BaseColumns._ID),
-//                            null);
-//                    dbHelper.successfulTransaction();
-//                    dbHelper.endTransaction();
-//                }
-//            } finally {
-//                dbHelper.createLogChangesTriggers(tableEntry.getKey(), entityType.getKeys().get(0));
-//            }
-//        }
-//        for (Map.Entry<String, List<Map<String, Object>>> tableEntry : dbHelper.getUpdatedRows().entrySet()) {
-//            LogUtil.d("update", tableEntry);
-//        }
-//        for (Map.Entry<String, List<Long>> tableEntry : dbHelper.getDeletedRowsId().entrySet()) {
-//            LogUtil.d("delete", tableEntry);
-//            for (Long value : tableEntry.getValue()) {//TODO поддержка других типов
-//                consumer.deleteEntity(tableEntry.getKey(), value.intValue()).execute();
-//                LogUtil.d(dbHelper.delete(GdmnContract.TableLogChanges.TABLE_NAME,
-//                        GdmnContract.TableLogChanges.COLUMN_EXTERNAL_ID + "=" + value,
-//                        null));
-//            }
-//        }
-//        //после успешной отправки новых запесей удалить их с клиента и провести новую синхронизацию
-//    }
-
 
     public CoreDatabaseManager getDatabaseManager() {
         return databaseManager;

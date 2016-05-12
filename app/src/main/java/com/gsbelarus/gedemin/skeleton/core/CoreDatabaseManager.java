@@ -28,7 +28,6 @@ public class CoreDatabaseManager extends BaseDatabaseManager implements BasicDat
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
-    private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "skeleton_db.sqlite";
 
     private static final String TRIGGER_LOG_CHANGES_INSERT = "trigger_%s_insert";
@@ -59,7 +58,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager implements BasicDat
     private static CoreDatabaseManager instance = null;
 
     private CoreDatabaseManager(Context context) {
-        super(context, DATABASE_NAME, DATABASE_VERSION);
+        super(context, DATABASE_NAME, 1);
     }
 
     @NotNull
@@ -87,6 +86,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager implements BasicDat
     @Override
     public synchronized void open() {
         super.open();
+
         notifyVersionDB();
     }
 
@@ -189,6 +189,11 @@ public class CoreDatabaseManager extends BaseDatabaseManager implements BasicDat
         LogUtil.d("migrate from " + oldVersion + " to " + newVersion);
         dropAll();
         onCreateDatabase(db);
+    }
+
+    @Override
+    public void onDowngradeDatabase(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (newVersion != 1) super.onDowngradeDatabase(db, oldVersion, newVersion);
     }
 
     @Override

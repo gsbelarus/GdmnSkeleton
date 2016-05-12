@@ -72,7 +72,7 @@ public abstract class BaseSyncService extends IntentService {
     @Override
     protected void onHandleIntent(final Intent intent) {
         if (intent != null) {
-            if (TypeTask.valueOf(intent.getAction()) == TypeTask.FOREGROUND) {
+            if (getTypeTask(intent) == TypeTask.FOREGROUND) {
                 startForeground(ID_SYNC_NOTIFICATION, getStartSyncNotification());
             }
             handler.post(new Runnable() {
@@ -159,6 +159,10 @@ public abstract class BaseSyncService extends IntentService {
             }
         }
         return handled;
+    }
+
+    protected TypeTask getTypeTask(Intent intent) {
+        return TypeTask.valueOf(intent.getAction());
     }
 
     protected void publishProcess(final int max, final int progress) {

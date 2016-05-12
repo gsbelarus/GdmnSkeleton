@@ -7,4 +7,9 @@
         android:title="Sync"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/action_add"
+        android:title="+"
+        app:showAsAction="ifRoom" />
+
 </menu>
