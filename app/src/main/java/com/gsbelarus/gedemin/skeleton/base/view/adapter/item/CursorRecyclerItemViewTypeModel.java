@@ -37,6 +37,13 @@ public class CursorRecyclerItemViewTypeModel {
         return from;
     }
 
+    public String[] getOriginalFrom(@NonNull Cursor cursor) {
+        if (originalFrom != null) return originalFrom;
+
+        findColumns(cursor);
+        return originalFrom;
+    }
+
     private void findColumns(@NonNull Cursor cursor) {
         if(originalFrom==null)  {
             originalFrom = cursor.getColumnNames();

@@ -13,8 +13,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FilterQueryProvider;
+import android.view.ViewGroup;
 
 import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.app.SyncService;
@@ -29,12 +29,16 @@ import com.gsbelarus.gedemin.skeleton.core.CoreCursorRecyclerAdapterViewHandler;
 import com.gsbelarus.gedemin.skeleton.core.CoreCursorRecyclerItemViewTypeModel;
 import com.gsbelarus.gedemin.skeleton.core.CoreDatabaseManager;
 
+import java.util.Arrays;
+
+
 public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment implements BasicCursorRecyclerViewAdapter.Callback {
 
     private SearchView searchView;
     private CoreDatabaseManager coreDatabaseManager;
-
     private BasicCursorRecyclerViewAdapter cursorAdapter;
+    private String selection;
+    private CoreCursorRecyclerItemViewTypeModel itemViewTypeModel;
 
     /**
      * Сonfiguration
@@ -52,7 +56,7 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
 
         coreDatabaseManager = createDatabaseManager();
 
-        CoreCursorRecyclerItemViewTypeModel itemViewTypeModel = new CoreCursorRecyclerItemViewTypeModel(
+        itemViewTypeModel = new CoreCursorRecyclerItemViewTypeModel(
                 R.layout.core_recycler_item);
 
         cursorAdapter = new BasicCursorRecyclerViewAdapter(null, itemViewTypeModel.getLayoutResource(), null, null, this); //TODO
@@ -63,14 +67,6 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
             public void onClick(View view, int position, int viewType) {
                 long id = getAdapter().getAdapterDataSource().getItemId(position); //TODO
                 startActivity(DetailActivity.newStartIntent(getActivity(), id));
-            }
-        });
-        cursorAdapter.setFilterQueryProvider(new FilterQueryProvider() {
-            @Override
-            public Cursor runQuery(CharSequence constraint) {
-                if (!constraint.toString().isEmpty())
-                    return coreDatabaseManager.select("Products", null, "_id LIKE ?", new String[]{"%" + constraint.toString() + "%"}, null);
-                else return coreDatabaseManager.select("Products", null, null, null, null);
             }
         });
     }
@@ -133,7 +129,28 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
         super.bindViewOnCursorLoaded();
 
         if (getDataCursor() != null) {
+            String[] from = itemViewTypeModel.getOriginalFrom(getDataCursor());
+            StringBuilder stringBuilder = new StringBuilder();
+            for (String column : from) {
+                stringBuilder.append(column + " " + "LIKE ?");
+                if (!column.equals(from[from.length - 1]))
+                    stringBuilder.append(" OR ");
+            }
+            selection = stringBuilder.toString();
+
+            final String[] selectionArgs = new String[from.length];
+
+            cursorAdapter.setFilterQueryProvider(new FilterQueryProvider() {
+                @Override
+                public Cursor runQuery(CharSequence constraint) {
+                    if (!constraint.toString().isEmpty()) {
+                        Arrays.fill(selectionArgs, "%" + constraint.toString() + "%");
+                        return coreDatabaseManager.select("Products", null, selection, selectionArgs, null);
+                    } else return coreDatabaseManager.select("Products", null, null, null, null);
+                }
+            });
             ((CoreCursorRecyclerAdapterViewHandler) getAdapter().getAdapterViewHandler()).setFieldsCount(getDataCursor().getColumnCount());
+
         }
     }
 

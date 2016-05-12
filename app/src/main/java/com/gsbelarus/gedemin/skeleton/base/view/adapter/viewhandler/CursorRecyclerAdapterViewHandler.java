@@ -39,7 +39,7 @@ public class CursorRecyclerAdapterViewHandler
         return new BasicCursorItemViewHolder(view);
     }
 
-    protected CursorRecyclerItemViewTypeModel getViewTypeModel(int viewType) {
+    public CursorRecyclerItemViewTypeModel getViewTypeModel(int viewType) {
         return viewTypeModelMap.get(viewType);
     }
 
@@ -54,8 +54,6 @@ public class CursorRecyclerAdapterViewHandler
             holder.bindView(dataItem, itemViewTypeModel.getFrom(dataItem), itemViewTypeModel.getTo());
         }
     }
-
-
 
     // TODO перенести из core, base  ItemViewHolder
     public class BasicCursorItemViewHolder extends RecyclerView.ViewHolder {
