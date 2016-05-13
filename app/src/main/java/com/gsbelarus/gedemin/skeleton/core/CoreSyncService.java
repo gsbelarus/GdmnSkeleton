@@ -30,7 +30,7 @@ public class CoreSyncService extends BaseSyncService {
     private CoreDatabaseManager databaseManager;
     private ODataClient oDataClient;
 
-    public void onHandleRow(String tableName, ContentValues contentValues) {
+    protected void onHandleRow(String tableName, ContentValues contentValues) {
 
     }
 
@@ -39,12 +39,21 @@ public class CoreSyncService extends BaseSyncService {
         super.onCreate();
 
         databaseManager = CoreDatabaseManager.getInstance(getApplicationContext());
+        databaseManager.open();
         oDataClient = ODataClientFactory.getClient();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        databaseManager.close();
     }
 
     @Override
     protected void handleIntentBackground(Intent intent) {
         String url = "http://services.odata.org/V4/(S(5i2qvfszd0uktnpibrgfu2qs))/OData/OData.svc/";
+        boolean isSuccessful = false;
         databaseManager.beginTransactionNonExclusive();
         try {
             int version = 32;
@@ -65,10 +74,13 @@ public class CoreSyncService extends BaseSyncService {
             }
 
             publishProcess(100, 100);
-            databaseManager.transactionSuccessful();
+            databaseManager.setTransactionSuccessful();
+            isSuccessful = true;
         } finally {
             databaseManager.endTransaction();
-            databaseManager.notifyDataChanged();
+            if (isSuccessful) {
+                databaseManager.notifyDataChanged();
+            }
         }
     }
 

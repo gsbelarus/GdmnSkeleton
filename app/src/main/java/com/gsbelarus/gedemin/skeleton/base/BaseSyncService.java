@@ -70,7 +70,7 @@ public abstract class BaseSyncService extends IntentService {
     }
 
     @Override
-    protected void onHandleIntent(final Intent intent) {
+    protected final void onHandleIntent(final Intent intent) {
         if (intent != null) {
             if (getTypeTask(intent) == TypeTask.FOREGROUND) {
                 startForeground(ID_SYNC_NOTIFICATION, getStartSyncNotification());

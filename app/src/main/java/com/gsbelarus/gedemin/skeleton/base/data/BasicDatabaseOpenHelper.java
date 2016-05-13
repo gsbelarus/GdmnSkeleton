@@ -2,49 +2,45 @@ package com.gsbelarus.gedemin.skeleton.base.data;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class BasicDatabaseOpenHelper extends SQLiteOpenHelper {
+public final class BasicDatabaseOpenHelper extends SQLiteOpenHelper {
 
-    private DBOpenHelperCallback dbOpenHelperCallback = null;
+    private Delegate dbOpenHelperImpl = null;
     private AtomicInteger connectCounter = new AtomicInteger(0);
 
-    public BasicDatabaseOpenHelper(Context context, String dbName, int dbVersion, DBOpenHelperCallback dbOpenHelperCallback) {
+    public BasicDatabaseOpenHelper(Context context, String dbName, int dbVersion, Delegate dbOpenHelperImpl) {
         super(context, dbName, null, dbVersion);
 
-        this.dbOpenHelperCallback = dbOpenHelperCallback;
+        this.dbOpenHelperImpl = dbOpenHelperImpl;
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        if (dbOpenHelperCallback != null) {
-            dbOpenHelperCallback.onCreateDatabase(db);
-        }
+        dbOpenHelperImpl.onCreate(db);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (dbOpenHelperCallback != null) {
-            dbOpenHelperCallback.onUpgradeDatabase(db, oldVersion, newVersion);
-        }
+        dbOpenHelperImpl.onUpgrade(db, oldVersion, newVersion);
     }
 
     @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (dbOpenHelperCallback != null) {
-            dbOpenHelperCallback.onDowngradeDatabase(db, oldVersion, newVersion);
-        }
+        dbOpenHelperImpl.onDowngrade(db, oldVersion, newVersion);
     }
 
     @Override
     public void onConfigure(SQLiteDatabase db) {
-        super.onConfigure(db);
+        dbOpenHelperImpl.onConfigure(db);
+    }
 
-        if (dbOpenHelperCallback != null) {
-            dbOpenHelperCallback.onConfigure(db);
-        }
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        dbOpenHelperImpl.onOpen(db);
     }
 
     public void addConnection() {
@@ -59,14 +55,41 @@ public class BasicDatabaseOpenHelper extends SQLiteOpenHelper {
         return connectCounter.get();
     }
 
-    public interface DBOpenHelperCallback {
+    public abstract static class Delegate {
 
-        void onCreateDatabase(SQLiteDatabase db);
+        public abstract void onCreate(SQLiteDatabase db);
 
-        void onUpgradeDatabase(SQLiteDatabase db, int oldVersion, int newVersion);
+        public abstract void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion);
 
-        void onDowngradeDatabase(SQLiteDatabase db, int oldVersion, int newVersion);
+        public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            throw new SQLiteException("Can't downgrade database from version " +
+                    oldVersion + " to " + newVersion);
+        }
 
-        void onConfigure(SQLiteDatabase db);
+        public void onConfigure(SQLiteDatabase db) {
+        }
+
+        public void onOpen(SQLiteDatabase db) {
+        }
+
+        protected final Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
+
+        public final boolean equals(Object o) {
+            return super.equals(o);
+        }
+
+        protected final void finalize() throws Throwable {
+            super.finalize();
+        }
+
+        public final int hashCode() {
+            return super.hashCode();
+        }
+
+        public final String toString() {
+            return super.toString();
+        }
     }
 }

@@ -9,7 +9,7 @@ import com.gsbelarus.gedemin.skeleton.core.LogUtil;
 public class SyncService extends CoreSyncService {
 
     @Override
-    public void onHandleRow(String tableName, ContentValues contentValues) {
+    protected void onHandleRow(String tableName, ContentValues contentValues) {
         super.onHandleRow(tableName, contentValues);
 //        LogUtil.d(tableName, contentValues.keySet());
     }

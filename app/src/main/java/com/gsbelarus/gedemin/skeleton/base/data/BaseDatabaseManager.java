@@ -5,52 +5,52 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.database.sqlite.SQLiteTransactionListener;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-abstract public class BaseDatabaseManager implements BasicDatabaseOpenHelper.DBOpenHelperCallback {
-
-    private static BaseDatabaseManager instance = null; //TODO singleton factory
-
-    protected int dbVersion;
-    protected String dbName;
+public abstract class BaseDatabaseManager {
 
     private final Context context;
-    private BasicDatabaseOpenHelper basicDatabaseOpenHelper = null;
-    protected SQLiteDatabase db = null;
 
-    //private static final Object lockObject = new Object();
+    protected SQLiteDatabase db;
+    private BasicDatabaseOpenHelper basicDatabaseOpenHelper;
+
+    private int dbVersion;
+    private String dbName;
 
     protected BaseDatabaseManager(Context context, String dbName, int dbVersion) {
         this.dbName = dbName;
         this.dbVersion = dbVersion;
         this.context = context.getApplicationContext();
-
-        basicDatabaseOpenHelper = new BasicDatabaseOpenHelper(context, dbName, dbVersion, this);
     }
+
+    @NonNull
+    protected abstract BasicDatabaseOpenHelper.Delegate getDbOpenHelperImpl();
 
     public boolean isOpen() {
         return (db != null && db.isOpen());
     }
 
     public synchronized void open() {                   //TODO check
+        if (basicDatabaseOpenHelper == null) {
+            basicDatabaseOpenHelper = new BasicDatabaseOpenHelper(context, dbName, dbVersion, getDbOpenHelperImpl());
+        }
         basicDatabaseOpenHelper.addConnection();
 
-        if(!isOpen()) {
+        if (!isOpen()) {
             //synchronized (lockObject) {
-                db = basicDatabaseOpenHelper.getWritableDatabase();
+            db = basicDatabaseOpenHelper.getWritableDatabase();
             //}
         }
     }
@@ -58,21 +58,15 @@ abstract public class BaseDatabaseManager implements BasicDatabaseOpenHelper.DBO
     public synchronized boolean close() {
         basicDatabaseOpenHelper.removeConnection();
 
-        if(basicDatabaseOpenHelper.getConnectCounter() == 0) {
+        if (basicDatabaseOpenHelper.getConnectCounter() == 0) {
             //synchronized (lockObject) {
-                if (db.inTransaction()) db.endTransaction();
-                basicDatabaseOpenHelper.close();
-                db = null;
+            if (db.inTransaction()) db.endTransaction();
+            basicDatabaseOpenHelper.close();
+            db = null;
             //}
             return true;
         }
         return false;
-    }
-
-    @Override
-    public void onDowngradeDatabase(SQLiteDatabase db, int oldVersion, int newVersion) {
-        throw new SQLiteException("Can't downgrade database from version " +
-                oldVersion + " to " + newVersion);
     }
 
     public void beginTransaction() {
@@ -83,12 +77,24 @@ abstract public class BaseDatabaseManager implements BasicDatabaseOpenHelper.DBO
         db.beginTransactionNonExclusive();
     }
 
-    public void transactionSuccessful() {
-        db.setTransactionSuccessful();
+    public void beginTransactionWithListener(SQLiteTransactionListener transactionListener) {
+        db.beginTransactionWithListener(transactionListener);
+    }
+
+    public void beginTransactionWithListenerNonExclusive(SQLiteTransactionListener transactionListener) {
+        db.beginTransactionWithListenerNonExclusive(transactionListener);
     }
 
     public void endTransaction() {
         db.endTransaction();
+    }
+
+    public void setTransactionSuccessful() {
+        db.setTransactionSuccessful();
+    }
+
+    public int getVersion() {
+        return db.getVersion();
     }
 
     public Cursor setNotifier(Cursor cursor) {
