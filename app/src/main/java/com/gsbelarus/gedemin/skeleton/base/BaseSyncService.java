@@ -43,7 +43,7 @@ public abstract class BaseSyncService extends IntentService {
         return context.bindService(intent, serviceConnection, BIND_NOT_FOREGROUND);
     }
 
-    protected abstract void handleIntentBackground(Intent intent);
+    protected abstract void handleIntentBackground(Intent intent) throws Exception;
 
     @Override
     public final IBinder onBind(Intent intent) {

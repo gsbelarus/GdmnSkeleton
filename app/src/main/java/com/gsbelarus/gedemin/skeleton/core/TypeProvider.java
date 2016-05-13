@@ -32,7 +32,7 @@ public class TypeProvider {
         return bytes;
     }
 
-    public static ClientProperty getProperty(ODataClient oDataClient, EdmProperty edmProperty, String value) {
+    public static ClientProperty getProperty(ODataClient oDataClient, EdmProperty edmProperty, String value) throws UnsupportedDataTypeException {
         ClientPrimitiveValue.Builder builder = oDataClient.getObjectFactory().newPrimitiveValueBuilder();
         switch (EdmPrimitiveTypeKind.valueOfFQN(edmProperty.getType().getFullQualifiedName())) {
             case String:
@@ -67,6 +67,8 @@ public class TypeProvider {
             case DateTimeOffset:
                 builder.setType(edmProperty.getType()).setValue(CoreDatabaseManager.getDateTime(value));
                 break;
+            default:
+                throw new UnsupportedDataTypeException(edmProperty.getType().getName());
         }
         return oDataClient.getObjectFactory().newPrimitiveProperty(edmProperty.getName(), builder.build());
     }

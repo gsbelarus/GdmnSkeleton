@@ -51,7 +51,7 @@ public class CoreSyncService extends BaseSyncService {
     }
 
     @Override
-    protected void handleIntentBackground(Intent intent) {
+    protected void handleIntentBackground(Intent intent) throws Exception {
         String url = "http://services.odata.org/V4/(S(5i2qvfszd0uktnpibrgfu2qs))/OData/OData.svc/";
         boolean isSuccessful = false;
         databaseManager.beginTransactionNonExclusive();
@@ -126,31 +126,28 @@ public class CoreSyncService extends BaseSyncService {
 
                 databaseManager.dropLogChangesTriggers(entitySetName);
                 databaseManager.createLogChangesSyncTriggers(entitySetName, entitySetKey);
-                try {
-                    while (entitySetIterator.hasNext()) {
-                        ClientEntity entity = entitySetIterator.next();
-                        if (entity.getEditLink() != null && entity.getEditLink().toString().contains("/"))
-                            continue;
-                        ContentValues cv = new ContentValues();
-                        for (ClientProperty property : entity.getProperties()) {
-                            try {
-                                if (property.getValue().isPrimitive() && property.getPrimitiveValue() != null) {
-                                    TypeProvider.putProperty(property, cv);
-                                }
-                            } catch (UnsupportedDataTypeException e) {
-                                LogUtil.d(e.getMessage());
+                while (entitySetIterator.hasNext()) {
+                    ClientEntity entity = entitySetIterator.next();
+                    if (entity.getEditLink() != null && entity.getEditLink().toString().contains("/"))//TODO
+                        continue;
+                    ContentValues cv = new ContentValues();
+                    for (ClientProperty property : entity.getProperties()) {
+                        try {
+                            if (property.getValue().isPrimitive() && property.getPrimitiveValue() != null) {
+                                TypeProvider.putProperty(property, cv);
                             }
-                        }
-                        onHandleRow(entitySetName, cv);
-                        if (databaseManager.insert(entitySetName, null, cv) == null) {
-//                            LogUtil.d(databaseManager.update(entitySetName, cv, entitySetKey + "=?",
-//                                    new String[]{cv.getAsString(entitySetKey)}));
+                        } catch (UnsupportedDataTypeException e) {
+                            LogUtil.d(e.getMessage());
                         }
                     }
-                } finally {
-                    databaseManager.dropLogChangesSyncTriggers(entitySetName);
-                    databaseManager.createLogChangesTriggers(entitySetName, entitySetKey);
+                    onHandleRow(entitySetName, cv);
+                    if (databaseManager.insert(entitySetName, null, cv) == null) {
+//                            LogUtil.d(databaseManager.update(entitySetName, cv, entitySetKey + "=?",
+//                                    new String[]{cv.getAsString(entitySetKey)}));
+                    }
                 }
+                databaseManager.dropLogChangesSyncTriggers(entitySetName);
+                databaseManager.createLogChangesTriggers(entitySetName, entitySetKey);
             }
         }
     }
@@ -171,18 +168,19 @@ public class CoreSyncService extends BaseSyncService {
                 if (entityType != null) break;
             }
             if (entityType == null) continue;
+
             getDatabaseManager().dropLogChangesTriggers(tableEntry.getKey());
-            try {
-                for (Map<String, String> row : tableEntry.getValue()) {
-                    List<ClientProperty> properties = new ArrayList<>();
-                    for (Map.Entry<String, String> value : row.entrySet()) {
-                        if (!value.getKey().equals(BaseColumns._ID)) {
-                            properties.add(TypeProvider.getProperty(
-                                    oDataClient,
-                                    entityType.getStructuralProperty(value.getKey()),
-                                    value.getValue()));
-                        }
+
+            for (Map<String, String> row : tableEntry.getValue()) {
+                List<ClientProperty> properties = new ArrayList<>();
+                for (Map.Entry<String, String> value : row.entrySet()) {
+                    if (!value.getKey().equals(BaseColumns._ID)) {
+                        properties.add(TypeProvider.getProperty(
+                                oDataClient,
+                                entityType.getStructuralProperty(value.getKey()),
+                                value.getValue()));
                     }
+                }
 //                    ClientEntity entity = oDataClient.getObjectFactory().newEntity(entityType.getFullQualifiedName());
 //                    entity.getProperties().addAll(properties);
 //                    ODataEntityCreateResponse insertResponse = oDataClient.getCUDRequestFactory().getEntityCreateRequest(
@@ -205,10 +203,8 @@ public class CoreSyncService extends BaseSyncService {
 //                            getDatabaseManager().endTransaction();
 //                        }
 //                    }
-                }
-            } finally {
-                getDatabaseManager().createLogChangesTriggers(tableEntry.getKey(), entityType.getKeyPropertyRefs().get(0).getName());
             }
+            getDatabaseManager().createLogChangesTriggers(tableEntry.getKey(), entityType.getKeyPropertyRefs().get(0).getName());
         }
         return isPush;
     }

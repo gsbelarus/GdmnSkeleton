@@ -59,7 +59,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
 
     private static CoreDatabaseManager instance = null;
 
-    private BasicDatabaseOpenHelper.Delegate dbOpenHelperIml = new BasicDatabaseOpenHelper.Delegate() {
+    private BasicDatabaseOpenHelper.Delegate dbOpenHelperImpl = new BasicDatabaseOpenHelper.Delegate() {
         @Override
         public void onCreate(SQLiteDatabase db) {
             LogUtil.d();
@@ -200,7 +200,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
     @NonNull
     @Override
     protected BasicDatabaseOpenHelper.Delegate getDbOpenHelperImpl() {
-        return dbOpenHelperIml;
+        return dbOpenHelperImpl;
     }
 
     private void notifyVersionDB(SQLiteDatabase db) {
@@ -222,7 +222,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
     public boolean migrateIfNeeded() {
         int versionFromMetadata = getVersionFromMetadata(db);
         if (getVersion() < versionFromMetadata) {
-            dbOpenHelperIml.onUpgrade(db, db.getVersion(), versionFromMetadata);
+            dbOpenHelperImpl.onUpgrade(db, db.getVersion(), versionFromMetadata);
             db.setVersion(versionFromMetadata);
             return true;
         }
@@ -396,8 +396,10 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
             switch (SQLiteDataType.SQLiteDataTypes.values()[cursor.getType(indexExternalId)]) {
                 case FLOAT:
                     tables.get(tableName).add(cursor.getDouble(indexExternalId));
+                    break;
                 case INTEGER:
                     tables.get(tableName).add(cursor.getLong(indexExternalId));
+                    break;
                 default:
                     tables.get(tableName).add(cursor.getString(indexExternalId));
                     break;
