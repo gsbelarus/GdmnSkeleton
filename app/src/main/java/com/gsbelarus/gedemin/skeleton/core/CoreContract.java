@@ -15,8 +15,8 @@ public class CoreContract {
         public enum ChangeType {INSERT, UPDATE, DELETE}
     }
 
-    public static abstract class TableSyncMetadata implements BaseColumns {
-        public static final String TABLE_NAME = "sync_metadata";
+    public static abstract class TableLogSync implements BaseColumns {
+        public static final String TABLE_NAME = "log_sync";
 
         public static final String COLUMN_VERSION_DB = "version_db";
         public static final String COLUMN_SYNC_DATE = "sync_date";

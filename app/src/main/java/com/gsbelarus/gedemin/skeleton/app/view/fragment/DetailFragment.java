@@ -90,7 +90,7 @@ public class DetailFragment extends BaseCursorFragment {
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new BasicTableCursorLoader(getContext(), getDatabaseManager(), "Products", null, BaseColumns._ID + " = ?", new String[]{String.valueOf(dataId)}, null);
+        return new BasicTableCursorLoader(getContext(), getDatabaseManager(), "Categories", null, BaseColumns._ID + " = ?", new String[]{String.valueOf(dataId)}, null);
     }
 
     @Override

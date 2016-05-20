@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,7 +14,7 @@ import com.gsbelarus.gedemin.skeleton.base.data.BasicDatabaseOpenHelper;
 import com.gsbelarus.gedemin.skeleton.base.data.SQLiteDataType;
 import com.gsbelarus.gedemin.skeleton.base.data.SQLiteDataType.SQLiteStorageTypes;
 import com.gsbelarus.gedemin.skeleton.core.CoreContract.TableLogChanges;
-import com.gsbelarus.gedemin.skeleton.core.CoreContract.TableSyncMetadata;
+import com.gsbelarus.gedemin.skeleton.core.CoreContract.TableLogSync;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -50,11 +51,11 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
                     TableLogChanges.COLUMN_EXTERNAL_ID + SQLiteStorageTypes.INTEGER + COMMA_SEP +
                     TableLogChanges.COLUMN_CHANGE_TYPE + SQLiteStorageTypes.INTEGER +
                     " )";
-    private static final String CREATE_TABLE_SYNC_METADATA =
-            "CREATE TABLE " + TableSyncMetadata.TABLE_NAME + " (" +
-                    TableSyncMetadata._ID + SQLiteStorageTypes.INTEGER + "PRIMARY KEY AUTOINCREMENT" + COMMA_SEP +
-                    TableSyncMetadata.COLUMN_VERSION_DB + SQLiteStorageTypes.INTEGER + COMMA_SEP +
-                    TableSyncMetadata.COLUMN_SYNC_DATE + SQLiteStorageTypes.TEXT +
+    private static final String CREATE_TABLE_LOG_SYNC =
+            "CREATE TABLE " + TableLogSync.TABLE_NAME + " (" +
+                    TableLogSync._ID + SQLiteStorageTypes.INTEGER + "PRIMARY KEY AUTOINCREMENT" + COMMA_SEP +
+                    TableLogSync.COLUMN_VERSION_DB + SQLiteStorageTypes.INTEGER + COMMA_SEP +
+                    TableLogSync.COLUMN_SYNC_DATE + SQLiteStorageTypes.TEXT +
                     " )";
 
     private static CoreDatabaseManager instance = null;
@@ -64,7 +65,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
         public void onCreate(SQLiteDatabase db) {
             LogUtil.d();
             db.execSQL(CREATE_TABLE_LOG_CHANGES);
-            db.execSQL(CREATE_TABLE_SYNC_METADATA);
+            db.execSQL(CREATE_TABLE_LOG_SYNC);
 
 //            Column column0 = new Column(BaseColumns._ID, ColumnType.INTEGER, ColumnConstraint.PRIMARY_KEY);
 //            Column column1 = new Column("column1_BIGINT", ColumnType.INTEGER);
@@ -139,9 +140,8 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            LogUtil.d("migrate from " + oldVersion + " to " + newVersion);
-            dropAll();
-            onCreate(db);
+            throw new SQLiteException("Upgrade is not supported " +
+                    oldVersion + " to " + newVersion);
         }
 
         @Override
@@ -204,49 +204,42 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
     }
 
     private void notifyVersionDB(SQLiteDatabase db) {
-        db.setVersion(getVersionFromMetadata(db));
+        db.setVersion(getMaxVersionFromLog(db));
+        LogUtil.d("local db version: " + db.getVersion());
     }
 
-    private int getVersionFromMetadata(SQLiteDatabase db) {
-        int version = 1;
-        Cursor cursor = db.query(TableSyncMetadata.TABLE_NAME,
-                new String[]{"MAX(" + TableSyncMetadata.COLUMN_VERSION_DB + ")"}, null, null, null, null, null);
-        if (cursor.moveToNext()) {
-            version = cursor.getInt(0);
+    private int getMaxVersionFromLog(SQLiteDatabase db) {
+        int version = db.getVersion();
+        try {
+            Cursor cursor = db.query(TableLogSync.TABLE_NAME,
+                    new String[]{"MAX(" + TableLogSync.COLUMN_VERSION_DB + ")"}, null, null, null, null, null);
+            if (cursor.moveToNext()) {
+                version = cursor.getInt(0);
+            }
+            cursor.close();
+            if (version == 0) version = db.getVersion();
+        } catch (SQLiteException e) {
+            LogUtil.d(e.getMessage());
         }
-        cursor.close();
-        if (version == 0) version = 1;
         return version;
     }
 
-    public boolean migrateIfNeeded() {
-        int versionFromMetadata = getVersionFromMetadata(db);
-        if (getVersion() < versionFromMetadata) {
-            dbOpenHelperImpl.onUpgrade(db, db.getVersion(), versionFromMetadata);
-            db.setVersion(versionFromMetadata);
-            return true;
+    protected void setVersion(int version, @NonNull Callback callback) {
+        LogUtil.d("local db version: " + getVersion(), "server db version: " + version);
+        if (getVersion() < version) {
+            if (getVersion() == 1) callback.onCreateDatabase(this);
+            else callback.onUpgradeDatabase(this, getVersion(), version);
         }
-        return false;
-    }
-
-    public Date getLastSyncData() {
-        Date syncDate = new Date(0);
-        Cursor cursor = db.query(TableSyncMetadata.TABLE_NAME,
-                new String[]{"MAX(" + TableSyncMetadata.COLUMN_SYNC_DATE + ")"}, null, null, null, null, null);
-        if (cursor.moveToNext()) {
-            if (cursor.getString(0) != null) {
-                syncDate = getDateTime(cursor.getString(0));
-            }
-        }
-        cursor.close();
-        return syncDate;
-    }
-
-    public void updateMetadata(int version, Date date) {
         ContentValues cv = new ContentValues();
-        cv.put(TableSyncMetadata.COLUMN_VERSION_DB, version);
-        cv.put(TableSyncMetadata.COLUMN_SYNC_DATE, getDateTime(date));
-        db.insert(TableSyncMetadata.TABLE_NAME, null, cv);
+        cv.put(TableLogSync.COLUMN_VERSION_DB, version);
+        cv.put(TableLogSync.COLUMN_SYNC_DATE, getDateTime(new Date()));
+        db.insert(TableLogSync.TABLE_NAME, null, cv);
+        notifyVersionDB(db);
+    }
+
+    public void recreateDatabase() {
+        dropAll();
+        dbOpenHelperImpl.onCreate(db);
     }
 
     public void createTable(String tableName, Map<String, String> columns, String externalId) throws IllegalArgumentException {
@@ -441,5 +434,11 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
 
         cursor.close();
         return changedRows;
+    }
+
+    public interface Callback {
+        void onCreateDatabase(CoreDatabaseManager coreDatabaseManager);
+
+        void onUpgradeDatabase(CoreDatabaseManager coreDatabaseManager, int oldVersion, int newVersion);
     }
 }

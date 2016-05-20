@@ -12,6 +12,7 @@ import org.apache.olingo.commons.api.edm.EdmPrimitiveType;
 import org.apache.olingo.commons.api.edm.EdmPrimitiveTypeKind;
 import org.apache.olingo.commons.api.edm.EdmProperty;
 import org.apache.olingo.commons.api.edm.EdmType;
+import org.apache.olingo.commons.api.edm.constants.EdmTypeKind;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -114,7 +115,7 @@ public class TypeProvider {
 
     @NonNull
     public static SQLiteStorageTypes convertToSqlStorageType(EdmType edmType) throws UnsupportedDataTypeException {
-        if (edmType instanceof EdmPrimitiveType) {
+        if (edmType.getKind() == EdmTypeKind.PRIMITIVE) {
             switch (EdmPrimitiveTypeKind.valueOfFQN(edmType.getFullQualifiedName())) {
                 case String:
                 case Guid:

@@ -92,7 +92,7 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                getDatabaseManager().delete("Products",
+                getDatabaseManager().delete("Categories",
                         BaseColumns._ID + " = ?",
                         new String[]{String.valueOf(getAdapter().getItemId(viewHolder.getAdapterPosition()))});
                 getDatabaseManager().notifyDataChanged();
@@ -124,7 +124,7 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
 
     @Override
     public BasicTableCursorLoader onCreateLoader(int id, Bundle args) {
-        return new BasicTableCursorLoader(getContext(), getDatabaseManager(), "Products", null, null, null, null);
+        return new BasicTableCursorLoader(getContext(), getDatabaseManager(), "Categories", null, null, null, null);
     }
 
     @Override
@@ -148,8 +148,8 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
                 public Cursor runQuery(CharSequence constraint) {
                     if (!constraint.toString().isEmpty()) {
                         Arrays.fill(selectionArgs, "%" + constraint.toString() + "%");
-                        return coreDatabaseManager.select("Products", null, selection, selectionArgs, null);
-                    } else return coreDatabaseManager.select("Products", null, null, null, null);
+                        return coreDatabaseManager.select("Categories", null, selection, selectionArgs, null);
+                    } else return coreDatabaseManager.select("Categories", null, null, null, null);
                 }
             });
             ((CoreCursorRecyclerAdapterViewHandler) getAdapter().getAdapterViewHandler()).setFieldsCount(getDataCursor().getColumnCount());
@@ -193,11 +193,7 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
                 ContentValues cv = new ContentValues();
                 cv.put("ID", -1);
                 cv.put("Name", "testName");
-                cv.put("Description", "testDescription");
-                cv.put("ReleaseDate", CoreDatabaseManager.getDateTime(new Date()));
-                cv.put("Rating", 123);
-                cv.put("Price", 99.9);
-                getDatabaseManager().insert("Products", null, cv);
+                getDatabaseManager().insert("Categories", null, cv);
                 getDatabaseManager().notifyDataChanged();
                 break;
         }

@@ -183,7 +183,7 @@ public abstract class BaseDatabaseManager {
         dropAll(db);
     }
 
-    private void dropAll(SQLiteDatabase db) {
+    protected void dropAll(SQLiteDatabase db) {
         List<String> tables = new ArrayList<>();
         Cursor cursor = db.query("sqlite_master", null, "type = ?", new String[]{"table"}, null, null, null);
 
