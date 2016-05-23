@@ -17,6 +17,12 @@ public class SyncService extends CoreSyncService {
         return url;
     }
 
+    @NonNull
+    @Override
+    protected String getNamespace() {
+        return "ODataDemo";
+    }
+
     @Override
     protected void onHandleRow(String tableName, ContentValues contentValues) {
         super.onHandleRow(tableName, contentValues);

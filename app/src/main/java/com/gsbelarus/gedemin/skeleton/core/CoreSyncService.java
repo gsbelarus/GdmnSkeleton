@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 
+import com.google.gson.Gson;
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
 
 import org.apache.olingo.client.api.ODataClient;
@@ -24,6 +25,10 @@ import org.apache.olingo.commons.api.edm.FullQualifiedName;
 import org.apache.olingo.commons.api.format.ODataFormat;
 import org.apache.olingo.commons.api.http.HttpStatusCode;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,6 +37,7 @@ import java.util.Map;
 public abstract class CoreSyncService extends BaseSyncService implements CoreDatabaseManager.Callback {
 
     private String url;
+    private String namespace;
     private CoreDatabaseManager databaseManager;
     private ODataClient oDataClient;
 
@@ -41,6 +47,9 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
 
     @NonNull
     protected abstract String getUrl();
+
+    @NonNull
+    protected abstract String getNamespace();
 
     @Override
     public void onCreate() {
@@ -61,23 +70,24 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
     @Override
     protected void handleIntentBackground(Intent intent) throws Exception {
         url = getUrl();
+        namespace = getNamespace();
+
         publishProcess(100, 0);
         boolean isSuccessful = false;
         databaseManager.beginTransactionNonExclusive();
         try {
-            int serverVersion = 3;
+            int serverVersion = 13;
             databaseManager.setVersion(serverVersion, this);
 
             Edm edm = oDataClient.getRetrieveRequestFactory().getMetadataRequest(url).execute().getBody();
 
-            pullData(edm, url);
+            pullData(edm);
             publishProcess(100, 50);
 
-            pushUpdatedData(edm, url);
-            pushDeletedData(url);
-            if (pushInsertedData(edm, url)) {
-//                startSync(getApplicationContext(), this.getClass(), getTypeTask(intent));
-            }
+            pushDeletedData();
+            pushUpdatedData(edm);
+            pushInsertedData(edm);
+//            pullData(edm);
 
             databaseManager.setTransactionSuccessful();
             isSuccessful = true;
@@ -91,16 +101,18 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
     }
 
     private void test() {
-        ClientEntity entity = oDataClient.getObjectFactory().newEntity(new FullQualifiedName("ODataDemo.Category"));
+        ClientEntity entity = oDataClient.getObjectFactory().newEntity(new FullQualifiedName(namespace, "Category"));
         entity.getProperties().add(oDataClient.getObjectFactory().newPrimitiveProperty("ID",
                 oDataClient.getObjectFactory().newPrimitiveValueBuilder().buildInt32(123)));
         entity.getProperties().add(oDataClient.getObjectFactory().newPrimitiveProperty("Name",
                 oDataClient.getObjectFactory().newPrimitiveValueBuilder().buildString("TestName")));
-        ODataEntityCreateRequest request = oDataClient.getCUDRequestFactory().getEntityCreateRequest(
+        ODataEntityCreateRequest<ClientEntity> request = oDataClient.getCUDRequestFactory().getEntityCreateRequest(
                 oDataClient.newURIBuilder(url).appendEntitySetSegment("Categories").build(),
                 entity
         );
         request.setFormat(ODataFormat.APPLICATION_JSON);
+        for (String s : request.getHeaderNames())
+            LogUtil.d(s, request.getHeader(s));
         LogUtil.d(request.execute().getStatusCode());
     }
 
@@ -118,90 +130,70 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
     }
 
     private void createDatabase(Edm metadata) {
-        for (EdmSchema edmSchema : metadata.getSchemas()) {
-            for (EdmEntitySet edmEntitySet : edmSchema.getEntityContainer().getEntitySets()) {
-                EdmEntityType edmEntityType = metadata.getEntityType(edmEntitySet.getEntityType().getFullQualifiedName());
-                if (edmEntityType.getKeyPropertyRefs().size() > 1)
-                    throw new RuntimeException("more then 1 primary key");
+        for (EdmEntitySet edmEntitySet : metadata.getSchema(namespace).getEntityContainer().getEntitySets()) {
+            EdmEntityType edmEntityType = metadata.getEntityType(edmEntitySet.getEntityType().getFullQualifiedName());
+            if (edmEntityType.getKeyPropertyRefs().size() > 1)
+                throw new RuntimeException("more then 1 primary key");
 
-                Map<String, String> columns = new LinkedHashMap<>();
-                for (String propertyName : edmEntityType.getPropertyNames()) {
-                    EdmProperty edmProperty = edmEntityType.getStructuralProperty(propertyName);
+            Map<String, String> columns = new LinkedHashMap<>();
+            for (String propertyName : edmEntityType.getPropertyNames()) {
+                EdmProperty edmProperty = edmEntityType.getStructuralProperty(propertyName);
+                try {
+                    columns.put(edmProperty.getName(),
+                            TypeProvider.convertToSqlStorageType(edmProperty.getType()) +
+                                    TypeProvider.getCheck(edmProperty) +
+                                    TypeProvider.getNullable(edmProperty) +
+                                    TypeProvider.getDefaultValue(edmProperty));
+
+                } catch (UnsupportedDataTypeException e) {
+                    LogUtil.d(e.getMessage());
+                }
+            }
+            databaseManager.createTable(edmEntitySet.getName(), columns, edmEntityType.getKeyPropertyRefs().get(0).getName());
+        }
+    }
+
+    private void pullData(Edm metadata) {
+        for (EdmEntitySet edmEntitySet : getSchema(metadata).getEntityContainer().getEntitySets()) {
+            EdmEntityType edmEntityType = metadata.getEntityType(edmEntitySet.getEntityType().getFullQualifiedName());
+            String entitySetName = edmEntitySet.getName();
+            String entitySetKey = edmEntityType.getKeyPropertyRefs().get(0).getName();
+            ClientEntitySetIterator<ClientEntitySet, ClientEntity> entitySetIterator =
+                    oDataClient.getRetrieveRequestFactory().getEntitySetIteratorRequest(
+                            oDataClient.newURIBuilder(url).appendEntitySetSegment(entitySetName).build()
+                    ).execute().getBody();
+
+            databaseManager.dropLogChangesTriggers(entitySetName);
+            databaseManager.createLogChangesSyncTriggers(entitySetName, entitySetKey);
+            while (entitySetIterator.hasNext()) {
+                ClientEntity entity = entitySetIterator.next();
+                ContentValues cv = new ContentValues();
+                for (ClientProperty property : entity.getProperties()) {
                     try {
-                        columns.put(edmProperty.getName(),
-                                TypeProvider.convertToSqlStorageType(edmProperty.getType()) +
-                                        TypeProvider.getCheck(edmProperty) +
-                                        TypeProvider.getNullable(edmProperty) +
-                                        TypeProvider.getDefaultValue(edmProperty));
-
+                        if (property.getValue().isPrimitive() && property.getPrimitiveValue() != null) {
+                            TypeProvider.putProperty(property, cv);
+                        }
                     } catch (UnsupportedDataTypeException e) {
                         LogUtil.d(e.getMessage());
                     }
                 }
-                databaseManager.createTable(edmEntitySet.getName(), columns, edmEntityType.getKeyPropertyRefs().get(0).getName());
-            }
-        }
-    }
-
-    private void pullData(Edm metadata, String url) {
-        for (EdmSchema edmSchema : metadata.getSchemas()) {
-            for (EdmEntitySet edmEntitySet : edmSchema.getEntityContainer().getEntitySets()) {
-                EdmEntityType edmEntityType = metadata.getEntityType(edmEntitySet.getEntityType().getFullQualifiedName());
-                String entitySetName = edmEntitySet.getName();
-                String entitySetKey = edmEntityType.getKeyPropertyRefs().get(0).getName();
-                ClientEntitySetIterator<ClientEntitySet, ClientEntity> entitySetIterator =
-                        oDataClient.getRetrieveRequestFactory().getEntitySetIteratorRequest(
-                                oDataClient.newURIBuilder(url).appendEntitySetSegment(entitySetName).build()
-                        ).execute().getBody();
-
-                databaseManager.dropLogChangesTriggers(entitySetName);
-                databaseManager.createLogChangesSyncTriggers(entitySetName, entitySetKey);
-                while (entitySetIterator.hasNext()) {
-                    ClientEntity entity = entitySetIterator.next();
-//                    if (entity.getEditLink() != null && entity.getEditLink().toString().contains("/"))//TODO
-//                        continue;
-                    ContentValues cv = new ContentValues();
-                    for (ClientProperty property : entity.getProperties()) {
-                        try {
-                            if (property.getValue().isPrimitive() && property.getPrimitiveValue() != null) {
-                                TypeProvider.putProperty(property, cv);
-                            }
-                        } catch (UnsupportedDataTypeException e) {
-                            LogUtil.d(e.getMessage());
-                        }
-                    }
-                    onHandleRow(entitySetName, cv);
-                    if (databaseManager.insert(entitySetName, null, cv) == null) {
+                onHandleRow(entitySetName, cv);
+                if (databaseManager.insert(entitySetName, null, cv) == null) {
 //                            LogUtil.d(databaseManager.update(entitySetName, cv, entitySetKey + "=?",
 //                                    new String[]{cv.getAsString(entitySetKey)}));
-                    }
                 }
-                databaseManager.dropLogChangesSyncTriggers(entitySetName);
-                databaseManager.createLogChangesTriggers(entitySetName, entitySetKey);
             }
+            databaseManager.dropLogChangesSyncTriggers(entitySetName);
+            databaseManager.createLogChangesTriggers(entitySetName, entitySetKey);
         }
     }
 
-    private boolean pushInsertedData(Edm metadata, String url) {
-        boolean isPush = false;
-        for (Map.Entry<String, List<Map<String, String>>> tableEntry : getDatabaseManager().getInsertedRows().entrySet()) {
-            LogUtil.d("insert", tableEntry);
-            EdmEntityType entityType = null;
-            for (EdmSchema edmSchema : metadata.getSchemas()) {
-                for (EdmEntitySet edmEntitySet : edmSchema.getEntityContainer().getEntitySets()) {
-                    EdmEntityType edmEntityType = metadata.getEntityType(edmEntitySet.getEntityType().getFullQualifiedName());
-                    if (edmEntitySet.getName().equals(tableEntry.getKey())) {
-                        entityType = edmEntityType;
-                        break;
-                    }
-                }
-                if (entityType != null) break;
-            }
-            if (entityType == null) continue;
+    private void prepareChangedData(Edm metadata, Map<String, List<Map<String, String>>> changedRows, PrepareCallback prepareCallback) {
+        for (final Map.Entry<String, List<Map<String, String>>> tableEntry : changedRows.entrySet()) {
+            LogUtil.d("change", tableEntry);
+            final EdmEntityType entityType = getSchema(metadata).getEntityContainer().getEntitySet(tableEntry.getKey()).getEntityType();
 
-            getDatabaseManager().dropLogChangesTriggers(tableEntry.getKey());
-
-            for (Map<String, String> row : tableEntry.getValue()) {
+            for (final Map<String, String> row : tableEntry.getValue()) {
                 List<ClientProperty> properties = new ArrayList<>();
                 for (Map.Entry<String, String> value : row.entrySet()) {
                     if (!value.getKey().equals(BaseColumns._ID)) {
@@ -211,41 +203,84 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
                                 value.getValue()));
                     }
                 }
-//                    ClientEntity entity = oDataClient.getObjectFactory().newEntity(entityType.getFullQualifiedName());
-//                    entity.getProperties().addAll(properties);
-//                    ODataEntityCreateResponse insertResponse = oDataClient.getCUDRequestFactory().getEntityCreateRequest(
-//                            oDataClient.newURIBuilder(url).appendEntitySetSegment(tableEntry.getKey()).build(),
-//                            entity
-//                    ).execute();
-//
-//                    if (insertResponse.getStatusCode() == HttpStatusCode.CREATED.getStatusCode()) {
-//                        getDatabaseManager().beginTransaction();
-//                        try {
-//                            getDatabaseManager().delete(CoreContract.TableLogChanges.TABLE_NAME,
-//                                    CoreContract.TableLogChanges.COLUMN_INTERNAL_ID + "=" + row.get(BaseColumns._ID),
-//                                    null);
-//                            getDatabaseManager().delete(tableEntry.getKey(),
-//                                    BaseColumns._ID + "=" + row.get(BaseColumns._ID),
-//                                    null);
-//                            isPush = true;
-//                            getDatabaseManager().transactionSuccessful();
-//                        } finally {
-//                            getDatabaseManager().endTransaction();
-//                        }
-//                    }
+
+                Map<String, String> values = new LinkedHashMap<>();
+                for (ClientProperty property : properties) {
+                    values.put(property.getName(), property.getValue().toString());
+                }
+                prepareCallback.onPrepare(tableEntry.getKey(), entityType.getKeyPropertyRefs().get(0).getName(), row.get(BaseColumns._ID), values);
             }
-            getDatabaseManager().createLogChangesTriggers(tableEntry.getKey(), entityType.getKeyPropertyRefs().get(0).getName());
-        }
-        return isPush;
-    }
-
-    private void pushUpdatedData(Edm metadata, String url) {
-        for (Map.Entry<String, List<Map<String, String>>> tableEntry : getDatabaseManager().getUpdatedRows().entrySet()) {
-            LogUtil.d("update", tableEntry);
         }
     }
 
-    private void pushDeletedData(String url) {
+    private void pushInsertedData(Edm metadata) {
+        prepareChangedData(metadata, getDatabaseManager().getInsertedRows(), new PrepareCallback() {
+            @Override
+            public void onPrepare(final String tableName, final String externalKeyName, final String internalKey,
+                                  final Map<String, String> values) {
+                sendData(tableName, "POST", values, new HttpCallback() {
+                    @Override
+                    public void onResponse(int responseCode) {
+                        if (responseCode == HttpURLConnection.HTTP_CREATED) {
+//                            ClientEntity entity = oDataClient.getObjectFactory().newEntity(entityType.getFullQualifiedName());
+//                            entity.getProperties().addAll(properties);
+//                            ODataEntityCreateResponse insertResponse = oDataClient.getCUDRequestFactory().getEntityCreateRequest(
+//                                    oDataClient.newURIBuilder(url).appendEntitySetSegment(tableEntry.getKey()).build(),
+//                                    entity
+//                            ).execute();
+//
+//                            if (insertResponse.getStatusCode() == HttpStatusCode.CREATED.getStatusCode()) {
+//                                getDatabaseManager().beginTransaction();
+//                                try {
+//                                    getDatabaseManager().delete(CoreContract.TableLogChanges.TABLE_NAME,
+//                                            CoreContract.TableLogChanges.COLUMN_INTERNAL_ID + "=" + row.get(BaseColumns._ID),
+//                                            null);
+//                                    getDatabaseManager().delete(tableEntry.getKey(),
+//                                            BaseColumns._ID + "=" + row.get(BaseColumns._ID),
+//                                            null);
+//                                    isPush = true;
+//                                    getDatabaseManager().transactionSuccessful();
+//                                } finally {
+//                                    getDatabaseManager().endTransaction();
+//                                }
+//                            }
+                            getDatabaseManager().dropLogChangesTriggers(tableName);
+                            getDatabaseManager().delete(CoreContract.TableLogChanges.TABLE_NAME,
+                                    CoreContract.TableLogChanges.COLUMN_INTERNAL_ID + "=" + internalKey,
+                                    null);
+                            getDatabaseManager().delete(tableName,
+                                    BaseColumns._ID + "=" + internalKey,
+                                    null);
+                            getDatabaseManager().createLogChangesTriggers(tableName, externalKeyName);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void pushUpdatedData(Edm metadata) {
+        prepareChangedData(metadata, getDatabaseManager().getUpdatedRows(), new PrepareCallback() {
+            @Override
+            public void onPrepare(final String tableName, final String externalKeyName, final String internalKey,
+                                  final Map<String, String> values) {
+                sendData(tableName, "PATCH", values, new HttpCallback() {
+                    @Override
+                    public void onResponse(int responseCode) {
+                        if (responseCode == HttpURLConnection.HTTP_NO_CONTENT) {
+                            getDatabaseManager().dropLogChangesTriggers(tableName);
+                            getDatabaseManager().delete(CoreContract.TableLogChanges.TABLE_NAME,
+                                    CoreContract.TableLogChanges.COLUMN_INTERNAL_ID + "=" + internalKey,
+                                    null);
+                            getDatabaseManager().createLogChangesTriggers(tableName, externalKeyName);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void pushDeletedData() {
         for (Map.Entry<String, List<Object>> tableEntry : getDatabaseManager().getDeletedRowsId().entrySet()) {
             LogUtil.d("delete", tableEntry);
             for (Object value : tableEntry.getValue()) {
@@ -264,7 +299,43 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
         }
     }
 
+    private EdmSchema getSchema(Edm metadata) {
+        EdmSchema edmSchema = metadata.getSchema(namespace);
+        if (edmSchema == null) throw new RuntimeException("schema not found");
+        return edmSchema;
+    }
+
     public CoreDatabaseManager getDatabaseManager() {
         return databaseManager;
+    }
+
+    // TODO: 23.05.2016 - переделать через API библиотеки
+    private void sendData(String tableName, String requestMethod, Map<String, String> values, HttpCallback httpCallback) {
+        try {
+            URL url1 = new URL(url + tableName);
+            HttpURLConnection conn = (HttpURLConnection) url1.openConnection();
+            conn.setReadTimeout(10000);
+            conn.setConnectTimeout(15000);
+            conn.setRequestMethod(requestMethod);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoInput(true);
+            conn.setDoOutput(true);
+
+            OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
+            out.write(new Gson().toJson(values));
+            out.close();
+
+            httpCallback.onResponse(conn.getResponseCode());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private interface HttpCallback {
+        void onResponse(int responseCode);
+    }
+
+    private interface PrepareCallback {
+        void onPrepare(String tableName, String externalKeyName, String internalKey, Map<String, String> values);
     }
 }

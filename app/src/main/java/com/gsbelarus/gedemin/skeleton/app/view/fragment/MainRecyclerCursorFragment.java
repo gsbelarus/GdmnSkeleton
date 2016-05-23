@@ -191,7 +191,7 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
                 break;
             case R.id.action_add:
                 ContentValues cv = new ContentValues();
-                cv.put("ID", -1);
+                cv.put("ID", 1234);
                 cv.put("Name", "testName");
                 getDatabaseManager().insert("Categories", null, cv);
                 getDatabaseManager().notifyDataChanged();
