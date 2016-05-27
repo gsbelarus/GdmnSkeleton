@@ -22,28 +22,24 @@ import java.util.Map;
 
 public class CoreCursorRecyclerAdapterViewHandler extends CursorRecyclerAdapterViewHandler {
 
-    private CoreViewHelper coreViewHelper;
-
-
     public CoreCursorRecyclerAdapterViewHandler(CoreCursorRecyclerItemViewTypeModel... cursorViewTypeModelMap) {
         super(cursorViewTypeModelMap);
-
-        coreViewHelper = new CoreViewHelper();
     }
 
     @Override
     public CoreCursorItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) { //TODO ItemViewTypes.DEFAULT_VIEW_TYPE
-        View view = createItemView(parent, viewType); //inflater.inflate(itemViewTypeModel.getLayoutResource(), parent, false);
-        return new CoreCursorItemViewHolder(view,  new LinkedHashMap<>(coreViewHelper.getValueViewLabelViewMap()));
-    }
-
-    private View createItemView(ViewGroup parent, int viewType) {
         CoreCursorRecyclerItemViewTypeModel itemViewTypeModel = (CoreCursorRecyclerItemViewTypeModel) getViewTypeModel(viewType);
 
-        View itemView = coreViewHelper.generateCoreItemView(parent, itemViewTypeModel.getOriginalFrom().length);
+        //inflater.inflate(itemViewTypeModel.getLayoutResource(), parent, false);
+        LinkedHashMap<View, View> valueViewLabelViewMap = CoreUtils.includeCoreView(
+                R.layout.core_recycler_item, parent, itemViewTypeModel.getOriginalFrom().length, CoreUtils.CoreViewType.LABELED_DATA_VIEW, null);
+        View itemView = parent.getChildAt(parent.getChildCount()-1);
+        parent.removeViewAt(parent.getChildCount()-1);
 
-        itemViewTypeModel.setTo(coreViewHelper.getTo());
-        return itemView;
+        //itemViewTypeModel.setTo(new int[0]);
+
+
+        return new CoreCursorItemViewHolder(itemView,  new LinkedHashMap<>(valueViewLabelViewMap));
     }
 
 
@@ -58,8 +54,8 @@ public class CoreCursorRecyclerAdapterViewHandler extends CursorRecyclerAdapterV
         }
 
         @Override
-        public void bindView(@Nullable Cursor cursor, final int[] from, final int[] to) {
-            CoreViewHelper.bindViews(cursor, from, valueViewLabelViewMap);
+        public void bindView(@Nullable Cursor cursor, final int[] from, @Nullable final int[] to) {
+            CoreUtils.bindViews(cursor, from, valueViewLabelViewMap);
         }
     }
 

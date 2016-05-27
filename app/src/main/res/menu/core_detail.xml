@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:appcompat="http://schemas.android.com/apk/res-auto">
+
+    <item
+    android:id="@+id/core_action_edit"
+    android:icon="@drawable/ic_edit_24dp"
+    android:title="Редактировать"
+    appcompat:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/core_action_delete"
+        android:icon="@drawable/ic_delete_24dp"
+        android:title="Удалить"
+        appcompat:showAsAction="ifRoom" />
+
+</menu>

@@ -41,9 +41,9 @@ abstract public class BaseFragment extends Fragment {
         if(extras != null) handleIntentExtras(extras);
     }
 
-    protected abstract void handleFragmentArguments(@NonNull Bundle arguments);
-    protected abstract void handleSavedInstanceState(@NonNull Bundle savedInstanceState);
-    protected abstract void handleIntentExtras(@NonNull Bundle extras);
+    protected void handleFragmentArguments(@NonNull Bundle arguments) {};
+    protected void handleSavedInstanceState(@NonNull Bundle savedInstanceState) {};
+    protected void handleIntentExtras(@NonNull Bundle extras) {};
 
     @Nullable
     @Override

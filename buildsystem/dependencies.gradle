@@ -7,7 +7,7 @@ allprojects {
 
 ext {
     //Android
-    androidBuildToolsVersion = "23.0.2"
+    androidBuildToolsVersion = "23.0.3"
     androidMinSdkVersion = 14
     androidTargetSdkVersion = 23
     androidCompileSdkVersion = 23
@@ -16,7 +16,7 @@ ext {
     jUnitVersion = '4.12'
 
     //Libraries
-    supportVersion = '23.3.0'
+    supportVersion = '23.4.0'
     sqliteQueryBuilder = '0.2.0'
     sqliteQueryBuilder2 = '0.1.0'
 

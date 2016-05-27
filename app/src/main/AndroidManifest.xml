@@ -17,7 +17,11 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".app.view.activity.DetailActivity"/>
+        <activity android:name=".app.view.activity.DetailActivity"
+            android:label="Подробно"/>
+
+        <activity android:name=".app.view.activity.EditActivity"
+            android:label="Изменить запись"/>
 
     </application>
 

@@ -1,18 +1,24 @@
 package com.gsbelarus.gedemin.skeleton.app.view.activity;
 
+
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDialog;
+import android.view.KeyEvent;
+import android.view.MenuItem;
 
 import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.base.view.BaseActivity;
-import com.gsbelarus.gedemin.skeleton.core.CoreDetailCursorFragment;
+import com.gsbelarus.gedemin.skeleton.core.CoreEditCursorFragment;
 
-
-public class DetailActivity extends BaseActivity {
+public class EditActivity extends BaseActivity {
 
     /**
      * Сonfiguration
@@ -34,10 +40,8 @@ public class DetailActivity extends BaseActivity {
         return R.id.toolbar;
     }
 
-
     long dataId;
-    CoreDetailCursorFragment fragment;
-
+    CoreEditCursorFragment fragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,10 +50,10 @@ public class DetailActivity extends BaseActivity {
 //        setScrollFlagsToolbar(0);
 
         if (savedInstanceState == null) {
-            fragment = CoreDetailCursorFragment.newInstance(dataId);
-            includeFragment(R.id.activity_content_fragment_place, fragment, CoreDetailCursorFragment.class.getCanonicalName());
+            fragment = CoreEditCursorFragment.newInstance(dataId);
+            includeFragment(R.id.activity_content_fragment_place, fragment, CoreEditCursorFragment.class.getCanonicalName());
         } else {
-            fragment = findSupportFragment(CoreDetailCursorFragment.class.getCanonicalName());
+            fragment = findSupportFragment(CoreEditCursorFragment.class.getCanonicalName());
         }
     }
 
@@ -58,15 +62,22 @@ public class DetailActivity extends BaseActivity {
 
     @Override
     protected void handleIntentExtras(@NonNull Bundle extras) {
-        if (extras.containsKey(CoreDetailCursorFragment.ARGUMENT_KEY_DATA_ID)) {
-            dataId = extras.getLong(CoreDetailCursorFragment.ARGUMENT_KEY_DATA_ID);
+        if (extras.containsKey(CoreEditCursorFragment.ARGUMENT_KEY_DATA_ID)) {
+            dataId = extras.getLong(CoreEditCursorFragment.ARGUMENT_KEY_DATA_ID);
         }
     }
 
     public static <T extends AppCompatActivity> Intent newStartIntent(Context context, long dataId) {
         Bundle extrasBundle = new Bundle();
-        extrasBundle.putLong(CoreDetailCursorFragment.ARGUMENT_KEY_DATA_ID, dataId);
+        extrasBundle.putLong(CoreEditCursorFragment.ARGUMENT_KEY_DATA_ID, dataId);
 
-        return newStartIntent(context, DetailActivity.class, extrasBundle);
+        return newStartIntent(context, EditActivity.class, extrasBundle);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) return false;
+
+        return super.onOptionsItemSelected(item);
     }
 }

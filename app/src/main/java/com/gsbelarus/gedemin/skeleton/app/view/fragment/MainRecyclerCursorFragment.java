@@ -81,15 +81,6 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
     }
 
     @Override
-    protected void handleFragmentArguments(@NonNull Bundle arguments) {}
-
-    @Override
-    protected void handleSavedInstanceState(@NonNull Bundle savedInstanceState) {}
-
-    @Override
-    protected void handleIntentExtras(@NonNull Bundle extras) {}
-
-    @Override
     protected void doOnCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
         RecyclerView rv = (RecyclerView) rootView.findViewById(R.id.recycler_view);
         setupRecyclerView(rv);

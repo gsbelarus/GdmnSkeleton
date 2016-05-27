@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.gsbelarus.gedemin.skeleton.base.BasicUtils;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.item.CursorRecyclerItemViewTypeModel;
 
 import java.util.HashMap;
@@ -65,41 +66,8 @@ public class CursorRecyclerAdapterViewHandler
         }
 
         public void bindView(@Nullable Cursor cursor, final int[] from, final int[] to) {
-            if (cursor == null) return;
-            final int count = to.length;
-
-            for (int i = 0; i < count; i++) {
-                final View v = itemView.findViewById(to[i]);
-                if (v != null) {
-                    String text = cursor.getString(from[i]);
-                    if (text == null) {
-                        text = "";
-                    }
-
-                    if (v instanceof TextView) {
-                        bindTextView((TextView) v, text);
-                    } else if (v instanceof ImageView) {
-                        bindViewImage((ImageView) v, text);
-                    } else {
-                        throw new IllegalStateException(v.getClass().getName() + " is not a " +
-                                " view that can be bounds");
-                    }
-                }
-            }
+            BasicUtils.bindViews(cursor, from, to, itemView);
         }
-
-        protected void bindViewImage(ImageView v, String value) {
-            try {
-                v.setImageResource(Integer.parseInt(value));
-            } catch (NumberFormatException nfe) {
-                v.setImageURI(Uri.parse(value));
-            }
-        }
-
-        protected void bindTextView(TextView textView, CharSequence value) {
-            textView.setText(value);
-        }
-
     }
 
 }
