@@ -95,7 +95,14 @@ public class CoreUtils {
 
     public enum CoreViewType { EDIT_VIEW, DATA_VIEW, LABELED_DATA_VIEW }
 
-    public static LinkedHashMap<View, View> includeCoreView(@LayoutRes final int rowLayoutRes, ViewGroup parent, final int columnCount, final CoreViewType coreViewType, final @Nullable View.OnKeyListener onKeyBackListener) { //TODO return object
+    public static LinkedHashMap<View, View> includeCoreView(
+            @LayoutRes final int rowLayoutRes,
+            ViewGroup parent,
+            final int columnCount,
+            final CoreViewType coreViewType,
+            @Nullable final View.OnKeyListener onKeyBackListener,
+            @Nullable final TextWatcher editTextWatcher) { //TODO return object
+
         LinkedHashMap<View, View> valueViewLabelViewMap = new LinkedHashMap<>();
 
 //        @IdRes int[] to = new int[columnCount];
@@ -130,7 +137,9 @@ public class CoreUtils {
                     ((EditText) valueView).setImeOptions(EditorInfo.IME_ACTION_DONE);
                 }
 
-                if (onKeyBackListener != null) valueView.setOnKeyListener(onKeyBackListener); //TODO
+                //TODO
+                if (onKeyBackListener != null) valueView.setOnKeyListener(onKeyBackListener);
+                if (editTextWatcher != null) ((EditText) valueView).addTextChangedListener(editTextWatcher);
             }
 
             valueViewLabelViewMap.put(valueView, labelView);
@@ -149,11 +158,11 @@ public class CoreUtils {
     }
 
     public static LinkedHashMap<View, View> includeCoreDetailView(ViewGroup parent, final int columnCount) {
-        return includeCoreView(R.layout.core_detail_item, parent, columnCount, CoreViewType.LABELED_DATA_VIEW, null);
+        return includeCoreView(R.layout.core_detail_item, parent, columnCount, CoreViewType.LABELED_DATA_VIEW, null, null);
     }
 
-    public static LinkedHashMap<View, View> includeCoreEditView(ViewGroup parent, int columnCount, View.OnKeyListener onKeyBackListener) {
-        return includeCoreView(R.layout.core_edit_item, parent, columnCount, CoreViewType.EDIT_VIEW, onKeyBackListener);
+    public static LinkedHashMap<View, View> includeCoreEditView(ViewGroup parent, int columnCount, View.OnKeyListener onKeyBackListener, final TextWatcher editTextWatcher) {
+        return includeCoreView(R.layout.core_edit_item, parent, columnCount, CoreViewType.EDIT_VIEW, onKeyBackListener, editTextWatcher);
     }
 
     public static void bindViews(@Nullable Cursor cursor, final String[] originalFrom, Map<View, View> toValueViewLabelViewMap) {
@@ -238,7 +247,6 @@ public class CoreUtils {
         if (textWatcher != null) editText.addTextChangedListener(textWatcher);
     }
 
-    //TODO inputType, error
     private static void bindTextInputLayout(final TextInputLayout textInputLayout, CharSequence hint) {
         textInputLayout.setHintAnimationEnabled(false);
         textInputLayout.setHint(hint);

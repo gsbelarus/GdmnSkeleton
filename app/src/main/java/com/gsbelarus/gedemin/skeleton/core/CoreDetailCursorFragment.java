@@ -72,7 +72,7 @@ public class CoreDetailCursorFragment extends BaseDetailCursorFragment {
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) { //TODO
         return new BasicTableCursorLoader(getContext(), getDatabaseManager(), "table1", null, BaseColumns._ID + " = ?", new String[] {String.valueOf(getDataId())}, null);
     }
 

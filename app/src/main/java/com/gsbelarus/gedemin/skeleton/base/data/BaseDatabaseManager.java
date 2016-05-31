@@ -69,12 +69,15 @@ abstract public class BaseDatabaseManager implements BasicDatabaseOpenHelper.DBO
         return false;
     }
 
-
     public void beginTransaction() {
         db.beginTransaction();
     }
 
-    public void transactionSuccessful() {
+    public boolean inTransaction() {
+        return db.inTransaction();
+    }
+
+    public void commitTransaction() {
         db.setTransactionSuccessful();
     }
 

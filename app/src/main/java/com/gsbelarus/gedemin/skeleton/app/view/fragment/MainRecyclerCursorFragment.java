@@ -1,27 +1,29 @@
 package com.gsbelarus.gedemin.skeleton.app.view.fragment;
 
+import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.BaseColumns;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.text.SpannableStringBuilder;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.FilterQueryProvider;
 import android.view.ViewGroup;
 
 import com.gsbelarus.gedemin.skeleton.R;
+import com.gsbelarus.gedemin.skeleton.app.view.RequestCode;
+import com.gsbelarus.gedemin.skeleton.app.view.ResultCode;
 import com.gsbelarus.gedemin.skeleton.app.view.activity.DetailActivity;
+import com.gsbelarus.gedemin.skeleton.app.view.activity.EditActivity;
 import com.gsbelarus.gedemin.skeleton.app.view.component.decorator.DividerItemDecoration;
 import com.gsbelarus.gedemin.skeleton.base.data.loader.BasicTableCursorLoader;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.listener.OnRecyclerItemClickListener;
@@ -32,10 +34,12 @@ import com.gsbelarus.gedemin.skeleton.core.CoreCursorRecyclerItemViewTypeModel;
 import com.gsbelarus.gedemin.skeleton.core.CoreDatabaseManager;
 
 
-public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment implements BasicCursorRecyclerViewAdapter.Callback {
+public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment implements BasicCursorRecyclerViewAdapter.Callback, View.OnClickListener {
+
+    private CoreDatabaseManager coreDatabaseManager;
 
     private SearchView searchView;
-    private CoreDatabaseManager coreDatabaseManager;
+    private FloatingActionButton fab;
 
     /**
      * Сonfiguration
@@ -84,6 +88,31 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
     protected void doOnCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
         RecyclerView rv = (RecyclerView) rootView.findViewById(R.id.recycler_view);
         setupRecyclerView(rv);
+
+        fab = (FloatingActionButton) rootView.findViewById(R.id.fab_add);
+        fab.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v == null) return;
+
+        if (v.getId() == R.id.fab_add) {
+            coreDatabaseManager.beginTransaction(); //TODO
+            Long dataId = coreDatabaseManager.insert("table1", "column1_BIGINT", new ContentValues());
+            if (dataId != null) startActivityForResult(EditActivity.newStartIntent(getActivity(), dataId), RequestCode.REQUEST_CODE_EDIT_CHANGED);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RequestCode.REQUEST_CODE_EDIT_CHANGED) {
+            if (resultCode == Activity.RESULT_OK) getDatabaseManager().commitTransaction();
+
+            coreDatabaseManager.endTransaction(); //TODO
+        }
     }
 
     @Override
@@ -149,4 +178,5 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
     public void updateDataCursor(@Nullable Cursor cursor) {
         swapCursor(cursor);
     }
+
 }

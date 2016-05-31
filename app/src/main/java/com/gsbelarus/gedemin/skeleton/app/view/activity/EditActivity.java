@@ -40,8 +40,8 @@ public class EditActivity extends BaseActivity {
         return R.id.toolbar;
     }
 
-    long dataId;
-    CoreEditCursorFragment fragment;
+    private long dataId;
+    private CoreEditCursorFragment fragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

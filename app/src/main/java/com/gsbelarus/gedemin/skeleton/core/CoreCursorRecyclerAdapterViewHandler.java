@@ -32,7 +32,7 @@ public class CoreCursorRecyclerAdapterViewHandler extends CursorRecyclerAdapterV
 
         //inflater.inflate(itemViewTypeModel.getLayoutResource(), parent, false);
         LinkedHashMap<View, View> valueViewLabelViewMap = CoreUtils.includeCoreView(
-                R.layout.core_recycler_item, parent, itemViewTypeModel.getOriginalFrom().length, CoreUtils.CoreViewType.LABELED_DATA_VIEW, null);
+                R.layout.core_recycler_item, parent, itemViewTypeModel.getOriginalFrom().length, CoreUtils.CoreViewType.LABELED_DATA_VIEW, null, null);
         View itemView = parent.getChildAt(parent.getChildCount()-1);
         parent.removeViewAt(parent.getChildCount()-1);
 
