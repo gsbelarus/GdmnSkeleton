@@ -17,21 +17,14 @@ abstract public class BaseDetailCursorFragment extends BaseCursorFragment {
     private long dataId;
 
     private String[] originalFrom;
-    private int[] to; //private LinkedHashMap<Integer, Integer> toValueIdLabelIdMap;  //TODO SparseIntArray, ArrayMap, SimpleArrayMap
+    private int[] to;
 
 
-    public static <T extends Fragment> T newInstance(Class<T> cl, long dataId) {
+    public static <T extends BaseDetailCursorFragment> T newInstance(Class<T> cl, long dataId) { //TODO originalFrom, to
         Bundle argsBundle = new Bundle();
         argsBundle.putLong(ARGUMENT_KEY_DATA_ID, dataId);
 
         return (T) newInstance(cl, argsBundle);
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        //TODO set originalFrom, to
     }
 
     @Override
@@ -48,7 +41,7 @@ abstract public class BaseDetailCursorFragment extends BaseCursorFragment {
 
     @Override
     protected Cursor getDataCursor() {
-        if (dataCursor != null) dataCursor.moveToFirst(); //TODO нужно?
+        if (dataCursor != null) dataCursor.moveToFirst(); //TODO ?
         return dataCursor;
     }
 

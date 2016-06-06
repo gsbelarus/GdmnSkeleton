@@ -21,7 +21,7 @@ import java.util.Map;
 public class CursorRecyclerAdapterViewHandler
         implements RecyclerAdapterViewHandler<CursorRecyclerAdapterViewHandler.BasicCursorItemViewHolder, Cursor> {   //TODO <V extends ViewType, VH>
 
-    private Map<Integer, CursorRecyclerItemViewTypeModel> viewTypeModelMap = new HashMap<>();
+    private Map<Integer, CursorRecyclerItemViewTypeModel> viewTypeModelMap = new HashMap<>(); //TODO SparseArray
 
 
     public CursorRecyclerAdapterViewHandler(CursorRecyclerItemViewTypeModel... cursorViewTypeModelMap) {
@@ -57,8 +57,6 @@ public class CursorRecyclerAdapterViewHandler
     }
 
 
-
-    // TODO перенести из core, base  ItemViewHolder
     public class BasicCursorItemViewHolder extends RecyclerView.ViewHolder {
 
         public BasicCursorItemViewHolder(View itemView) {

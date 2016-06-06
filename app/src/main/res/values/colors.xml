@@ -5,4 +5,11 @@
     <color name="colorAccent">#ff4081</color>
 
     <color name="fab_ripple">#4EDDDDDD</color>
+
+    <array name="swipe_refresh">
+        <item>#FF9900</item>
+        <item>#009900</item>
+        <item>#448AFF</item>
+    </array>
+
 </resources>

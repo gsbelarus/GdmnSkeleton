@@ -18,25 +18,16 @@ import android.widget.EditText;
 
 import com.gsbelarus.gedemin.skeleton.R;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 
 public class CoreEditCursorFragment extends CoreDetailCursorFragment {
 
     private boolean dataChanged;
-    private boolean dataSaved; // был хотя бы один коммит
+    private boolean dataSaved; // было хотя бы одино сохранение
     private View.OnKeyListener onKeyBackListener;
     private MenuItem saveMenuItem;
 
-    @Override
-    protected int getLayoutResource() {
-        return R.layout.core_fragment;
-    }
 
-
-    public static CoreEditCursorFragment newInstance(long dataId) {
+    public static CoreEditCursorFragment newInstance(long dataId) { // called from reflection
         return newInstance(CoreEditCursorFragment.class, dataId);
     }
 
@@ -70,7 +61,14 @@ public class CoreEditCursorFragment extends CoreDetailCursorFragment {
             }
 
         };
-        valueViewLabelViewMap = CoreUtils.includeCoreEditView(rootView, getOriginalFrom().length, onKeyBackListener, valueChangedTextWatcher);
+        toValueViewLabelViewMap = CoreUtils.includeCoreEditView(rootView, getOriginalFrom().length, onKeyBackListener, valueChangedTextWatcher);
+    }
+
+    @Override
+    protected void bindViewOnCursorLoaded() {
+        super.bindViewOnCursorLoaded();
+
+        setDataChanged(false); // т.к. valueChangedTextWatcher сработал
     }
 
     @Override
@@ -95,6 +93,7 @@ public class CoreEditCursorFragment extends CoreDetailCursorFragment {
 
     private void saveData() {
         getDatabaseManager().update("table1", getContentValues(), BaseColumns._ID + " = ?", new String[] {String.valueOf(getDataId())}); //TODO
+        getDatabaseManager().notifyDataChanged();
 
         setDataChanged(false);
         dataSaved = true;
@@ -102,7 +101,7 @@ public class CoreEditCursorFragment extends CoreDetailCursorFragment {
 
     private ContentValues getContentValues() {
         ContentValues contentValues = new ContentValues();
-        View[] valueViews = valueViewLabelViewMap.keySet().toArray(new View[valueViewLabelViewMap.keySet().size()]);
+        View[] valueViews = toValueViewLabelViewMap.keySet().toArray(new View[toValueViewLabelViewMap.keySet().size()]);
 
         for (int i = 0; i < valueViews.length; i++) { //TODO
             contentValues.put(getDataCursor().getColumnName(i), String.valueOf(((EditText)valueViews[i]).getText()));

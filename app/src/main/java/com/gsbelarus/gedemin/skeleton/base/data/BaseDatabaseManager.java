@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.net.Uri;
 import android.provider.BaseColumns;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -30,8 +31,6 @@ abstract public class BaseDatabaseManager implements BasicDatabaseOpenHelper.DBO
     private BasicDatabaseOpenHelper basicDatabaseOpenHelper = null;
     protected SQLiteDatabase db = null;
 
-    //private static final Object lockObject = new Object();
-
 
     protected BaseDatabaseManager(Context сontext, String dbName, int dbVersion) {
         this.dbName = dbName;
@@ -49,9 +48,7 @@ abstract public class BaseDatabaseManager implements BasicDatabaseOpenHelper.DBO
         basicDatabaseOpenHelper.addConnection();
 
         if(!isOpen()) {
-            //synchronized (lockObject) {
-                db = basicDatabaseOpenHelper.getWritableDatabase();
-            //}
+            db = basicDatabaseOpenHelper.getWritableDatabase();
         }
     }
 
@@ -59,11 +56,10 @@ abstract public class BaseDatabaseManager implements BasicDatabaseOpenHelper.DBO
         basicDatabaseOpenHelper.removeConnection();
 
         if(basicDatabaseOpenHelper.getConnectCounter() == 0) {
-            //synchronized (lockObject) {
-                if (db.inTransaction()) db.endTransaction();
-                basicDatabaseOpenHelper.close();
-                db = null;
-            //}
+            if (db.inTransaction()) db.endTransaction();
+            basicDatabaseOpenHelper.close();
+            db = null;
+
             return true;
         }
         return false;
@@ -77,7 +73,7 @@ abstract public class BaseDatabaseManager implements BasicDatabaseOpenHelper.DBO
         return db.inTransaction();
     }
 
-    public void commitTransaction() {
+    public void setTransactionSuccessful() {
         db.setTransactionSuccessful();
     }
 
@@ -85,12 +81,38 @@ abstract public class BaseDatabaseManager implements BasicDatabaseOpenHelper.DBO
         db.endTransaction();
     }
 
+    public void commitTransaction() {
+        db.setTransactionSuccessful();
+        db.endTransaction();
+    }
+
+    public void cancelTransaction() {
+        db.endTransaction();
+    }
+
+    public Cursor setNotifier(Cursor cursor) {  //TODO
+        cursor.setNotificationUri(appContext.getContentResolver(),
+                new Uri.Builder()
+                        .scheme("content")
+                        .authority("gdmn")
+                        .build());
+        return cursor;
+    }
+
+    public void notifyDataChanged() {
+        appContext.getContentResolver().notifyChange(
+                new Uri.Builder()
+                        .scheme("content")
+                        .authority("gdmn")
+                        .build(),
+                null, false);
+    }
+
 
     @Nullable
     public Cursor select(String tableName, String[] columnNames, String selection, String[] selectionArgs, String order) {
         try {
-            return db.query(tableName, columnNames, selection, selectionArgs, null, null, order);
-
+            return setNotifier(db.query(tableName, columnNames, selection, selectionArgs, null, null, order));
         } catch (Exception e) {
             Log.e("BaseDatabaseManager", "Error selecting: " + SQLiteQueryBuilder.buildQueryString(false, tableName, columnNames, selection, null, null, order, null), e);
             return null;
@@ -102,9 +124,8 @@ abstract public class BaseDatabaseManager implements BasicDatabaseOpenHelper.DBO
         try {
             return db.insertOrThrow(tableName, nullColumnHack, contentValues);
 
-        } catch (SQLException e) {  //TODO проброс
+        } catch (SQLException e) {
             Log.e("BaseDatabaseManager", "Error inserting " + tableName + ": " + contentValues, e);
-//          close();  //TODO
             return null;
         }
     }

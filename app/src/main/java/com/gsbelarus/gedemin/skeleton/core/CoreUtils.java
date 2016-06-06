@@ -40,7 +40,6 @@ public class CoreUtils {
 
     @NonNull
     public static CharSequence getFieldValueString(int columnIndex, Cursor dataCursor) {
-        //TODO check columnName (columnIndex = -1)
         CharSequence value = "";
         switch (dataCursor.getType(columnIndex)) {
             case Cursor.FIELD_TYPE_STRING:
@@ -61,8 +60,7 @@ public class CoreUtils {
                 value =  String.format("(%d bytes)", dataCursor.getBlob(columnIndex).length);
                 break;
             default:
-                //throw new AssertionError("Unknown type: " + dataCursor.getType(columnIndex));
-                break;
+                throw new AssertionError("Unknown type: " + dataCursor.getType(columnIndex));
         }
 
         if (dataCursor.isNull(columnIndex)) {
@@ -105,9 +103,7 @@ public class CoreUtils {
 
         LinkedHashMap<View, View> valueViewLabelViewMap = new LinkedHashMap<>();
 
-//        @IdRes int[] to = new int[columnCount];
-
-        LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext()); //TODO
+        LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         LinearLayout itemView = (LinearLayout) layoutInflater.inflate(rowLayoutRes, parent, false);
         Context context = parent.getContext();
 
@@ -137,7 +133,6 @@ public class CoreUtils {
                     ((EditText) valueView).setImeOptions(EditorInfo.IME_ACTION_DONE);
                 }
 
-                //TODO
                 if (onKeyBackListener != null) valueView.setOnKeyListener(onKeyBackListener);
                 if (editTextWatcher != null) ((EditText) valueView).addTextChangedListener(editTextWatcher);
             }
@@ -146,7 +141,6 @@ public class CoreUtils {
 
             int viewId = generateViewId();
             rowView.setId(viewId);
-//            to[i] = viewId;
 
             dynamicLinear.addView(rowView);
         }
@@ -166,7 +160,7 @@ public class CoreUtils {
     }
 
     public static void bindViews(@Nullable Cursor cursor, final String[] originalFrom, Map<View, View> toValueViewLabelViewMap) {
-        if (cursor == null) return;
+        if (cursor == null || cursor.getCount() == 0) return;
 
         int[] from = new int[originalFrom.length];
         for (int i = 0; i < originalFrom.length; i++) {
@@ -177,7 +171,7 @@ public class CoreUtils {
     }
 
     public static void bindViews(@Nullable Cursor cursor, final int[] from, Map<View, View> toValueViewLabelViewMap) {
-        if (cursor == null) return;
+        if (cursor == null || cursor.getCount() == 0) return;
 
         int i = 0;
         for (Map.Entry<View, View> entry : toValueViewLabelViewMap.entrySet()) {

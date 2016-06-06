@@ -84,7 +84,6 @@ public class CoreDatabaseManager extends BaseDatabaseManager implements BasicDat
 
         db.execSQL(createQuery);
 
-
         // insert
 
         InsertColumns insertColumns = Statements.insert().
@@ -141,13 +140,14 @@ public class CoreDatabaseManager extends BaseDatabaseManager implements BasicDat
     @Override
     public void onConfigure(SQLiteDatabase db) {
         db.enableWriteAheadLogging(); //TODO
-//        if (!db.isReadOnly()) {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//                db.setForeignKeyConstraintsEnabled(true);
-//            } else {
-//                db.execSQL("PRAGMA foreign_keys=ON");
-//            }
-//        }
+
+        if (!db.isReadOnly()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                db.setForeignKeyConstraintsEnabled(true);
+            } else {
+                db.execSQL("PRAGMA foreign_keys=ON");
+            }
+        }
     }
 
 }

@@ -9,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.base.view.BaseActivity;
+import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseCursorFragment;
+import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseDetailCursorFragment;
 import com.gsbelarus.gedemin.skeleton.core.CoreDetailCursorFragment;
 
 
@@ -35,8 +37,8 @@ public class DetailActivity extends BaseActivity {
     }
 
 
-    long dataId;
-    CoreDetailCursorFragment fragment;
+    protected long dataId;
+    protected BaseDetailCursorFragment fragment;
 
 
     @Override
@@ -45,11 +47,27 @@ public class DetailActivity extends BaseActivity {
 
 //        setScrollFlagsToolbar(0);
 
+        initFragment(savedInstanceState);
+    }
+
+    protected void initFragment(Bundle savedInstanceState) {
+        initFragment(savedInstanceState, CoreDetailCursorFragment.class);
+    }
+
+    protected void initFragment(Bundle savedInstanceState, Class<? extends BaseDetailCursorFragment> cl) {
         if (savedInstanceState == null) {
-            fragment = CoreDetailCursorFragment.newInstance(dataId);
-            includeFragment(R.id.activity_content_fragment_place, fragment, CoreDetailCursorFragment.class.getCanonicalName());
+            try {
+                fragment = cl.newInstance().newInstance(cl, dataId);
+
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+
+            includeFragment(R.id.activity_content_fragment_place, fragment, cl.getCanonicalName());
         } else {
-            fragment = findSupportFragment(CoreDetailCursorFragment.class.getCanonicalName());
+            fragment = findSupportFragment(cl.getCanonicalName());
         }
     }
 

@@ -36,8 +36,6 @@ public class CoreCursorRecyclerAdapterViewHandler extends CursorRecyclerAdapterV
         View itemView = parent.getChildAt(parent.getChildCount()-1);
         parent.removeViewAt(parent.getChildCount()-1);
 
-        //itemViewTypeModel.setTo(new int[0]);
-
 
         return new CoreCursorItemViewHolder(itemView,  new LinkedHashMap<>(valueViewLabelViewMap));
     }

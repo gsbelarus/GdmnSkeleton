@@ -18,7 +18,7 @@ import com.gsbelarus.gedemin.skeleton.app.view.activity.DetailActivity;
 
 abstract public class BaseActivity extends AppCompatActivity {
 
-    public enum ActivityType {
+    protected enum ActivityType {
         HIGH_LEVEL, SUB_LEVEL, TITLED_SUB_LEVEL
     }
 

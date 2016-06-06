@@ -17,16 +17,18 @@ ext {
 
     //Libraries
     supportVersion = '23.4.0'
-    sqliteQueryBuilder = '0.2.0'
-    sqliteQueryBuilder2 = '0.1.0'
+    supportConstraintVersion = '1.0.0-alpha1'
+    sqliteQueryBuilderVersion = '0.2.0'
+    sqliteQueryBuilder2Version = '0.1.0'
 
     appDependencies = [
-            supportSupport     : "com.android.support:support-v4:${supportVersion}",
-            supportDesign      : "com.android.support:design:${supportVersion}",
-            supportCardView    : "com.android.support:cardview-v7:${supportVersion}",
-            supportAnnotations : "com.android.support:support-annotations:${supportVersion}",
-            sqliteQueryBuilder : "com.github.alexfu:SQLiteQueryBuilder:${sqliteQueryBuilder}",
-            sqliteQueryBuilder2 : "com.nhaarman:sqlitebuilder:${sqliteQueryBuilder2}",
+            supportSupport      : "com.android.support:support-v4:${supportVersion}",
+            supportDesign       : "com.android.support:design:${supportVersion}",
+            supportCardView     : "com.android.support:cardview-v7:${supportVersion}",
+            supportConstraint   : "com.android.support.constraint:constraint-layout:${supportConstraintVersion}",
+            supportAnnotations  : "com.android.support:support-annotations:${supportVersion}",
+            sqliteQueryBuilder  : "com.github.alexfu:SQLiteQueryBuilder:${sqliteQueryBuilderVersion}",
+            sqliteQueryBuilder2 : "com.nhaarman:sqlitebuilder:${sqliteQueryBuilder2Version}",
     ]
 
     appTestDependencies = [

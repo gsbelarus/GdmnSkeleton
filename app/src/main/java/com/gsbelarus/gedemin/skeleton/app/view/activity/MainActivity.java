@@ -30,14 +30,8 @@ public class MainActivity extends BaseActivity {
         return R.id.toolbar;
     }
 
-    @Override
-    protected void handleSavedInstanceState(@NonNull Bundle savedInstanceState) {}
 
-    @Override
-    protected void handleIntentExtras(@NonNull Bundle extras) {}
-
-
-    MainRecyclerCursorFragment fragment;
+    private MainRecyclerCursorFragment fragment;
 
 
     @Override
@@ -53,4 +47,11 @@ public class MainActivity extends BaseActivity {
             fragment = findSupportFragment(MainRecyclerCursorFragment.class.getCanonicalName());
         }
     }
+
+    @Override
+    protected void handleSavedInstanceState(@NonNull Bundle savedInstanceState) {}
+
+    @Override
+    protected void handleIntentExtras(@NonNull Bundle extras) {}
+
 }

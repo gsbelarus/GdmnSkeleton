@@ -9,6 +9,7 @@ import android.provider.BaseColumns;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -21,10 +22,9 @@ import android.view.ViewGroup;
 
 import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.app.view.RequestCode;
-import com.gsbelarus.gedemin.skeleton.app.view.ResultCode;
 import com.gsbelarus.gedemin.skeleton.app.view.activity.DetailActivity;
 import com.gsbelarus.gedemin.skeleton.app.view.activity.EditActivity;
-import com.gsbelarus.gedemin.skeleton.app.view.component.decorator.DividerItemDecoration;
+import com.gsbelarus.gedemin.skeleton.app.view.component.DividerItemDecoration;
 import com.gsbelarus.gedemin.skeleton.base.data.loader.BasicTableCursorLoader;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.listener.OnRecyclerItemClickListener;
 import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseRecyclerCursorFragment;
@@ -34,12 +34,10 @@ import com.gsbelarus.gedemin.skeleton.core.CoreCursorRecyclerItemViewTypeModel;
 import com.gsbelarus.gedemin.skeleton.core.CoreDatabaseManager;
 
 
-public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment implements BasicCursorRecyclerViewAdapter.Callback, View.OnClickListener {
-
-    private CoreDatabaseManager coreDatabaseManager;
+public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
 
     private SearchView searchView;
-    private FloatingActionButton fab;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     /**
      * Сonfiguration
@@ -58,13 +56,11 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
 
         setHasOptionsMenu(true);
 
-        coreDatabaseManager = createDatabaseManager();
-
         CoreCursorRecyclerItemViewTypeModel itemViewTypeModel = new CoreCursorRecyclerItemViewTypeModel(
                 R.layout.core_recycler_item,
                 new String[]{BaseColumns._ID, "column2_CHAR_32767"});
 
-        cursorAdapter = new BasicCursorRecyclerViewAdapter(null, itemViewTypeModel.getLayoutResource(), null, null, this); //TODO
+        cursorAdapter = new BasicCursorRecyclerViewAdapter(itemViewTypeModel.getLayoutResource(), null, null); //TODO
         CoreCursorRecyclerAdapterViewHandler viewHandler = new CoreCursorRecyclerAdapterViewHandler(itemViewTypeModel);
         cursorAdapter.setAdapterViewHandler(viewHandler);
         cursorAdapter.setOnRecyclerItemClickListener(new OnRecyclerItemClickListener() {
@@ -78,8 +74,8 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
             @Override
             public Cursor runQuery(CharSequence constraint) {
                 if (!constraint.toString().isEmpty())
-                    return coreDatabaseManager.select("table1", null, "_id LIKE ?", new String[]{"%" + constraint.toString() + "%"}, null);
-                else return coreDatabaseManager.select("table1", null, null, null, null);
+                    return getDatabaseManager().select("table1", null, "_id LIKE ?", new String[]{"%" + constraint.toString() + "%"}, null);
+                else return getDatabaseManager().select("table1", null, null, null, null);
             }
         });
     }
@@ -89,8 +85,22 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
         RecyclerView rv = (RecyclerView) rootView.findViewById(R.id.recycler_view);
         setupRecyclerView(rv);
 
-        fab = (FloatingActionButton) rootView.findViewById(R.id.fab_add);
+        FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab_add);
         fab.setOnClickListener(this);
+
+        initRefreshLayout(rootView);
+    }
+
+    protected final void initRefreshLayout(ViewGroup rootView) {
+        swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout.setColorSchemeColors(getContext().getResources().getIntArray(R.array.swipe_refresh));
+        swipeRefreshLayout.setOnRefreshListener(this);
+    }
+
+    @Override
+    public void onRefresh() {
+        //TODO
+        swipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
@@ -98,8 +108,8 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
         if (v == null) return;
 
         if (v.getId() == R.id.fab_add) {
-            coreDatabaseManager.beginTransaction(); //TODO
-            Long dataId = coreDatabaseManager.insert("table1", "column1_BIGINT", new ContentValues());
+            getDatabaseManager().beginTransaction();
+            Long dataId = getDatabaseManager().insert("table1", "column1_BIGINT", new ContentValues());
             if (dataId != null) startActivityForResult(EditActivity.newStartIntent(getActivity(), dataId), RequestCode.REQUEST_CODE_EDIT_CHANGED);
         }
     }
@@ -109,9 +119,11 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RequestCode.REQUEST_CODE_EDIT_CHANGED) {
-            if (resultCode == Activity.RESULT_OK) getDatabaseManager().commitTransaction();
-
-            coreDatabaseManager.endTransaction(); //TODO
+            if (resultCode == Activity.RESULT_OK) {
+                getDatabaseManager().commitTransaction();
+            } else {
+                getDatabaseManager().cancelTransaction();
+            }
         }
     }
 
@@ -172,11 +184,6 @@ public class MainRecyclerCursorFragment extends BaseRecyclerCursorFragment imple
                 return true;
             }
         });
-    }
-
-    @Override
-    public void updateDataCursor(@Nullable Cursor cursor) {
-        swapCursor(cursor);
     }
 
 }

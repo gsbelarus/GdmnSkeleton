@@ -5,7 +5,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <android.support.design.widget.CoordinatorLayout
-        android:id="@+id/coordinatorLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -19,8 +18,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scrollbars="vertical"
-                android:clipToPadding="false"
-                />
+                android:clipToPadding="false" />
         </android.support.v4.widget.SwipeRefreshLayout>
 
         <android.support.design.widget.FloatingActionButton
@@ -32,8 +30,9 @@
             app:layout_anchor="@id/swipe_refresh_layout"
             app:layout_anchorGravity="bottom|right|end"
             android:clickable="true"
-            app:useCompatPadding="true"
-            app:layout_behavior="com.gsbelarus.gedemin.skeleton.app.view.ScrollAwareFABBehavior" />
+            app:useCompatPadding="true" />
+
+        <!--app:layout_behavior="com.gsbelarus.gedemin.skeleton.app.view.component.ScrollAwareFABBehavior"-->
 
     </android.support.design.widget.CoordinatorLayout>
 

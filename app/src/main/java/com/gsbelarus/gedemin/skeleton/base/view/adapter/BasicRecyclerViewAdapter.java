@@ -13,7 +13,7 @@ import com.gsbelarus.gedemin.skeleton.base.view.adapter.viewhandler.NullRecycler
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.viewhandler.RecyclerAdapterViewHandler;
 
 
-// TODO 1. View Handler pattern  2. к полям только через getters  3. empty view 4 onItemLongClickListener
+// TODO 1.empty view 2.onItemLongClickListener
 
 public class BasicRecyclerViewAdapter<VH_T extends RecyclerView.ViewHolder, ITEM_T> extends RecyclerView.Adapter<VH_T> {
 

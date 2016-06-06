@@ -55,7 +55,6 @@ public class CursorRecyclerAdapterDataSource implements RecyclerAdapterDataSourc
         return ItemViewTypes.DEFAULT_VIEW_TYPE;
     }
 
-    //TODO
     @Nullable
     public synchronized Cursor swapCursor(@Nullable Cursor newCursor) {
         if (newCursor == dataCursor) return newCursor;

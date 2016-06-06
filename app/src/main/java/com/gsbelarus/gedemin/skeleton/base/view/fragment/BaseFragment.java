@@ -20,6 +20,7 @@ abstract public class BaseFragment extends Fragment {
      */
     @LayoutRes
     protected abstract int getLayoutResource();
+
     protected Context appContext;
 
 

@@ -10,7 +10,7 @@ import java.util.Locale;
 
 abstract public class BaseApplication extends Application {
 
-    private static Context appContext;
+    private static Context appContext; //TODO dagger
 
     public static Context getContext() {
         return appContext;

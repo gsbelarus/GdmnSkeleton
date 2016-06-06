@@ -1,4 +1,4 @@
-package com.gsbelarus.gedemin.skeleton.app.view;
+package com.gsbelarus.gedemin.skeleton.app.view.component;
 
 import android.content.Context;
 import android.support.design.widget.CoordinatorLayout;

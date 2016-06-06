@@ -78,6 +78,7 @@ dependencies {
     compile appDependencies.supportSupport
     compile appDependencies.supportDesign
     compile appDependencies.supportCardView
+    compile appDependencies.supportConstraint
     compile appDependencies.supportAnnotations
     compile appDependencies.sqliteQueryBuilder
     compile appDependencies.sqliteQueryBuilder2
