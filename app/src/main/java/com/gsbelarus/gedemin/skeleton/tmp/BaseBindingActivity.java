@@ -4,7 +4,6 @@ import android.databinding.DataBindingUtil;
 import android.databinding.ViewDataBinding;
 import android.os.Bundle;
 
-
 import com.gsbelarus.gedemin.skeleton.base.view.BaseActivity;
 
 abstract public class BaseBindingActivity<T_ActivityDataBinding extends ViewDataBinding> extends BaseActivity {

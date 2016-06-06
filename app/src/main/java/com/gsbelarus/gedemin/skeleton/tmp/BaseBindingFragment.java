@@ -26,7 +26,4 @@ public abstract class BaseBindingFragment extends BaseFragment {
     }
 
     protected abstract void doOnCreateView(@Nullable Bundle savedInstanceState);
-
-    @Override
-    protected void onCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {}
 }

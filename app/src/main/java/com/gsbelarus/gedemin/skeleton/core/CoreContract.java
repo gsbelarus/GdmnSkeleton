@@ -2,7 +2,11 @@ package com.gsbelarus.gedemin.skeleton.core;
 
 import android.provider.BaseColumns;
 
+
 public class CoreContract {
+
+    public static final String TEST_TABLE = "Categories";
+    public static final String TEST_TABLE_NULLHACK_COLUMN = "Name";
 
     public static abstract class TableLogChanges implements BaseColumns {
         public static final String TABLE_NAME = "log_changes";

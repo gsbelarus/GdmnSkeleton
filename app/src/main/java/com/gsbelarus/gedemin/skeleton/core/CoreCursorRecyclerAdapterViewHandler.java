@@ -1,52 +1,42 @@
 package com.gsbelarus.gedemin.skeleton.core;
 
 import android.database.Cursor;
-import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.gsbelarus.gedemin.skeleton.R;
-import com.gsbelarus.gedemin.skeleton.base.view.adapter.item.ItemViewTypes;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.viewhandler.CursorRecyclerAdapterViewHandler;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 
 public class CoreCursorRecyclerAdapterViewHandler extends CursorRecyclerAdapterViewHandler {
 
-    private CoreViewHelper coreViewHelper;
     private int fieldsCount;
 
     public CoreCursorRecyclerAdapterViewHandler(CoreCursorRecyclerItemViewTypeModel... cursorViewTypeModelMap) {
         super(cursorViewTypeModelMap);
-
-        coreViewHelper = new CoreViewHelper();
     }
 
     @Override
     public CoreCursorItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) { //TODO ItemViewTypes.DEFAULT_VIEW_TYPE
-        View view = createItemView(parent, viewType); //inflater.inflate(itemViewTypeModel.getLayoutResource(), parent, false);
-        return new CoreCursorItemViewHolder(view,  new LinkedHashMap<>(coreViewHelper.getValueViewLabelViewMap()));
-    }
-
-    public View createItemView(ViewGroup parent, int viewType) {
         CoreCursorRecyclerItemViewTypeModel itemViewTypeModel = (CoreCursorRecyclerItemViewTypeModel) getViewTypeModel(viewType);
 
-        View itemView = coreViewHelper.generateCoreItemView(parent, fieldsCount);//itemViewTypeModel.getOriginalFrom().length);
+        //inflater.inflate(itemViewTypeModel.getLayoutResource(), parent, false);
+        LinkedHashMap<View, View> valueViewLabelViewMap = CoreUtils.includeCoreView(
+                R.layout.core_recycler_item, parent, fieldsCount, CoreUtils.CoreViewType.LABELED_DATA_VIEW, null, null);
+        View itemView = parent.getChildAt(parent.getChildCount()-1);
+        parent.removeViewAt(parent.getChildCount()-1);
 
-        itemViewTypeModel.setTo(coreViewHelper.getTo());
-        return itemView;
+        //itemViewTypeModel.setTo(coreViewHelper.getTo());
+
+        return new CoreCursorItemViewHolder(itemView,  new LinkedHashMap<>(valueViewLabelViewMap));
     }
 
-    public void setFieldsCount(int fieldsCount) {
+    public void setFieldsCount(int fieldsCount) { //TODO tmp
         this.fieldsCount = fieldsCount;
     }
 
@@ -62,8 +52,8 @@ public class CoreCursorRecyclerAdapterViewHandler extends CursorRecyclerAdapterV
         }
 
         @Override
-        public void bindView(@Nullable Cursor cursor, final int[] from, final int[] to) {
-            CoreViewHelper.bindViews(cursor, from, valueViewLabelViewMap);
+        public void bindView(@Nullable Cursor cursor, final int[] from, @Nullable final int[] to) {
+            CoreUtils.bindViews(cursor, from, valueViewLabelViewMap);
         }
     }
 

@@ -19,8 +19,4 @@ public class CoreCursorRecyclerItemViewTypeModel extends CursorRecyclerItemViewT
         super(viewTypeId, layoutResource, originalFrom, null);
     }
 
-    public void setTo(int[] to) {
-        this.to = to;
-    }
-
 }

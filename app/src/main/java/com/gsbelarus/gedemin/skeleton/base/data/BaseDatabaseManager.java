@@ -21,18 +21,20 @@ import java.util.Map;
 
 public abstract class BaseDatabaseManager {
 
-    private final Context context;
+    //private static BaseDatabaseManager instance = null; //TODO singleton factory
 
-    protected SQLiteDatabase db;
-    private BasicDatabaseOpenHelper basicDatabaseOpenHelper;
+    protected int dbVersion;
+    protected String dbName;
 
-    private int dbVersion;
-    private String dbName;
+    private final Context appContext;
+    private BasicDatabaseOpenHelper basicDatabaseOpenHelper = null;
+    protected SQLiteDatabase db = null;
 
-    protected BaseDatabaseManager(Context context, String dbName, int dbVersion) {
+
+    protected BaseDatabaseManager(Context сontext, String dbName, int dbVersion) {
         this.dbName = dbName;
         this.dbVersion = dbVersion;
-        this.context = context.getApplicationContext();
+        this.appContext = сontext.getApplicationContext();
     }
 
     @NonNull
@@ -44,33 +46,39 @@ public abstract class BaseDatabaseManager {
 
     public synchronized void open() {                   //TODO check
         if (basicDatabaseOpenHelper == null) {
-            basicDatabaseOpenHelper = new BasicDatabaseOpenHelper(context, dbName, dbVersion, getDbOpenHelperImpl());
+            basicDatabaseOpenHelper = new BasicDatabaseOpenHelper(appContext, dbName, dbVersion, getDbOpenHelperImpl());
         }
         basicDatabaseOpenHelper.addConnection();
 
-        if (!isOpen()) {
-            //synchronized (lockObject) {
+        if(!isOpen()) {
             db = basicDatabaseOpenHelper.getWritableDatabase();
-            //}
         }
     }
 
     public synchronized boolean close() {
         basicDatabaseOpenHelper.removeConnection();
 
-        if (basicDatabaseOpenHelper.getConnectCounter() == 0) {
-            //synchronized (lockObject) {
+        if(basicDatabaseOpenHelper.getConnectCounter() == 0) {
             if (db.inTransaction()) db.endTransaction();
             basicDatabaseOpenHelper.close();
             db = null;
-            //}
+
             return true;
         }
         return false;
     }
 
+
     public void beginTransaction() {
         db.beginTransaction();
+    }
+
+    public boolean inTransaction() {
+        return db.inTransaction();
+    }
+
+    public void setTransactionSuccessful() {
+        db.setTransactionSuccessful();
     }
 
     public void beginTransactionNonExclusive() {
@@ -89,16 +97,21 @@ public abstract class BaseDatabaseManager {
         db.endTransaction();
     }
 
-    public void setTransactionSuccessful() {
+    public void commitTransaction() {
         db.setTransactionSuccessful();
+        db.endTransaction();
+    }
+
+    public void cancelTransaction() {
+        db.endTransaction();
     }
 
     public int getVersion() {
         return db.getVersion();
     }
 
-    public Cursor setNotifier(Cursor cursor) {
-        cursor.setNotificationUri(getContext().getContentResolver(),
+    public Cursor setNotifier(Cursor cursor) {  //TODO
+        cursor.setNotificationUri(appContext.getContentResolver(),
                 new Uri.Builder()
                         .scheme("content")
                         .authority("gdmn")
@@ -107,7 +120,7 @@ public abstract class BaseDatabaseManager {
     }
 
     public void notifyDataChanged() {
-        getContext().getContentResolver().notifyChange(
+        appContext.getContentResolver().notifyChange(
                 new Uri.Builder()
                         .scheme("content")
                         .authority("gdmn")
@@ -115,11 +128,11 @@ public abstract class BaseDatabaseManager {
                 null, false);
     }
 
+
     @Nullable
     public Cursor select(String tableName, String[] columnNames, String selection, String[] selectionArgs, String order) {
         try {
             return setNotifier(db.query(tableName, columnNames, selection, selectionArgs, null, null, order));
-
         } catch (Exception e) {
             Log.e("BaseDatabaseManager", "Error selecting: " + SQLiteQueryBuilder.buildQueryString(false, tableName, columnNames, selection, null, null, order, null), e);
             return null;
@@ -131,9 +144,8 @@ public abstract class BaseDatabaseManager {
         try {
             return db.insertOrThrow(tableName, nullColumnHack, contentValues);
 
-        } catch (SQLException e) {  //TODO проброс
+        } catch (SQLException e) {
             Log.e("BaseDatabaseManager", "Error inserting " + tableName + ": " + contentValues, e);
-//          close();  //TODO
             return null;
         }
     }
@@ -211,7 +223,4 @@ public abstract class BaseDatabaseManager {
         return rows;
     }
 
-    public Context getContext() {
-        return context;
-    }
 }

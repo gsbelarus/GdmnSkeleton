@@ -2,17 +2,22 @@ package com.gsbelarus.gedemin.skeleton.base.data.loader;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.support.v4.content.CursorLoader;
 
 import com.gsbelarus.gedemin.skeleton.base.data.BaseDatabaseManager;
 
 
-public class BasicTableCursorLoader extends CursorLoader {
+public class BasicTableCursorLoader extends BaseSimpleCursorLoader {
 
-    protected String tableName;
-    protected BaseDatabaseManager databaseManager;
+    private final String tableName;
+    private final BaseDatabaseManager databaseManager;
 
-    public BasicTableCursorLoader(Context context, BaseDatabaseManager databaseManager, String tableName, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+    public BasicTableCursorLoader(final Context context,
+                                  final BaseDatabaseManager databaseManager,
+                                  final String tableName,
+                                  final String[] projection,
+                                  final String selection,
+                                  final String[] selectionArgs,
+                                  final String sortOrder) {
         super(context, null, projection, selection, selectionArgs, sortOrder);
 
         this.databaseManager = databaseManager;
@@ -20,8 +25,8 @@ public class BasicTableCursorLoader extends CursorLoader {
     }
 
     @Override
-    public Cursor loadInBackground() {
-        return databaseManager.select(tableName, getProjection(), getSelection(), getSelectionArgs(), getSortOrder());
+    public Cursor loadCursor() {
+        return  databaseManager.select(tableName, getProjection(), getSelection(), getSelectionArgs(), getSortOrder());
     }
 
 }

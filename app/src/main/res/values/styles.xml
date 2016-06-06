@@ -12,4 +12,15 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+
+    <!-- FAB -->
+    <style name="FabStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <!--<item name="android:layout_margin">@dimen/fab_compat_margin</item>-->
+        <item name="borderWidth">0dp</item>
+        <item name="elevation">6dp</item>
+        <item name="rippleColor">@color/fab_ripple</item>
+    </style>
+
 </resources>

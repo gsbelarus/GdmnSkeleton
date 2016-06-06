@@ -1,6 +1,7 @@
 package com.gsbelarus.gedemin.skeleton.app.view.activity;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.gsbelarus.gedemin.skeleton.R;
@@ -9,6 +10,7 @@ import com.gsbelarus.gedemin.skeleton.app.view.fragment.MainRecyclerCursorFragme
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
 import com.gsbelarus.gedemin.skeleton.base.view.BaseActivity;
 import com.gsbelarus.gedemin.skeleton.core.LogUtil;
+
 
 public class MainActivity extends BaseActivity {
 
@@ -32,6 +34,10 @@ public class MainActivity extends BaseActivity {
         return R.id.toolbar;
     }
 
+
+    private MainRecyclerCursorFragment fragment;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,17 +50,27 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public boolean onFinishSync(@Nullable String error) {
+            public boolean onFinishSync(@Nullable String error) { //TODO не всегда срабатывает
                 LogUtil.d();
+
+                fragment.disableLayoutRefreshing();
+
                 return super.onFinishSync(error);
             }
         });
-
 //        setScrollFlagsToolbar(0);
 
         if (savedInstanceState == null) {
-            includeFragment(R.id.activity_content_fragment_place, new MainRecyclerCursorFragment(),
-                    MainRecyclerCursorFragment.class.getCanonicalName());
+            fragment = new MainRecyclerCursorFragment();
+            includeFragment(R.id.activity_content_fragment_place, fragment, MainRecyclerCursorFragment.class.getCanonicalName());
+        } else {
+            fragment = findSupportFragment(MainRecyclerCursorFragment.class.getCanonicalName());
         }
     }
+
+    @Override
+    protected void handleSavedInstanceState(@NonNull Bundle savedInstanceState) {}
+
+    @Override
+    protected void handleIntentExtras(@NonNull Bundle extras) {}
 }

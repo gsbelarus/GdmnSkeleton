@@ -163,6 +163,6 @@ public class TypeProvider {
     }
 
     public static String getNullable(EdmProperty edmProperty) {
-        return edmProperty.isNullable() ? "" : " NOT NULL ";
+        return edmProperty.isNullable() ? "" : ""; //TODO tmp for test //" NOT NULL ";
     }
 }
