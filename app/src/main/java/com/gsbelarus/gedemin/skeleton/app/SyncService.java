@@ -5,7 +5,7 @@ import android.content.ContentValues;
 import android.support.annotation.NonNull;
 
 import com.gsbelarus.gedemin.skeleton.core.data.CoreDatabaseManager;
-import com.gsbelarus.gedemin.skeleton.core.service.CoreSyncService;
+import com.gsbelarus.gedemin.skeleton.core.data.CoreSyncService;
 
 public class SyncService extends CoreSyncService {
 

@@ -74,8 +74,7 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
                     @Override
                     public boolean onKey(View v, int keyCode, KeyEvent event) {
                         if (keyCode == KeyEvent.KEYCODE_BACK) {
-                            pressBackHandle();
-                            return true;
+                            return pressBackHandle();
                         }
                         return false;
                     }
@@ -207,11 +206,13 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
         });
     }
 
-    private void pressBackHandle() {
-        if ((searchView != null && !searchView.isIconified())) {
+    private boolean pressBackHandle() {
+        if (searchView != null && !searchView.isIconified()) {
             searchView.setQuery("", true);
             searchView.setIconified(true);
+            return true;
         }
+        return false;
     }
 
 }

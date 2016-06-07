@@ -22,21 +22,34 @@ import com.gsbelarus.gedemin.skeleton.core.util.LogUtil;
 
 abstract public class BaseActivity extends AppCompatActivity {
 
-    protected enum ActivityType {
-        HIGH_LEVEL, SUB_LEVEL, TITLED_SUB_LEVEL
-    }
-
     protected final String TAG = this.getClass().getCanonicalName();
+
+    protected Context context;
+    private Toolbar toolbar;
+
+    private BaseSyncService.SyncBinder syncBinder;
+    private ServiceConnection serviceConnection;
+    private BaseSyncService.OnSyncListener onSyncListener;
+
+    public static <T extends AppCompatActivity> Intent newStartIntent(Context context, Class<T> cl, Bundle extrasBundle) {
+        Intent intent = new Intent(context, cl);
+        intent.putExtras(extrasBundle);
+
+        return intent;
+    }
 
     /**
      * Сonfiguration
      */
     protected abstract ActivityType getActivityType();
+
     @LayoutRes
     protected abstract int getLayoutResource();
+
     @Nullable
     @IdRes
     protected abstract Integer getToolbarIdResource();
+
     /**
      * если AppBarLayout (toolbar должен находиться именно в нем) отсутствует,
      * необходимо переопределить
@@ -45,15 +58,8 @@ abstract public class BaseActivity extends AppCompatActivity {
         return true;
     }
 
-
-    protected Context context;
-    private Toolbar toolbar;
-    private BaseSyncService.SyncBinder syncBinder;
-    private ServiceConnection serviceConnection;
-    private BaseSyncService.OnSyncListener onSyncListener;
-
-
     protected abstract void handleSavedInstanceState(@NonNull Bundle savedInstanceState);
+
     protected abstract void handleIntentExtras(@NonNull Bundle extras);
 
     @Override
@@ -77,11 +83,11 @@ abstract public class BaseActivity extends AppCompatActivity {
         }
 
         // restore saved state
-        if(savedInstanceState != null) handleSavedInstanceState(savedInstanceState);
+        if (savedInstanceState != null) handleSavedInstanceState(savedInstanceState);
 
         // handle intent extras
         Bundle extras = getIntent().getExtras();
-        if(extras != null) handleIntentExtras(extras);
+        if (extras != null) handleIntentExtras(extras);
     }
 
     protected void setupHighLevelActivity() {
@@ -139,7 +145,6 @@ abstract public class BaseActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
     public void setToolbarTitle(@StringRes int titleResId) {
         if (getSupportActionBar() != null)
             getSupportActionBar().setTitle(titleResId);
@@ -149,7 +154,6 @@ abstract public class BaseActivity extends AppCompatActivity {
     public Toolbar getToolbar() {
         return toolbar;
     }
-
 
     protected void includeFragment(@IdRes int fragmentPlaceIdResource, Fragment fragment, @Nullable String tag) {
         getSupportFragmentManager().beginTransaction()
@@ -163,16 +167,6 @@ abstract public class BaseActivity extends AppCompatActivity {
         return (T) getSupportFragmentManager().findFragmentByTag(tag);
     }
 
-
-    public static <T extends AppCompatActivity> Intent newStartIntent(Context context, Class<T> cl, Bundle extrasBundle) {
-        Intent intent = new Intent(context, cl);
-        intent.putExtras(extrasBundle);
-
-        return intent;
-    }
-
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -180,7 +174,7 @@ abstract public class BaseActivity extends AppCompatActivity {
         disconnectService();
     }
 
-    protected boolean connectService(Class<? extends BaseSyncService> serviceClass, BaseSyncService.OnSyncListener onSyncListener) {
+    protected boolean connectService(final Class<? extends BaseSyncService> serviceClass, final BaseSyncService.OnSyncListener onSyncListener) {
         disconnectService();
         this.onSyncListener = onSyncListener;
         return BaseSyncService.bindService(getApplicationContext(), serviceClass, serviceConnection = new ServiceConnection() {
@@ -194,6 +188,7 @@ abstract public class BaseActivity extends AppCompatActivity {
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 syncBinder = null;
+                connectService(serviceClass, onSyncListener);// // FIXME: 07.06.2016
                 LogUtil.d();
             }
         });
@@ -210,5 +205,9 @@ abstract public class BaseActivity extends AppCompatActivity {
 
     public boolean isSyncProcess() {
         return syncBinder != null;
+    }
+
+    protected enum ActivityType {
+        HIGH_LEVEL, SUB_LEVEL, TITLED_SUB_LEVEL
     }
 }

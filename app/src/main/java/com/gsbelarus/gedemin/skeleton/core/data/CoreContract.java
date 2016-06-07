@@ -19,10 +19,18 @@ public class CoreContract {
         public enum ChangeType {INSERT, UPDATE, DELETE}
     }
 
-    public static abstract class TableLogSync implements BaseColumns {
-        public static final String TABLE_NAME = "log_sync";
+    public static abstract class TableSyncSchemaVersion implements BaseColumns {
+        public static final String TABLE_NAME = "sync_schema_version";
 
         public static final String COLUMN_VERSION_DB = "version_db";
         public static final String COLUMN_SYNC_DATE = "sync_date";
+    }
+
+    public static abstract class TableSyncSchema implements BaseColumns {
+        public static final String TABLE_NAME = "sync_schema";
+
+        public static final String COLUMN_TABLE_NAME = "table_name";
+        public static final String COLUMN_SYNC_TOKEN = "sync_token";
+        public static final String COLUMN_SYNC_SCHEMA_VERSION_KEY = "sync_schema_version_key";
     }
 }

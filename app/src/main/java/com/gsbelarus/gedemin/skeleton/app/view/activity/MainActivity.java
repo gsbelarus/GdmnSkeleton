@@ -11,8 +11,9 @@ import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
 import com.gsbelarus.gedemin.skeleton.base.view.BaseActivity;
 import com.gsbelarus.gedemin.skeleton.core.util.LogUtil;
 
-
 public class MainActivity extends BaseActivity {
+
+    private MainRecyclerCursorFragment fragment;
 
     /**
      * Сonfiguration
@@ -33,10 +34,6 @@ public class MainActivity extends BaseActivity {
     protected Integer getToolbarIdResource() {
         return R.id.toolbar;
     }
-
-
-    private MainRecyclerCursorFragment fragment;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,8 +66,10 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
-    protected void handleSavedInstanceState(@NonNull Bundle savedInstanceState) {}
+    protected void handleSavedInstanceState(@NonNull Bundle savedInstanceState) {
+    }
 
     @Override
-    protected void handleIntentExtras(@NonNull Bundle extras) {}
+    protected void handleIntentExtras(@NonNull Bundle extras) {
+    }
 }

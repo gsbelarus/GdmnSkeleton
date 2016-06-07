@@ -15,15 +15,10 @@ import org.apache.olingo.commons.api.edm.EdmProperty;
 import org.apache.olingo.commons.api.edm.EdmType;
 import org.apache.olingo.commons.api.edm.constants.EdmTypeKind;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 import java.util.UUID;
 
 public class TypeProvider {
-
-    private static final String FORMAT_ODATA_DATA_OFFSET = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
     private static byte[] parseString(String strOfBytes) {
         String[] bytesString = strOfBytes.split(" ");
@@ -76,7 +71,7 @@ public class TypeProvider {
     }
 
     public static ContentValues putProperty(ClientProperty property, ContentValues cv) throws UnsupportedDataTypeException {
-        if (property.getPrimitiveValue() != null) {
+        if (property.hasPrimitiveValue()) {
             EdmPrimitiveType edmType = property.getPrimitiveValue().getType();
             switch (EdmPrimitiveTypeKind.valueOfFQN(edmType.getFullQualifiedName())) {
                 case String:
@@ -101,12 +96,7 @@ public class TypeProvider {
                     return cv;
                 case Date:
                 case DateTimeOffset:
-                    Date date = null;
-                    try {
-                        date = new SimpleDateFormat(FORMAT_ODATA_DATA_OFFSET, Locale.getDefault()).parse(property.getValue().toString());
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
+                    Date date = (Date) property.getPrimitiveValue().toValue();
                     cv.put(property.getName(), CoreDatabaseManager.getDateTime(date));
                     return cv;
             }

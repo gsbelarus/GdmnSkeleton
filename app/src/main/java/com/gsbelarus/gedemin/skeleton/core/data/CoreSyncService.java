@@ -1,4 +1,4 @@
-package com.gsbelarus.gedemin.skeleton.core.service;
+package com.gsbelarus.gedemin.skeleton.core.data;
 
 import android.content.ContentValues;
 import android.content.Intent;
@@ -8,38 +8,46 @@ import android.support.annotation.NonNull;
 import com.google.gson.Gson;
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
 import com.gsbelarus.gedemin.skeleton.core.UnsupportedDataTypeException;
-import com.gsbelarus.gedemin.skeleton.core.data.CoreContract;
-import com.gsbelarus.gedemin.skeleton.core.data.CoreDatabaseManager;
-import com.gsbelarus.gedemin.skeleton.core.data.TypeProvider;
 import com.gsbelarus.gedemin.skeleton.core.util.LogUtil;
 
 import org.apache.olingo.client.api.ODataClient;
 import org.apache.olingo.client.api.communication.request.cud.ODataEntityCreateRequest;
 import org.apache.olingo.client.api.communication.response.ODataDeleteResponse;
+import org.apache.olingo.client.api.communication.response.ODataRetrieveResponse;
+import org.apache.olingo.client.api.domain.ClientDeletedEntity;
+import org.apache.olingo.client.api.domain.ClientDelta;
+import org.apache.olingo.client.api.domain.ClientDeltaLink;
 import org.apache.olingo.client.api.domain.ClientEntity;
 import org.apache.olingo.client.api.domain.ClientEntitySet;
-import org.apache.olingo.client.api.domain.ClientEntitySetIterator;
 import org.apache.olingo.client.api.domain.ClientProperty;
 import org.apache.olingo.client.core.ODataClientFactory;
 import org.apache.olingo.commons.api.edm.Edm;
 import org.apache.olingo.commons.api.edm.EdmEntitySet;
 import org.apache.olingo.commons.api.edm.EdmEntityType;
+import org.apache.olingo.commons.api.edm.EdmKeyPropertyRef;
+import org.apache.olingo.commons.api.edm.EdmPrimitiveTypeKind;
 import org.apache.olingo.commons.api.edm.EdmProperty;
 import org.apache.olingo.commons.api.edm.EdmSchema;
 import org.apache.olingo.commons.api.edm.FullQualifiedName;
 import org.apache.olingo.commons.api.format.ODataFormat;
+import org.apache.olingo.commons.api.http.HttpMethod;
 import org.apache.olingo.commons.api.http.HttpStatusCode;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public abstract class CoreSyncService extends BaseSyncService implements CoreDatabaseManager.Callback {
+
+    private static final String HEADER_DATABASE_VERSION = "Database-Version";
+    private static final int DEFAULT_SCHEMA_VERSION = 36;
 
     private String url;
     private String namespace;
@@ -81,18 +89,21 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
         boolean isSuccessful = false;
         databaseManager.beginTransactionNonExclusive();
         try {
-            int serverVersion = 13;
-            databaseManager.setVersion(serverVersion, this);
 
-            Edm edm = oDataClient.getRetrieveRequestFactory().getMetadataRequest(url).execute().getBody();
+            ODataRetrieveResponse<Edm> metadataResponse = oDataClient.getRetrieveRequestFactory().getMetadataRequest(url).execute();
+            Map<String, String> tokens = databaseManager.setVersion(getDatabaseVersion(metadataResponse), this);
 
-            pullData(edm);
+            pullData(metadataResponse.getBody(), tokens);
             publishProcess(100, 50);
 
-            pushDeletedData();
-            pushUpdatedData(edm);
-            pushInsertedData(edm);
-//            pullData(edm);
+            try {
+                pushDeletedData();
+                pushUpdatedData(metadataResponse.getBody());
+                pushInsertedData(metadataResponse.getBody());
+//                startSync(getApplicationContext(), this.getClass(), TypeTask.FOREGROUND);
+            } catch (Exception e) {
+                LogUtil.d(e.getMessage());
+            }
 
             databaseManager.setTransactionSuccessful();
             isSuccessful = true;
@@ -137,59 +148,95 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
     private void createDatabase(Edm metadata) {
         for (EdmEntitySet edmEntitySet : metadata.getSchema(namespace).getEntityContainer().getEntitySets()) {
             EdmEntityType edmEntityType = metadata.getEntityType(edmEntitySet.getEntityType().getFullQualifiedName());
-            if (edmEntityType.getKeyPropertyRefs().size() > 1)
-                throw new RuntimeException("more then 1 primary key");
 
-            Map<String, String> columns = new LinkedHashMap<>();
-            for (String propertyName : edmEntityType.getPropertyNames()) {
-                EdmProperty edmProperty = edmEntityType.getStructuralProperty(propertyName);
-                try {
-                    columns.put(edmProperty.getName(),
-                            TypeProvider.convertToSqlStorageType(edmProperty.getType()) +
-                                    TypeProvider.getCheck(edmProperty) +
-                                    TypeProvider.getNullable(edmProperty) +
-                                    TypeProvider.getDefaultValue(edmProperty));
-
-                } catch (UnsupportedDataTypeException e) {
-                    LogUtil.d(e.getMessage());
-                }
-            }
-            databaseManager.createTable(edmEntitySet.getName(), columns, edmEntityType.getKeyPropertyRefs().get(0).getName());
+            databaseManager.createTable(edmEntitySet.getName(), createTableColumns(edmEntityType), edmEntityType.getKeyPropertyRefs().get(0).getName());
         }
     }
 
-    private void pullData(Edm metadata) {
+    private Map<String, String> createTableColumns(EdmEntityType edmEntityType) {
+        if (edmEntityType.getKeyPropertyRefs().size() > 1)
+            throw new RuntimeException("more then 1 primary key");
+
+        EdmKeyPropertyRef edmKeyPropertyRef = edmEntityType.getKeyPropertyRefs().get(0);
+        if (!edmKeyPropertyRef.getProperty().isPrimitive())
+            throw new RuntimeException("primary key must be primitive");
+
+        EdmPrimitiveTypeKind type = EdmPrimitiveTypeKind.valueOfFQN(edmKeyPropertyRef.getProperty().getType().getFullQualifiedName());
+        if (type != EdmPrimitiveTypeKind.Int16 && type != EdmPrimitiveTypeKind.Int32 && type != EdmPrimitiveTypeKind.Int64) {
+//                throw new RuntimeException("primary key must be int"); TODO
+        }
+
+        Map<String, String> columns = new LinkedHashMap<>();
+        for (String propertyName : edmEntityType.getPropertyNames()) {
+            EdmProperty edmProperty = edmEntityType.getStructuralProperty(propertyName);
+            try {
+                columns.put(edmProperty.getName(),
+                        TypeProvider.convertToSqlStorageType(edmProperty.getType()) +
+                                TypeProvider.getCheck(edmProperty) +
+                                TypeProvider.getNullable(edmProperty) +
+                                TypeProvider.getDefaultValue(edmProperty));
+
+            } catch (UnsupportedDataTypeException e) {
+                LogUtil.d(e.getMessage());
+            }
+        }
+        if (edmEntityType.getBaseType() != null) {
+            columns.putAll(createTableColumns(edmEntityType.getBaseType()));
+        }
+        return columns;
+    }
+
+    private void pullData(Edm metadata, Map<String, String> tokens) {
         for (EdmEntitySet edmEntitySet : getSchema(metadata).getEntityContainer().getEntitySets()) {
             EdmEntityType edmEntityType = metadata.getEntityType(edmEntitySet.getEntityType().getFullQualifiedName());
             String entitySetName = edmEntitySet.getName();
             String entitySetKey = edmEntityType.getKeyPropertyRefs().get(0).getName();
-            ClientEntitySetIterator<ClientEntitySet, ClientEntity> entitySetIterator =
-                    oDataClient.getRetrieveRequestFactory().getEntitySetIteratorRequest(
-                            oDataClient.newURIBuilder(url).appendEntitySetSegment(entitySetName).build()
-                    ).execute().getBody();
 
             databaseManager.dropLogChangesTriggers(entitySetName);
             databaseManager.createLogChangesSyncTriggers(entitySetName, entitySetKey);
-            while (entitySetIterator.hasNext()) {
-                ClientEntity entity = entitySetIterator.next();
-                ContentValues cv = new ContentValues();
-                for (ClientProperty property : entity.getProperties()) {
-                    try {
-                        if (property.getValue().isPrimitive() && property.getPrimitiveValue() != null) {
-                            TypeProvider.putProperty(property, cv);
-                        }
-                    } catch (UnsupportedDataTypeException e) {
-                        LogUtil.d(e.getMessage());
-                    }
+            if (tokens.get(entitySetName) == null) {
+                ClientEntitySet entitySet = oDataClient.getRetrieveRequestFactory().getEntitySetRequest(
+                        oDataClient.newURIBuilder(url).appendEntitySetSegment(entitySetName).build()
+                ).execute().getBody();
+                if (entitySet.getDeltaLink() != null) {
+                    databaseManager.putToken(entitySetName, entitySet.getDeltaLink().toString());
                 }
-                onHandleRow(entitySetName, cv);
-                if (databaseManager.insert(entitySetName, null, cv) == null) {
-//                            LogUtil.d(databaseManager.update(entitySetName, cv, entitySetKey + "=?",
-//                                    new String[]{cv.getAsString(entitySetKey)}));
+
+                for (ClientEntity entity : entitySet.getEntities()) {
+                    storeEntity(entitySetName, entity);
+                }
+            } else {
+                ClientDelta delta = oDataClient.getRetrieveRequestFactory().getDeltaRequest(URI.create(tokens.get(entitySetName))).execute().getBody();
+                if (delta.getDeltaLink() != null) {
+                    databaseManager.putToken(entitySetName, delta.getDeltaLink().toString());
+                }
+                for (ClientDeltaLink link : delta.getAddedLinks()) {
+                    storeEntity(entitySetName, oDataClient.getRetrieveRequestFactory().getEntityRequest(link.getSource()).execute().getBody());
+                }
+                for (ClientDeletedEntity deletedEntity : delta.getDeletedEntities()) {
+//                    deletedEntity.getId()                 TODO удаление, обновление
                 }
             }
             databaseManager.dropLogChangesSyncTriggers(entitySetName);
             databaseManager.createLogChangesTriggers(entitySetName, entitySetKey);
+        }
+    }
+
+    private void storeEntity(String entitySetName, ClientEntity entity) {
+        ContentValues cv = new ContentValues();
+        for (ClientProperty property : entity.getProperties()) {
+            try {
+                if (property.getValue().isPrimitive() && property.getPrimitiveValue() != null) {
+                    TypeProvider.putProperty(property, cv);
+                }
+            } catch (UnsupportedDataTypeException e) {
+                LogUtil.d(e.getMessage());
+            }
+        }
+        onHandleRow(entitySetName, cv);
+        if (databaseManager.insert(entitySetName, null, cv) == null) {
+//                            LogUtil.d(databaseManager.update(entitySetName, cv, entitySetKey + "=?",
+//                                    new String[]{cv.getAsString(entitySetKey)}));
         }
     }
 
@@ -211,21 +258,27 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
 
                 Map<String, String> values = new LinkedHashMap<>();
                 for (ClientProperty property : properties) {
-                    values.put(property.getName(), property.getValue().toString());
+                    String value = null;
+                    if (property.getValue().asPrimitive().toValue() != null) {
+                        value = property.getValue().toString();
+                    }
+                    values.put(property.getName(), value);
                 }
+                values.put("@odata.type", "#" + entityType.getFullQualifiedName().toString());
                 prepareCallback.onPrepare(tableEntry.getKey(), entityType.getKeyPropertyRefs().get(0).getName(), row.get(BaseColumns._ID), values);
             }
         }
     }
 
-    private void pushInsertedData(Edm metadata) {
+    private void pushInsertedData(final Edm metadata) {
         prepareChangedData(metadata, getDatabaseManager().getInsertedRows(), new PrepareCallback() {
             @Override
             public void onPrepare(final String tableName, final String externalKeyName, final String internalKey,
                                   final Map<String, String> values) {
-                sendData(tableName, "POST", values, new HttpCallback() {
+                sendData(tableName, HttpMethod.POST.name(), values, new HttpCallback() {
                     @Override
                     public void onResponse(int responseCode) {
+                        LogUtil.d("insert", HttpStatusCode.fromStatusCode(responseCode));
                         if (responseCode == HttpURLConnection.HTTP_CREATED) {
 //                            ClientEntity entity = oDataClient.getObjectFactory().newEntity(entityType.getFullQualifiedName());
 //                            entity.getProperties().addAll(properties);
@@ -269,7 +322,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
             @Override
             public void onPrepare(final String tableName, final String externalKeyName, final String internalKey,
                                   final Map<String, String> values) {
-                sendData(tableName, "PATCH", values, new HttpCallback() {
+                sendData(tableName + "(" + values.get(externalKeyName) + ")", HttpMethod.PATCH.name(), values, new HttpCallback() {
                     @Override
                     public void onResponse(int responseCode) {
                         if (responseCode == HttpURLConnection.HTTP_NO_CONTENT) {
@@ -286,7 +339,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
     }
 
     private void pushDeletedData() {
-        for (Map.Entry<String, List<Object>> tableEntry : getDatabaseManager().getDeletedRowsId().entrySet()) {
+        for (Map.Entry<String, List<Long>> tableEntry : getDatabaseManager().getDeletedRowsId().entrySet()) {
             LogUtil.d("delete", tableEntry);
             for (Object value : tableEntry.getValue()) {
                 ODataDeleteResponse deleteResponse = oDataClient.getCUDRequestFactory().getDeleteRequest(
@@ -308,6 +361,13 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
         EdmSchema edmSchema = metadata.getSchema(namespace);
         if (edmSchema == null) throw new RuntimeException("schema not found");
         return edmSchema;
+    }
+
+    private int getDatabaseVersion(ODataRetrieveResponse<Edm> metadataResponse) {
+        Collection<String> versions = metadataResponse.getHeader(HEADER_DATABASE_VERSION);
+        if (versions != null && !versions.isEmpty())
+            return Integer.valueOf(versions.iterator().next());
+        return DEFAULT_SCHEMA_VERSION;
     }
 
     public CoreDatabaseManager getDatabaseManager() {
