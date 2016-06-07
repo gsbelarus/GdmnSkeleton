@@ -1,4 +1,4 @@
-package com.gsbelarus.gedemin.skeleton.core;
+package com.gsbelarus.gedemin.skeleton.core.view.fragment;
 
 import android.app.Activity;
 import android.content.ContentValues;
@@ -17,6 +17,9 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.gsbelarus.gedemin.skeleton.R;
+import com.gsbelarus.gedemin.skeleton.core.view.TextWatcherAdapter;
+import com.gsbelarus.gedemin.skeleton.core.data.CoreContract;
+import com.gsbelarus.gedemin.skeleton.core.util.CoreUtils;
 
 
 public class CoreEditCursorFragment extends CoreDetailCursorFragment {

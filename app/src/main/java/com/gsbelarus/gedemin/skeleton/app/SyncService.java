@@ -4,8 +4,8 @@ import android.app.Notification;
 import android.content.ContentValues;
 import android.support.annotation.NonNull;
 
-import com.gsbelarus.gedemin.skeleton.core.CoreDatabaseManager;
-import com.gsbelarus.gedemin.skeleton.core.CoreSyncService;
+import com.gsbelarus.gedemin.skeleton.core.data.CoreDatabaseManager;
+import com.gsbelarus.gedemin.skeleton.core.service.CoreSyncService;
 
 public class SyncService extends CoreSyncService {
 

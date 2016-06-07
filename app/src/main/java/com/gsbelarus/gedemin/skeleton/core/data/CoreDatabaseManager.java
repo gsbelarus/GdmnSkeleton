@@ -1,4 +1,4 @@
-package com.gsbelarus.gedemin.skeleton.core;
+package com.gsbelarus.gedemin.skeleton.core.data;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -14,8 +14,9 @@ import com.gsbelarus.gedemin.skeleton.base.data.BaseDatabaseManager;
 import com.gsbelarus.gedemin.skeleton.base.data.BasicDatabaseOpenHelper;
 import com.gsbelarus.gedemin.skeleton.base.data.SQLiteDataType;
 import com.gsbelarus.gedemin.skeleton.base.data.SQLiteDataType.SQLiteStorageTypes;
-import com.gsbelarus.gedemin.skeleton.core.CoreContract.TableLogChanges;
-import com.gsbelarus.gedemin.skeleton.core.CoreContract.TableLogSync;
+import com.gsbelarus.gedemin.skeleton.core.data.CoreContract.TableLogChanges;
+import com.gsbelarus.gedemin.skeleton.core.data.CoreContract.TableLogSync;
+import com.gsbelarus.gedemin.skeleton.core.util.LogUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -233,7 +234,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
         return version;
     }
 
-    protected void setVersion(int version, @NonNull Callback callback) {
+    public void setVersion(int version, @NonNull Callback callback) {
         LogUtil.d("local db version: " + getVersion(), "server db version: " + version);
         if (getVersion() < version) {
             if (getVersion() == 1) callback.onCreateDatabase(this);

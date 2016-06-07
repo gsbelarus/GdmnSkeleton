@@ -4,7 +4,7 @@ import android.support.annotation.NonNull;
 
 import com.gsbelarus.gedemin.skeleton.base.BaseApplication;
 
-
+//TODO AppCrashHandler
 public class App extends BaseApplication {
 
     @NonNull

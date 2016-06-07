@@ -21,7 +21,12 @@ import java.util.Map;
 
 public abstract class BaseDatabaseManager {
 
+    private final String TAG = this.getClass().getCanonicalName();
+
     //private static BaseDatabaseManager instance = null; //TODO singleton factory
+
+    private static String CONTENT_URI_AUTHORITY = "gdmn";
+    private static String CONTENT_URI_SCHEME = "content";
 
     protected int dbVersion;
     protected String dbName;
@@ -110,11 +115,11 @@ public abstract class BaseDatabaseManager {
         return db.getVersion();
     }
 
-    public Cursor setNotifier(Cursor cursor) {  //TODO
+    public Cursor setNotifier(Cursor cursor) {
         cursor.setNotificationUri(appContext.getContentResolver(),
                 new Uri.Builder()
-                        .scheme("content")
-                        .authority("gdmn")
+                        .scheme(CONTENT_URI_SCHEME)
+                        .authority(CONTENT_URI_AUTHORITY)
                         .build());
         return cursor;
     }
@@ -122,8 +127,8 @@ public abstract class BaseDatabaseManager {
     public void notifyDataChanged() {
         appContext.getContentResolver().notifyChange(
                 new Uri.Builder()
-                        .scheme("content")
-                        .authority("gdmn")
+                        .scheme(CONTENT_URI_SCHEME)
+                        .authority(CONTENT_URI_AUTHORITY)
                         .build(),
                 null, false);
     }
@@ -134,7 +139,7 @@ public abstract class BaseDatabaseManager {
         try {
             return setNotifier(db.query(tableName, columnNames, selection, selectionArgs, null, null, order));
         } catch (Exception e) {
-            Log.e("BaseDatabaseManager", "Error selecting: " + SQLiteQueryBuilder.buildQueryString(false, tableName, columnNames, selection, null, null, order, null), e);
+            Log.e(TAG, "Error selecting: " + SQLiteQueryBuilder.buildQueryString(false, tableName, columnNames, selection, null, null, order, null), e);
             return null;
         }
     }
@@ -145,7 +150,7 @@ public abstract class BaseDatabaseManager {
             return db.insertOrThrow(tableName, nullColumnHack, contentValues);
 
         } catch (SQLException e) {
-            Log.e("BaseDatabaseManager", "Error inserting " + tableName + ": " + contentValues, e);
+            Log.e(TAG, "Error inserting " + tableName + ": " + contentValues, e);
             return null;
         }
     }
@@ -156,7 +161,7 @@ public abstract class BaseDatabaseManager {
             return db.update(tableName, contentValues, whereClause, whereArgs);
 
         } catch (Exception e) {
-            Log.e("BaseDatabaseManager", "Error updating " + tableName + ": " + contentValues, e);
+            Log.e(TAG, "Error updating " + tableName + ": " + contentValues, e);
             return null;
         }
     }
@@ -167,7 +172,7 @@ public abstract class BaseDatabaseManager {
             return db.replaceOrThrow(tableName, nullColumnHack, initialValues);
 
         } catch (SQLException e) {
-            Log.e("BaseDatabaseManager", "Error replacing " + tableName + ": " + initialValues, e);
+            Log.e(TAG, "Error replacing " + tableName + ": " + initialValues, e);
             return null;
         }
     }
@@ -178,7 +183,7 @@ public abstract class BaseDatabaseManager {
             return db.delete(tableName, whereClause, whereArgs);
 
         } catch (SQLException e) {
-            Log.e("BaseDatabaseManager", "Error deleting: DELETE FROM " + tableName + (!TextUtils.isEmpty(whereClause) ? " WHERE " + whereClause : ""), e);
+            Log.e(TAG, "Error deleting: DELETE FROM " + tableName + (!TextUtils.isEmpty(whereClause) ? " WHERE " + whereClause : ""), e);
             return null;
         }
     }

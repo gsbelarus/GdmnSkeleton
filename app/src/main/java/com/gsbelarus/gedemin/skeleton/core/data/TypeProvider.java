@@ -1,9 +1,10 @@
-package com.gsbelarus.gedemin.skeleton.core;
+package com.gsbelarus.gedemin.skeleton.core.data;
 
 import android.content.ContentValues;
 import android.support.annotation.NonNull;
 
 import com.gsbelarus.gedemin.skeleton.base.data.SQLiteDataType.SQLiteStorageTypes;
+import com.gsbelarus.gedemin.skeleton.core.UnsupportedDataTypeException;
 
 import org.apache.olingo.client.api.ODataClient;
 import org.apache.olingo.client.api.domain.ClientPrimitiveValue;

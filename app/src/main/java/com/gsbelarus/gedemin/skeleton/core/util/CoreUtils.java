@@ -1,4 +1,4 @@
-package com.gsbelarus.gedemin.skeleton.core;
+package com.gsbelarus.gedemin.skeleton.core.util;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -23,6 +23,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.gsbelarus.gedemin.skeleton.R;
+import com.gsbelarus.gedemin.skeleton.core.view.TextWatcherAdapter;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

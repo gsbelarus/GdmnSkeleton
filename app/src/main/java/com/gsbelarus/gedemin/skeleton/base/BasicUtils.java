@@ -21,7 +21,7 @@ public class BasicUtils {
         bindViews(cursor, from, to, parentView);
     }
 
-    public static void bindViews(@Nullable Cursor cursor, final int[] from, final int[] to, View parentView) { //TODO add labels
+    public static void bindViews(@Nullable Cursor cursor, final int[] from, final int[] to, View parentView) {
         if (cursor == null) return;
         final int count = to.length;
 

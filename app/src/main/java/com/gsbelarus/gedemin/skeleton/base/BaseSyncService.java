@@ -13,7 +13,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 
 import com.gsbelarus.gedemin.skeleton.R;
-import com.gsbelarus.gedemin.skeleton.core.LogUtil;
+import com.gsbelarus.gedemin.skeleton.core.util.LogUtil;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- необходим для FAB behavior -->
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -21,16 +23,15 @@
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab_add"
-            style="@style/FabStyle"
-            app:srcCompat="@drawable/ic_plus_24dp"
-            app:fabSize="normal"
             android:layout_gravity="end|bottom"
             app:layout_anchor="@id/swipe_refresh_layout"
             app:layout_anchorGravity="bottom|right|end"
+            app:useCompatPadding="true"
+            style="@style/FabStyle"
+            app:fabSize="normal"
             android:clickable="true"
-            app:useCompatPadding="true" />
-
-        <!--app:layout_behavior="com.gsbelarus.gedemin.skeleton.app.view.component.ScrollAwareFABBehavior"-->
+            app:srcCompat="@drawable/ic_plus_24dp"
+            app:layout_behavior="com.gsbelarus.gedemin.skeleton.app.view.component.ScrollAwareFABBehavior"/>
 
     </android.support.design.widget.CoordinatorLayout>
 

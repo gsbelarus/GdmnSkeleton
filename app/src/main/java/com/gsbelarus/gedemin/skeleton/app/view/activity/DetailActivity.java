@@ -10,7 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.base.view.BaseActivity;
 import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseDetailCursorFragment;
-import com.gsbelarus.gedemin.skeleton.core.CoreDetailCursorFragment;
+import com.gsbelarus.gedemin.skeleton.core.view.fragment.CoreDetailCursorFragment;
 
 
 public class DetailActivity extends BaseActivity {
@@ -26,7 +26,7 @@ public class DetailActivity extends BaseActivity {
 
     @Override
     protected int getLayoutResource() {
-        return R.layout.basic_activity;
+        return R.layout.app_basic_activity;
     }
 
     @Nullable

@@ -1,5 +1,7 @@
 package com.gsbelarus.gedemin.skeleton.base.data;
 
+import com.gsbelarus.gedemin.skeleton.core.UnsupportedDataTypeException;
+
 public class SQLiteDataType {
 
     public static String getDataTypeString(int columnType) {
@@ -32,7 +34,7 @@ public class SQLiteDataType {
                 case BLOB:
                     return name();
                 default:
-                    return "[unknown type]"; // TODO exception
+                    throw new UnsupportedDataTypeException(String.valueOf(ordinal()));
             }
         }
     }

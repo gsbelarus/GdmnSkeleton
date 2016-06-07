@@ -9,16 +9,16 @@
         android:layout_height="wrap_content">
 
         <include
-            layout="@layout/include_core_recycler_item_label"
+            layout="@layout/core_include_recycler_item_label"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:layout_marginRight="16dp" />
 
         <TextView
             android:id="@+id/core_recycler_item_value"
-            android:textSize="16sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textSize="16sp"
             android:textColor="?android:textColorPrimary"
             tools:text="value" />
 

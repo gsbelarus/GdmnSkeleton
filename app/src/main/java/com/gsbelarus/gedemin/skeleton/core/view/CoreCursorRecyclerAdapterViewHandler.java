@@ -1,4 +1,4 @@
-package com.gsbelarus.gedemin.skeleton.core;
+package com.gsbelarus.gedemin.skeleton.core.view;
 
 import android.database.Cursor;
 import android.support.annotation.NonNull;
@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 
 import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.viewhandler.CursorRecyclerAdapterViewHandler;
+import com.gsbelarus.gedemin.skeleton.core.util.CoreUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

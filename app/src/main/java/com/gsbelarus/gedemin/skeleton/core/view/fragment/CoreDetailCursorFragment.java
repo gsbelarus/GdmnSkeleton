@@ -1,4 +1,4 @@
-package com.gsbelarus.gedemin.skeleton.core;
+package com.gsbelarus.gedemin.skeleton.core.view.fragment;
 
 import android.database.Cursor;
 import android.os.Bundle;
@@ -17,6 +17,9 @@ import com.gsbelarus.gedemin.skeleton.app.view.activity.EditActivity;
 import com.gsbelarus.gedemin.skeleton.base.data.BaseDatabaseManager;
 import com.gsbelarus.gedemin.skeleton.base.data.loader.BasicTableCursorLoader;
 import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseDetailCursorFragment;
+import com.gsbelarus.gedemin.skeleton.core.data.CoreContract;
+import com.gsbelarus.gedemin.skeleton.core.data.CoreDatabaseManager;
+import com.gsbelarus.gedemin.skeleton.core.util.CoreUtils;
 
 import java.util.LinkedHashMap;
 

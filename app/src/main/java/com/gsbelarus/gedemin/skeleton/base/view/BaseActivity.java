@@ -17,7 +17,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
-import com.gsbelarus.gedemin.skeleton.core.LogUtil;
+import com.gsbelarus.gedemin.skeleton.core.util.LogUtil;
 
 
 abstract public class BaseActivity extends AppCompatActivity {
@@ -121,7 +121,7 @@ abstract public class BaseActivity extends AppCompatActivity {
 //        else
 //            contentFrame.addView(appBarLayout);
 
-        if (getToolbarIdResource() != null) { //TODO не проверять - ex
+        if (getToolbarIdResource() != null) {
             toolbar = (Toolbar) findViewById(getToolbarIdResource());
             setSupportActionBar(toolbar);
         }

@@ -6,8 +6,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
-import com.gsbelarus.gedemin.skeleton.core.CoreDetailCursorFragment;
-import com.gsbelarus.gedemin.skeleton.core.CoreEditCursorFragment;
+import com.gsbelarus.gedemin.skeleton.core.view.fragment.CoreDetailCursorFragment;
+import com.gsbelarus.gedemin.skeleton.core.view.fragment.CoreEditCursorFragment;
 
 
 public class EditActivity extends DetailActivity {

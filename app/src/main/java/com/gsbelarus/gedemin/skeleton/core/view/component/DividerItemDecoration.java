@@ -1,4 +1,4 @@
-package com.gsbelarus.gedemin.skeleton.app.view.component;
+package com.gsbelarus.gedemin.skeleton.core.view.component;
 
 /*
  * Copyright (C) 2014 The Android Open Source Project

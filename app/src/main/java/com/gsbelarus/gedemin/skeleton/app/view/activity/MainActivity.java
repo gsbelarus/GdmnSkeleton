@@ -9,7 +9,7 @@ import com.gsbelarus.gedemin.skeleton.app.SyncService;
 import com.gsbelarus.gedemin.skeleton.app.view.fragment.MainRecyclerCursorFragment;
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
 import com.gsbelarus.gedemin.skeleton.base.view.BaseActivity;
-import com.gsbelarus.gedemin.skeleton.core.LogUtil;
+import com.gsbelarus.gedemin.skeleton.core.util.LogUtil;
 
 
 public class MainActivity extends BaseActivity {
@@ -25,7 +25,7 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected int getLayoutResource() {
-        return R.layout.basic_activity;
+        return R.layout.app_basic_activity;
     }
 
     @Nullable
@@ -50,10 +50,10 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public boolean onFinishSync(@Nullable String error) { //TODO не всегда срабатывает
+            public boolean onFinishSync(@Nullable String error) {
                 LogUtil.d();
 
-                fragment.disableLayoutRefreshing();
+                fragment.disableLayoutRefreshing(); //TODO  onPause
 
                 return super.onFinishSync(error);
             }

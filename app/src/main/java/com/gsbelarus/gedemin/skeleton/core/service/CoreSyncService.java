@@ -1,4 +1,4 @@
-package com.gsbelarus.gedemin.skeleton.core;
+package com.gsbelarus.gedemin.skeleton.core.service;
 
 import android.content.ContentValues;
 import android.content.Intent;
@@ -7,6 +7,11 @@ import android.support.annotation.NonNull;
 
 import com.google.gson.Gson;
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
+import com.gsbelarus.gedemin.skeleton.core.UnsupportedDataTypeException;
+import com.gsbelarus.gedemin.skeleton.core.data.CoreContract;
+import com.gsbelarus.gedemin.skeleton.core.data.CoreDatabaseManager;
+import com.gsbelarus.gedemin.skeleton.core.data.TypeProvider;
+import com.gsbelarus.gedemin.skeleton.core.util.LogUtil;
 
 import org.apache.olingo.client.api.ODataClient;
 import org.apache.olingo.client.api.communication.request.cud.ODataEntityCreateRequest;
