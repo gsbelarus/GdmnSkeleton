@@ -19,7 +19,6 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.FilterQueryProvider;
 
 import com.gsbelarus.gedemin.skeleton.R;
-import com.gsbelarus.gedemin.skeleton.core.view.component.DividerItemDecoration;
 import com.gsbelarus.gedemin.skeleton.base.data.loader.BasicTableCursorLoader;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.BasicCursorRecyclerViewAdapter;
 import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseRecyclerCursorFragment;
@@ -27,6 +26,8 @@ import com.gsbelarus.gedemin.skeleton.core.data.CoreContract;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreDatabaseManager;
 import com.gsbelarus.gedemin.skeleton.core.view.CoreCursorRecyclerAdapterViewHandler;
 import com.gsbelarus.gedemin.skeleton.core.view.CoreCursorRecyclerItemViewTypeModel;
+import com.gsbelarus.gedemin.skeleton.core.view.component.DividerItemDecoration;
+import com.gsbelarus.gedemin.skeleton.core.view.component.EmptyRecyclerView;
 
 import java.util.Arrays;
 
@@ -65,8 +66,9 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
 
     @Override
     protected void doOnCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
-        RecyclerView rv = (RecyclerView) rootView.findViewById(R.id.recycler_view);
-        setupRecyclerView(rv);
+
+        EmptyRecyclerView emptyRecyclerView = (EmptyRecyclerView) rootView.findViewById(R.id.recycler_view);
+        setupRecyclerView(emptyRecyclerView, rootView);
 
         rootView.setFocusableInTouchMode(true);
         rootView.setOnKeyListener(
@@ -83,8 +85,8 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
     }
 
     @Override
-    protected void setupRecyclerView(RecyclerView recyclerView) {
-        super.setupRecyclerView(recyclerView);
+    protected void setupRecyclerView(EmptyRecyclerView recyclerView, ViewGroup rootView) {
+        super.setupRecyclerView(recyclerView, rootView);
 
 //        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 //            @Override
@@ -102,6 +104,7 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
 //        }).attachToRecyclerView(recyclerView);
         recyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
         recyclerView.setHasFixedSize(true);
+        recyclerView.setEmptyView(rootView);
     }
 
     @Override
