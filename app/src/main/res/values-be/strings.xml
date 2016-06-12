@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">GdmnSkeleton</string>
+    <string name="gdmsgs_is_empty">Паведамленняў няма</string>
+    <string name="auth_button">Аўтарызацыя</string>
+
+</resources>

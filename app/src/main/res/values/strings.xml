@@ -2,4 +2,11 @@
     <string name="app_name">GdmnSkeleton</string>
     <string name="gdmsgs_is_empty">Сообщений нет</string>
     <string name="auth_button">Авторизация</string>
+
+    <string-array name="language_list_values" translatable="false">
+        <item>ru</item>
+        <item>be</item>
+        <item>en</item>
+    </string-array>
+
 </resources>

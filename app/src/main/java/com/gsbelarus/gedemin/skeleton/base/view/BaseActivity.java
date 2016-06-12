@@ -17,6 +17,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
+import com.gsbelarus.gedemin.skeleton.core.util.CrashHandler;
 import com.gsbelarus.gedemin.skeleton.core.util.LogUtil;
 
 
@@ -64,6 +65,7 @@ abstract public class BaseActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Thread.setDefaultUncaughtExceptionHandler(new CrashHandler(this));
         super.onCreate(savedInstanceState);
 
         setContentView(getLayoutResource());
