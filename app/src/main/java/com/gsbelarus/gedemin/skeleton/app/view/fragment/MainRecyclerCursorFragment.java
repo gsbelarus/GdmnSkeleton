@@ -51,8 +51,8 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
     }
 
     @Override
-    protected void doOnCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
-        super.doOnCreateView(rootView, savedInstanceState);
+    protected void onCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
+        super.onCreateView(rootView, savedInstanceState);
 
         FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab_add);
         fab.setOnClickListener(this);

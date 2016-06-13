@@ -1,7 +1,9 @@
 package com.gsbelarus.gedemin.skeleton.core.view.fragment;
 
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.provider.BaseColumns;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -17,14 +19,16 @@ import com.gsbelarus.gedemin.skeleton.app.view.activity.EditActivity;
 import com.gsbelarus.gedemin.skeleton.base.data.BaseDatabaseManager;
 import com.gsbelarus.gedemin.skeleton.base.data.loader.BasicTableCursorLoader;
 import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseDetailCursorFragment;
+import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseFragment;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreContract;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreDatabaseManager;
 import com.gsbelarus.gedemin.skeleton.core.util.CoreUtils;
+import com.gsbelarus.gedemin.skeleton.core.view.fragment.viewstate.CoreDetailFragmentState;
 
 import java.util.LinkedHashMap;
 
 
-public class CoreDetailCursorFragment extends BaseDetailCursorFragment {
+public class CoreDetailCursorFragment<FRAGMENTSTATE_T extends CoreDetailFragmentState> extends BaseDetailCursorFragment<FRAGMENTSTATE_T> {
 
     private Snackbar snackOnDelete;
     private boolean canRemove;
@@ -46,26 +50,20 @@ public class CoreDetailCursorFragment extends BaseDetailCursorFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        setOriginalFrom(new String[] {
-//                BaseColumns._ID,
-//                "column1_BIGINT",
-//                "column2_CHAR_32767",
-//                "column3_DATE",
-//                "column4_DECIMAL_18_18",
-//                "column5_FLOAT",
-//                "column6_INTEGER",
-//                "column7_NUMERIC_18_18",
-//                "column8_SMALLINT",
-//                "column9_TIME",
-//                "column10_TIMESTAMP",
-//                "column11_VARCHAR_32765"});
-
         setHasOptionsMenu(true);
     }
 
     @Override
-    protected void doOnCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
-        //
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        if (getSavedFragmentState() != null) {
+            canRemove = getSavedFragmentState().canRemove;
+            if (canRemove) {
+                canRemove = false;
+                showDeleteSnack();
+            }
+        }
     }
 
     @Override
@@ -103,45 +101,71 @@ public class CoreDetailCursorFragment extends BaseDetailCursorFragment {
                 startActivity(EditActivity.newStartIntent(getActivity(), getDataId())); //TODO
                 break;
             case R.id.core_action_delete:
-                snackOnDelete = Snackbar.make(getView(), "Запись удалена" + ".", Snackbar.LENGTH_LONG);
-                snackOnDelete.setAction("Отменить", new View.OnClickListener() {
-                            public void onClick(View v) {
-                                getDatabaseManager().cancelTransaction();
-                                canRemove = false;
-                            }
-                        });
-
-                snackOnDelete.getView().addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
-                    @Override
-                    public void onViewAttachedToWindow(View v) {
-                        getDatabaseManager().beginTransaction();
-                        getDatabaseManager().delete(CoreContract.TEST_TABLE, BaseColumns._ID + " = ?", new String[]{String.valueOf(getDataId())});
-
-                        canRemove = true;
-                    }
-
-                    @Override
-                    public void onViewDetachedFromWindow(View v) {
-                        if (canRemove) {
-                            getDatabaseManager().commitTransaction();
-                            canRemove = false;
-
-                            getDatabaseManager().notifyDataChanged();
-                            getActivity().finish();
-                        }
-                    }
-                });
-                snackOnDelete.show();
+                showDeleteSnack();
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
+    private void showDeleteSnack() {
+        snackOnDelete = Snackbar.make(getView(), "Запись удалена" + ".", Snackbar.LENGTH_LONG);
+        snackOnDelete.setAction("Отменить", new View.OnClickListener() {
+            public void onClick(View v) {
+                getDatabaseManager().cancelTransaction();
+                canRemove = false;
+            }
+        });
 
-        if (snackOnDelete != null) snackOnDelete.dismiss();
+        snackOnDelete.setCallback(new Snackbar.Callback() {
+            @Override
+            public void onShown(Snackbar snackbar) {
+                super.onShown(snackbar);
+
+                getDatabaseManager().beginTransaction();
+                getDatabaseManager().delete(CoreContract.TEST_TABLE, BaseColumns._ID + " = ?", new String[]{String.valueOf(getDataId())});
+
+                canRemove = true;
+            }
+
+            @Override
+            public void onDismissed(Snackbar snackbar, int event) {
+                super.onDismissed(snackbar, event);
+
+                if (event != Snackbar.Callback.DISMISS_EVENT_MANUAL && event != Snackbar.Callback.DISMISS_EVENT_CONSECUTIVE) { //TODO  tmp DISMISS_EVENT_CONSECUTIVE
+                    if (canRemove) {
+                        getDatabaseManager().commitTransaction();
+                        canRemove = false;
+
+                        getDatabaseManager().notifyDataChanged();
+                        getActivity().finish();
+                    }
+                } else { /* при смене ориентации DISMISS_EVENT_MANUAL. нигде вручную НЕ ВЫЗЫВАТЬ dismiss - не удалится запись! */
+                    if (canRemove) {
+                        if (getDatabaseManager().inTransaction()) getDatabaseManager().cancelTransaction();
+                    }
+                }
+            }
+        });
+
+        snackOnDelete.show();
+    }
+
+    @Override
+    protected FRAGMENTSTATE_T newInstanceState() {
+        return (FRAGMENTSTATE_T) new CoreDetailFragmentState(this);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        //TODO orientation
+    }
+
+    // accessors tmp
+
+    public boolean isCanRemove() {
+        return canRemove;
     }
 
 }

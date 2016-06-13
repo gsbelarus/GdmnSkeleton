@@ -8,7 +8,7 @@ import android.support.annotation.NonNull;
 import com.google.gson.Gson;
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
 import com.gsbelarus.gedemin.skeleton.core.UnsupportedDataTypeException;
-import com.gsbelarus.gedemin.skeleton.core.util.LogUtil;
+import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 
 import org.apache.olingo.client.api.ODataClient;
 import org.apache.olingo.client.api.communication.request.cud.ODataEntityCreateRequest;
@@ -102,7 +102,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
                 pushInsertedData(metadataResponse.getBody());
 //                startSync(getApplicationContext(), this.getClass(), TypeTask.FOREGROUND);
             } catch (Exception e) {
-                LogUtil.d(e.getMessage());
+                Logger.d(e.getMessage());
             }
 
             databaseManager.setTransactionSuccessful();
@@ -128,19 +128,19 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
         );
         request.setFormat(ODataFormat.APPLICATION_JSON);
         for (String s : request.getHeaderNames())
-            LogUtil.d(s, request.getHeader(s));
-        LogUtil.d(request.execute().getStatusCode());
+            Logger.d(s, request.getHeader(s));
+        Logger.d(request.execute().getStatusCode());
     }
 
     @Override
     public void onCreateDatabase(CoreDatabaseManager coreDatabaseManager) {
-        LogUtil.d();
+        Logger.d();
         createDatabase(oDataClient.getRetrieveRequestFactory().getMetadataRequest(url).execute().getBody());
     }
 
     @Override
     public void onUpgradeDatabase(CoreDatabaseManager coreDatabaseManager, int oldVersion, int newVersion) {
-        LogUtil.d();
+        Logger.d();
         coreDatabaseManager.recreateDatabase();
         onCreateDatabase(coreDatabaseManager);
     }
@@ -177,7 +177,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
                                 TypeProvider.getDefaultValue(edmProperty));
 
             } catch (UnsupportedDataTypeException e) {
-                LogUtil.d(e.getMessage());
+                Logger.d(e.getMessage());
             }
         }
         if (edmEntityType.getBaseType() != null) {
@@ -230,19 +230,19 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
                     TypeProvider.putProperty(property, cv);
                 }
             } catch (UnsupportedDataTypeException e) {
-                LogUtil.d(e.getMessage());
+                Logger.d(e.getMessage());
             }
         }
         onHandleRow(entitySetName, cv);
         if (databaseManager.insert(entitySetName, null, cv) == null) {
-//                            LogUtil.d(databaseManager.update(entitySetName, cv, entitySetKey + "=?",
+//                            Logger.d(databaseManager.update(entitySetName, cv, entitySetKey + "=?",
 //                                    new String[]{cv.getAsString(entitySetKey)}));
         }
     }
 
     private void prepareChangedData(Edm metadata, Map<String, List<Map<String, String>>> changedRows, PrepareCallback prepareCallback) {
         for (final Map.Entry<String, List<Map<String, String>>> tableEntry : changedRows.entrySet()) {
-            LogUtil.d("change", tableEntry);
+            Logger.d("change", tableEntry);
             final EdmEntityType entityType = getSchema(metadata).getEntityContainer().getEntitySet(tableEntry.getKey()).getEntityType();
 
             for (final Map<String, String> row : tableEntry.getValue()) {
@@ -278,7 +278,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
                 sendData(tableName, HttpMethod.POST.name(), values, new HttpCallback() {
                     @Override
                     public void onResponse(int responseCode) {
-                        LogUtil.d("insert", HttpStatusCode.fromStatusCode(responseCode));
+                        Logger.d("insert", HttpStatusCode.fromStatusCode(responseCode));
                         if (responseCode == HttpURLConnection.HTTP_CREATED) {
 //                            ClientEntity entity = oDataClient.getObjectFactory().newEntity(entityType.getFullQualifiedName());
 //                            entity.getProperties().addAll(properties);
@@ -340,7 +340,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
 
     private void pushDeletedData() {
         for (Map.Entry<String, List<Long>> tableEntry : getDatabaseManager().getDeletedRowsId().entrySet()) {
-            LogUtil.d("delete", tableEntry);
+            Logger.d("delete", tableEntry);
             for (Object value : tableEntry.getValue()) {
                 ODataDeleteResponse deleteResponse = oDataClient.getCUDRequestFactory().getDeleteRequest(
                         oDataClient.newURIBuilder(url)
@@ -349,7 +349,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
                                 .build()
                 ).execute();
                 if (deleteResponse.getStatusCode() == HttpStatusCode.NO_CONTENT.getStatusCode()) {
-                    LogUtil.d(getDatabaseManager().delete(CoreContract.TableLogChanges.TABLE_NAME,
+                    Logger.d(getDatabaseManager().delete(CoreContract.TableLogChanges.TABLE_NAME,
                             CoreContract.TableLogChanges.COLUMN_EXTERNAL_ID + "=" + value,
                             null));
                 }

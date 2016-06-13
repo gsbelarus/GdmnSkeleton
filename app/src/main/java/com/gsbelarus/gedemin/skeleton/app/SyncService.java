@@ -26,7 +26,7 @@ public class SyncService extends CoreSyncService {
     @Override
     protected void onHandleRow(String tableName, ContentValues contentValues) {
         super.onHandleRow(tableName, contentValues);
-//        LogUtil.d(tableName, contentValues.keySet());
+//        Logger.d(tableName, contentValues.keySet());
     }
 
     @Override

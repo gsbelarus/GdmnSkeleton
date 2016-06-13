@@ -13,7 +13,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 
 import com.gsbelarus.gedemin.skeleton.R;
-import com.gsbelarus.gedemin.skeleton.core.util.LogUtil;
+import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +58,7 @@ public abstract class BaseSyncService extends IntentService {
         handler = new Handler();
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancel(ID_SYNC_NOTIFICATION);
-        LogUtil.d();
+        Logger.d();
     }
 
     @Override
@@ -66,7 +66,7 @@ public abstract class BaseSyncService extends IntentService {
         super.onDestroy();
 
         notificationManager.cancel(ID_SYNC_NOTIFICATION);
-        LogUtil.d();
+        Logger.d();
     }
 
     @Override
@@ -86,7 +86,7 @@ public abstract class BaseSyncService extends IntentService {
             try {
                 handleIntentBackground(intent);
             } catch (Exception e) {
-                LogUtil.e(e);
+                Logger.e(e);
                 error = e.getMessage();
             }
 
@@ -174,7 +174,7 @@ public abstract class BaseSyncService extends IntentService {
                     try {
                         onSyncListener.onProcessChange(max, progress);
                     } catch (Exception e) {
-                        LogUtil.d(e);
+                        Logger.d(e);
                     }
                 }
             }

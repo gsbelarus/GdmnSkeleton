@@ -19,6 +19,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.FilterQueryProvider;
 
 import com.gsbelarus.gedemin.skeleton.R;
+import com.gsbelarus.gedemin.skeleton.base.view.fragment.viewstate.BasicRecyclerFragmentState;
 import com.gsbelarus.gedemin.skeleton.core.view.component.DividerItemDecoration;
 import com.gsbelarus.gedemin.skeleton.base.data.loader.BasicTableCursorLoader;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.BasicCursorRecyclerViewAdapter;
@@ -27,19 +28,26 @@ import com.gsbelarus.gedemin.skeleton.core.data.CoreContract;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreDatabaseManager;
 import com.gsbelarus.gedemin.skeleton.core.view.CoreCursorRecyclerAdapterViewHandler;
 import com.gsbelarus.gedemin.skeleton.core.view.CoreCursorRecyclerItemViewTypeModel;
+import com.gsbelarus.gedemin.skeleton.core.view.fragment.viewstate.CoreRecyclerFragmentState;
 
 import java.util.Arrays;
 
 
-public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFragment {
+public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFragment<CoreRecyclerFragmentState> {
 
     /**
      * Сonfiguration
      */
+
     @Override
     protected int getLayoutResource() { //TODO
         return R.layout.fragment_main;
     } //TODO add core
+
+    @Override
+    protected int getRecyclerResId() {
+        return R.id.recycler_view;
+    }
 
 
     private BasicCursorRecyclerViewAdapter cursorAdapter;
@@ -64,9 +72,8 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
     }
 
     @Override
-    protected void doOnCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
-        RecyclerView rv = (RecyclerView) rootView.findViewById(R.id.recycler_view);
-        setupRecyclerView(rv);
+    protected void onCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
+        super.onCreateView(rootView, savedInstanceState);
 
         rootView.setFocusableInTouchMode(true);
         rootView.setOnKeyListener(
@@ -124,14 +131,13 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
         return getAdapter().getDataCursor();
     }
 
-
     @Override
     public BasicTableCursorLoader onCreateLoader(int id, Bundle args) { //TODO
         return new BasicTableCursorLoader(getContext(), getDatabaseManager(), CoreContract.TEST_TABLE, null, null, null, null);
     }
 
     @Override
-    protected void bindViewOnCursorLoaded() { //TODO  move in swap
+    protected void bindViewOnCursorLoaded() {
         super.bindViewOnCursorLoaded();
 
         if (getDataCursor() != null) {
@@ -189,7 +195,6 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
         // убираем полосу снизу
         View searchPlate = searchView.findViewById(android.support.v7.appcompat.R.id.search_plate);
         searchPlate.setBackgroundColor(Color.TRANSPARENT);
-
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -204,15 +209,28 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
                 return true;
             }
         });
+
+        if (getSavedFragmentState() != null && getSavedFragmentState().savedSearchFilterQuery != null){
+            searchView.setQuery(getSavedFragmentState().savedSearchFilterQuery, true);
+            searchView.setIconified(false);
+        }
     }
 
     private boolean pressBackHandle() {
         if (searchView != null && !searchView.isIconified()) {
-            searchView.setQuery("", true);
+            searchView.setQuery(null, true);
             searchView.setIconified(true);
             return true;
         }
         return false;
     }
 
+    @Override
+    protected CoreRecyclerFragmentState newInstanceState() {
+        return new CoreRecyclerFragmentState(this);
+    }
+
+    public String getSearchQuery() { //TODO tmp
+        return !searchView.isIconified() ? searchView.getQuery().toString() : null;
+    }
 }

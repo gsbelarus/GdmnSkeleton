@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:errorEnabled="true"
+        android:freezesText="true"
         tools:hint="hint">
 
         <android.support.design.widget.TextInputEditText
@@ -17,10 +18,11 @@
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:maxLength="300"
-            android:imeOptions="actionNext"
+            android:imeOptions="flagNoExtractUi|actionNext"
             android:inputType="text"
             android:textColor="?android:textColorPrimary"
             android:textColorHint="?android:textColorSecondary"
+            android:freezesText="true"
             tools:text="text" />
 
     </android.support.design.widget.TextInputLayout>

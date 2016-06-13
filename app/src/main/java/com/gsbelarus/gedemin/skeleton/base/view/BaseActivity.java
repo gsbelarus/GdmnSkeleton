@@ -17,31 +17,20 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
-import com.gsbelarus.gedemin.skeleton.core.util.LogUtil;
+import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 
 
 abstract public class BaseActivity extends AppCompatActivity {
 
     protected final String TAG = this.getClass().getCanonicalName();
 
-    protected Context context;
-    private Toolbar toolbar;
-
-    private BaseSyncService.SyncBinder syncBinder;
-    private ServiceConnection serviceConnection;
-    private BaseSyncService.OnSyncListener onSyncListener;
-
-    public static <T extends AppCompatActivity> Intent newStartIntent(Context context, Class<T> cl, Bundle extrasBundle) {
-        Intent intent = new Intent(context, cl);
-        intent.putExtras(extrasBundle);
-
-        return intent;
+    protected enum ActivityType {
+        HIGH_LEVEL, SUB_LEVEL, TITLED_SUB_LEVEL
     }
 
     /**
      * Сonfiguration
      */
-    protected abstract ActivityType getActivityType();
 
     @LayoutRes
     protected abstract int getLayoutResource();
@@ -58,9 +47,23 @@ abstract public class BaseActivity extends AppCompatActivity {
         return true;
     }
 
-    protected abstract void handleSavedInstanceState(@NonNull Bundle savedInstanceState);
+    protected abstract ActivityType getActivityType();
 
-    protected abstract void handleIntentExtras(@NonNull Bundle extras);
+
+    protected Context context;
+    private Toolbar toolbar;
+
+    private BaseSyncService.SyncBinder syncBinder;
+    private ServiceConnection serviceConnection;
+    private BaseSyncService.OnSyncListener onSyncListener;
+
+
+    public static <T extends AppCompatActivity> Intent newStartIntent(Context context, Class<T> cl, Bundle extrasBundle) {
+        Intent intent = new Intent(context, cl);
+        intent.putExtras(extrasBundle);
+
+        return intent;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,6 +141,10 @@ abstract public class BaseActivity extends AppCompatActivity {
 //        setVisibilityAppBarShadow(true);
     }
 
+    protected  void handleSavedInstanceState(@NonNull Bundle savedInstanceState) {};
+
+    protected  void handleIntentExtras(@NonNull Bundle extras) {};
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home)
@@ -182,14 +189,14 @@ abstract public class BaseActivity extends AppCompatActivity {
             public void onServiceConnected(ComponentName name, IBinder service) {
                 syncBinder = (BaseSyncService.SyncBinder) service;
                 syncBinder.addOnSyncListener(BaseActivity.this.onSyncListener);
-                LogUtil.d();
+                Logger.d();
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 syncBinder = null;
                 connectService(serviceClass, onSyncListener);// // FIXME: 07.06.2016
-                LogUtil.d();
+                Logger.d();
             }
         });
     }
@@ -207,7 +214,4 @@ abstract public class BaseActivity extends AppCompatActivity {
         return syncBinder != null;
     }
 
-    protected enum ActivityType {
-        HIGH_LEVEL, SUB_LEVEL, TITLED_SUB_LEVEL
-    }
 }

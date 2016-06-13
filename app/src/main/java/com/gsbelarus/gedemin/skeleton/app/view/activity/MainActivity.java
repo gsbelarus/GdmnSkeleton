@@ -9,11 +9,9 @@ import com.gsbelarus.gedemin.skeleton.app.SyncService;
 import com.gsbelarus.gedemin.skeleton.app.view.fragment.MainRecyclerCursorFragment;
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
 import com.gsbelarus.gedemin.skeleton.base.view.BaseActivity;
-import com.gsbelarus.gedemin.skeleton.core.util.LogUtil;
+import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 
 public class MainActivity extends BaseActivity {
-
-    private MainRecyclerCursorFragment fragment;
 
     /**
      * Сonfiguration
@@ -35,6 +33,10 @@ public class MainActivity extends BaseActivity {
         return R.id.toolbar;
     }
 
+
+    private MainRecyclerCursorFragment fragment;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,12 +45,12 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onStartSync() {
                 super.onStartSync();
-                LogUtil.d();
+                Logger.d();
             }
 
             @Override
             public boolean onFinishSync(@Nullable String error) {
-                LogUtil.d();
+                Logger.d();
 
                 fragment.disableLayoutRefreshing(); //TODO  onPause
 

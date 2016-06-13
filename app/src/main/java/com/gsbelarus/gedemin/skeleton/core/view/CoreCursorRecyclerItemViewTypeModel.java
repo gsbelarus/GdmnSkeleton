@@ -1,9 +1,9 @@
 package com.gsbelarus.gedemin.skeleton.core.view;
 
-
 import android.support.annotation.LayoutRes;
 
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.item.CursorRecyclerItemViewTypeModel;
+
 
 public class CoreCursorRecyclerItemViewTypeModel extends CursorRecyclerItemViewTypeModel {
 

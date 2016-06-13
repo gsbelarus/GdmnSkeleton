@@ -8,7 +8,7 @@ import android.support.annotation.Nullable;
 import com.gsbelarus.gedemin.skeleton.base.BasicUtils;
 
 
-abstract public class BaseDetailCursorFragment extends BaseCursorFragment {
+abstract public class BaseDetailCursorFragment<FRAGMENTSTATE_T extends BaseFragment.BasicState> extends BaseCursorFragment<FRAGMENTSTATE_T> {
 
     public static final String ARGUMENT_KEY_DATA_ID = "data_id";
 
@@ -34,11 +34,6 @@ abstract public class BaseDetailCursorFragment extends BaseCursorFragment {
     }
 
     @Override
-    protected void handleSavedInstanceState(@NonNull Bundle savedInstanceState) {
-        //TODO
-    }
-
-    @Override
     protected Cursor getDataCursor() {
         if (dataCursor != null) dataCursor.moveToFirst(); //TODO ?
         return dataCursor;
@@ -53,7 +48,6 @@ abstract public class BaseDetailCursorFragment extends BaseCursorFragment {
     protected void bindViewOnCursorLoaded() {
         BasicUtils.bindViews(getDataCursor(), originalFrom, to, getView());
     }
-
 
     // accessors
 

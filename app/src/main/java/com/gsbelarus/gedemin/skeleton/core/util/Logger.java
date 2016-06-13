@@ -7,7 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-public final class LogUtil {
+public final class Logger {
 
     private static final String TAG_DEFAULT = "GEDEMIN";
     public static boolean enabled = true;
@@ -121,7 +121,7 @@ public final class LogUtil {
     }
 
     private static String getLocation() {
-        final String className = LogUtil.class.getName();
+        final String className = Logger.class.getName();
         final StackTraceElement[] traces = Thread.currentThread().getStackTrace();
         boolean found = false;
 

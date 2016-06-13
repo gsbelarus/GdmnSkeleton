@@ -11,7 +11,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".app.view.activity.MainActivity">
+        <activity
+            android:name=".app.view.activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -19,10 +20,13 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".app.view.activity.DetailActivity"
-            android:label="Подробно"/>
+        <activity
+            android:name=".app.view.activity.DetailActivity"
+            android:label="Подробно"
+            android:configChanges="orientation"/>
 
-        <activity android:name=".app.view.activity.EditActivity"
+        <activity
+            android:name=".app.view.activity.EditActivity"
             android:label="Изменить запись"/>
 
         <service

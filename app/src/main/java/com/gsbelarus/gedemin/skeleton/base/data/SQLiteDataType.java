@@ -4,10 +4,6 @@ import com.gsbelarus.gedemin.skeleton.core.UnsupportedDataTypeException;
 
 public class SQLiteDataType {
 
-    public static String getDataTypeString(int columnType) {
-        return SQLiteDataTypes.values()[columnType].getStorageDataTypeString();
-    }
-
     public enum SQLiteStorageTypes {
 
         TEXT, INTEGER, BLOB, REAL, NUMERIC;
@@ -38,4 +34,10 @@ public class SQLiteDataType {
             }
         }
     }
+
+
+    public static String getDataTypeString(int columnType) {
+        return SQLiteDataTypes.values()[columnType].getStorageDataTypeString();
+    }
+
 }
