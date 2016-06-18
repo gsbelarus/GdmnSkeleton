@@ -5,7 +5,6 @@ import android.support.annotation.Nullable;
 /**
  *  использовать как NullObject
  *  */
-
 public final class NullRecyclerAdapterDataSource<ITEM_T> implements RecyclerAdapterDataSource<ITEM_T> {
 
     @Override

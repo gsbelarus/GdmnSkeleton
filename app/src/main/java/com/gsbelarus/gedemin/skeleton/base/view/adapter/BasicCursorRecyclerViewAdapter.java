@@ -13,6 +13,7 @@ import android.widget.Filterable;
 
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.datasource.CursorRecyclerAdapterDataSource;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.item.CursorRecyclerItemViewTypeModel;
+import com.gsbelarus.gedemin.skeleton.base.view.adapter.item.ItemViewTypes;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.viewhandler.CursorRecyclerAdapterViewHandler;
 
 //  <T>
@@ -26,12 +27,24 @@ public class BasicCursorRecyclerViewAdapter extends BasicRecyclerViewAdapter imp
     private CursorFilter cursorFilter;
     private FilterQueryProvider filterQueryProvider;
 
+    public BasicCursorRecyclerViewAdapter() {
+        setAdapterDataSource(new CursorRecyclerAdapterDataSource(null));
+    }
+
     public BasicCursorRecyclerViewAdapter(@LayoutRes int layout,
                                           String[] from,
                                           int[] to) {
-        setAdapterDataSource(new CursorRecyclerAdapterDataSource(null));
+        this();
 
-        CursorRecyclerAdapterViewHandler viewHandler = new CursorRecyclerAdapterViewHandler(new CursorRecyclerItemViewTypeModel(layout, from, to));
+        CursorRecyclerAdapterViewHandler viewHandler = new CursorRecyclerAdapterViewHandler(
+                new CursorRecyclerItemViewTypeModel(ItemViewTypes.DEFAULT_VIEW_TYPE, layout, from, to));
+        setAdapterViewHandler(viewHandler);
+    }
+
+    public BasicCursorRecyclerViewAdapter(CursorRecyclerItemViewTypeModel... cursorRecyclerItemViewTypeModels) {
+        this();
+
+        CursorRecyclerAdapterViewHandler viewHandler = new CursorRecyclerAdapterViewHandler(cursorRecyclerItemViewTypeModels);
         setAdapterViewHandler(viewHandler);
     }
 
@@ -48,7 +61,7 @@ public class BasicCursorRecyclerViewAdapter extends BasicRecyclerViewAdapter imp
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if (!getAdapterDataSource().isDataValid()) {
+        if (!isShowEmptyLayout() && !getAdapterDataSource().isDataValid()) {
             throw new IllegalStateException("this should only be called when the cursor is valid");
         }
         super.onBindViewHolder(holder, position);

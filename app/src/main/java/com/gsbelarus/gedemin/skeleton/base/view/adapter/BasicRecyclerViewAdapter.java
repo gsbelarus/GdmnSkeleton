@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.datasource.NullRecyclerAdapterDataSource;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.datasource.RecyclerAdapterDataSource;
+import com.gsbelarus.gedemin.skeleton.base.view.adapter.item.ItemViewTypes;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.listener.OnRecyclerItemClickListener;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.viewhandler.NullRecyclerAdapterViewHandler;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.viewhandler.RecyclerAdapterViewHandler;
@@ -19,6 +20,8 @@ public class BasicRecyclerViewAdapter<VH_T extends RecyclerView.ViewHolder, ITEM
 
     public final String TAG = this.getClass().getCanonicalName();
 
+    private boolean showEmptyLayout;
+//    private ITEM_T noDataValue;
 
     @NonNull
     private RecyclerAdapterDataSource<ITEM_T> adapterDataSource = new NullRecyclerAdapterDataSource<>();
@@ -40,48 +43,90 @@ public class BasicRecyclerViewAdapter<VH_T extends RecyclerView.ViewHolder, ITEM
     }
 
     public void onViewHolderCreated(final VH_T viewHolder, final int viewType) {
-        viewHolder.itemView.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (onRecyclerItemClickListener != null) {
-                            onRecyclerItemClickListener.onClick(view, viewHolder.getAdapterPosition(), viewType);
+
+        if (viewType != ItemViewTypes.EMPTY_VIEW_TYPE) {
+            viewHolder.itemView.setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (onRecyclerItemClickListener != null) {
+                                onRecyclerItemClickListener.onClick(view, viewHolder.getAdapterPosition(), viewType);
+                            }
                         }
                     }
-                }
-        );
+            );
+        }
     }
 
     @Override
     public void onBindViewHolder(VH_T holder, int position) {
-        ITEM_T item = adapterDataSource.getItem(position);
-        int viewType = adapterDataSource.getViewType(position);
+        ITEM_T item = null;
+        int viewType;
+        //TODO
+        if (!(adapterDataSource.getItemCount() == 0 && isShowEmptyLayout())) {
+            item = adapterDataSource.getItem(position);
+            viewType = adapterDataSource.getViewType(position);
+        } else {
+            viewType = ItemViewTypes.EMPTY_VIEW_TYPE;
+        }
 
         adapterViewHandler.onBindViewHolder(holder, item, viewType);
 
         onViewHolderBound(holder, item, position, viewType);
     }
 
+//    @Nullable
+//    protected DATA getData(int position) {
+//        if (getRecyclerAdapterDataSource().getVisibleDataCount() == 0 && hasNoDataLayout()) {
+//            if (!hasNoDataValue()) return null;
+//
+//            if (noDataValue instanceof Cursor) {
+//                ((Cursor) noDataValue).moveToPosition(position);
+//            } else if (noDataValue instanceof List) {
+//                return ((List<DATA>) noDataValue).get(position);
+//            }
+//            return noDataValue;
+//        }
+//        return getRecyclerAdapterDataSource().getVisibleData(position);
+//    }
+
     public void onViewHolderBound(VH_T viewHolder, ITEM_T item, int position, int viewType) {}
 
     @Override
-    public final int getItemViewType(int position) {
-        // TODO getRecyclerAdapterDataSource().getVisibleDataCount() == 0 ? EMPTY VIEW
+    public final int getItemViewType(int position) { //TODO
+        if (adapterDataSource.getItemCount() == 0 && isShowEmptyLayout()) {
+            return ItemViewTypes.EMPTY_VIEW_TYPE;
+        }
+
         return adapterDataSource.getViewType(position);
     }
 
     @Override
     public int getItemCount() {
-        return adapterDataSource.getItemCount();
+        int itemCount = adapterDataSource.getItemCount();
+        return (itemCount <= 0 && isShowEmptyLayout()) ? 1 : itemCount;
     }
 
     @Override
-    public long getItemId(int position) {
+    public long getItemId(int position) { //TODO
         return adapterDataSource.getItemId(position);
     }
 
+//    public synchronized DATA swapNoDataValue(DATA noDataValue) {
+//        DATA oldValue = this.noDataValue;
+//        this.noDataValue = noDataValue;
+//        return oldValue;
+//    }
 
     // accessors
+
+    public boolean isShowEmptyLayout() {
+        return showEmptyLayout;
+    }
+
+    public void setShowEmptyLayout(boolean showEmptyLayout) {
+        this.showEmptyLayout = showEmptyLayout;
+    }
 
     @NonNull
     public RecyclerAdapterDataSource<ITEM_T> getAdapterDataSource() {
@@ -109,4 +154,5 @@ public class BasicRecyclerViewAdapter<VH_T extends RecyclerView.ViewHolder, ITEM
     public void setAdapterViewHandler(@NonNull RecyclerAdapterViewHandler<VH_T, ITEM_T> adapterViewHandler) {
         this.adapterViewHandler = adapterViewHandler;
     }
+
 }

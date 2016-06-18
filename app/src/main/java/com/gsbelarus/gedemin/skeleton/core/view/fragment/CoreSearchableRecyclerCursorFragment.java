@@ -19,15 +19,15 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.FilterQueryProvider;
 
 import com.gsbelarus.gedemin.skeleton.R;
-import com.gsbelarus.gedemin.skeleton.base.view.fragment.viewstate.BasicRecyclerFragmentState;
-import com.gsbelarus.gedemin.skeleton.core.view.component.DividerItemDecoration;
 import com.gsbelarus.gedemin.skeleton.base.data.loader.BasicTableCursorLoader;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.BasicCursorRecyclerViewAdapter;
+import com.gsbelarus.gedemin.skeleton.base.view.adapter.item.ItemViewTypes;
 import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseRecyclerCursorFragment;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreContract;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreDatabaseManager;
 import com.gsbelarus.gedemin.skeleton.core.view.CoreCursorRecyclerAdapterViewHandler;
 import com.gsbelarus.gedemin.skeleton.core.view.CoreCursorRecyclerItemViewTypeModel;
+import com.gsbelarus.gedemin.skeleton.core.view.component.DividerItemDecoration;
 import com.gsbelarus.gedemin.skeleton.core.view.fragment.viewstate.CoreRecyclerFragmentState;
 
 import java.util.Arrays;
@@ -62,12 +62,21 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
 
         setHasOptionsMenu(true);
 
-        itemViewTypeModel = new CoreCursorRecyclerItemViewTypeModel(
-                R.layout.core_recycler_item);
-//                new String[]{BaseColumns._ID, "column2_CHAR_32767"});
+        cursorAdapter = new BasicCursorRecyclerViewAdapter();
+        cursorAdapter.setShowEmptyLayout(true);
 
-        cursorAdapter = new BasicCursorRecyclerViewAdapter(itemViewTypeModel.getLayoutResource(), null, null); //TODO
-        CoreCursorRecyclerAdapterViewHandler viewHandler = new CoreCursorRecyclerAdapterViewHandler(itemViewTypeModel);
+        itemViewTypeModel =
+                new CoreCursorRecyclerItemViewTypeModel(ItemViewTypes.DEFAULT_VIEW_TYPE, R.layout.core_recycler_item);
+        CoreCursorRecyclerItemViewTypeModel emptyItemViewTypeModel =
+                new CoreCursorRecyclerItemViewTypeModel(ItemViewTypes.EMPTY_VIEW_TYPE, R.layout.core_recycler_empty_item);
+
+        CoreCursorRecyclerAdapterViewHandler viewHandler = new CoreCursorRecyclerAdapterViewHandler(itemViewTypeModel, emptyItemViewTypeModel);
+        viewHandler.setOnEmptyRecyclerItemBtnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO
+            }
+        });
         cursorAdapter.setAdapterViewHandler(viewHandler);
     }
 

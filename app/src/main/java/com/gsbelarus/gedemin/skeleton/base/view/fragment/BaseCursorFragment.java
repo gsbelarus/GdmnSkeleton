@@ -59,7 +59,6 @@ abstract public class BaseCursorFragment<FRAGMENTSTATE_T extends BaseFragment.Ba
     @Override
     public void onLoadFinished(Loader<Cursor> loader, final Cursor cursor) {
         swapCursor(cursor);
-        bindViewOnCursorLoaded(); //TODO ?
     }
 
     protected void bindViewOnCursorLoaded() {}
@@ -73,6 +72,8 @@ abstract public class BaseCursorFragment<FRAGMENTSTATE_T extends BaseFragment.Ba
     public Cursor swapCursor(@Nullable Cursor newCursor) {
         final Cursor oldCursor = getDataCursor();
         setDataCursor(newCursor);
+
+        bindViewOnCursorLoaded();
 
         return oldCursor;
     }

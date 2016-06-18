@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.gsbelarus.gedemin.skeleton.R;
+import com.gsbelarus.gedemin.skeleton.base.view.adapter.item.ItemViewTypes;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.viewhandler.CursorRecyclerAdapterViewHandler;
 import com.gsbelarus.gedemin.skeleton.core.util.CoreUtils;
 
@@ -17,39 +18,49 @@ import java.util.Map;
 public class CoreCursorRecyclerAdapterViewHandler extends CursorRecyclerAdapterViewHandler {
 
     private int fieldsCount;
+    @Nullable
+    private View.OnClickListener onEmptyRecyclerItemBtnClickListener;
 
     public CoreCursorRecyclerAdapterViewHandler(CoreCursorRecyclerItemViewTypeModel... cursorViewTypeModelMap) {
         super(cursorViewTypeModelMap);
     }
 
     @Override
-    public CoreCursorItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) { //TODO ItemViewTypes.DEFAULT_VIEW_TYPE
-        CoreCursorRecyclerItemViewTypeModel itemViewTypeModel = (CoreCursorRecyclerItemViewTypeModel) getViewTypeModel(viewType);
+    public BasicCursorItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == ItemViewTypes.EMPTY_VIEW_TYPE) {
+            return super.onCreateViewHolder(parent, viewType);
+        }
 
-        //inflater.inflate(itemViewTypeModel.getLayoutResource(), parent, false);
+        CoreCursorRecyclerItemViewTypeModel itemViewTypeModel = (CoreCursorRecyclerItemViewTypeModel) getViewTypeModel(viewType);
         LinkedHashMap<View, View> valueViewLabelViewMap = CoreUtils.includeCoreView(
-                R.layout.core_recycler_item, parent, fieldsCount, CoreUtils.CoreViewType.LABELED_DATA_VIEW, null, null);
+                itemViewTypeModel.getLayoutResource(), parent, fieldsCount, CoreUtils.CoreViewType.LABELED_DATA_VIEW, null, null);
         View itemView = parent.getChildAt(parent.getChildCount()-1);
         parent.removeViewAt(parent.getChildCount()-1);
 
         //itemViewTypeModel.setTo(coreViewHelper.getTo());
-
-        return new CoreCursorItemViewHolder(itemView,  new LinkedHashMap<>(valueViewLabelViewMap));
+        return new CoreCursorItemViewHolder(itemView,  new LinkedHashMap<>(valueViewLabelViewMap), onEmptyRecyclerItemBtnClickListener);
     }
 
     public void setFieldsCount(int fieldsCount) { //TODO tmp
         this.fieldsCount = fieldsCount;
     }
 
+    public void setOnEmptyRecyclerItemBtnClickListener(@Nullable View.OnClickListener onEmptyRecyclerItemBtnClickListener) {
+        this.onEmptyRecyclerItemBtnClickListener = onEmptyRecyclerItemBtnClickListener;
+    }
 
     public class CoreCursorItemViewHolder extends BasicCursorItemViewHolder {
 
-        Map<View, View>  valueViewLabelViewMap;
+        private Map<View, View>  valueViewLabelViewMap;
 
-        public CoreCursorItemViewHolder(View itemView, Map<View, View> toValueViewLabelViewMap) {
+        public CoreCursorItemViewHolder(View itemView, Map<View, View> toValueViewLabelViewMap, @Nullable View.OnClickListener onEmptyRecyclerItemBtnClickListener) {
             super(itemView);
 
             valueViewLabelViewMap = toValueViewLabelViewMap;
+
+            if (onEmptyRecyclerItemBtnClickListener != null) {
+                itemView.findViewById(R.id.empty_item_btn).setOnClickListener(onEmptyRecyclerItemBtnClickListener);
+            }
         }
 
         @Override

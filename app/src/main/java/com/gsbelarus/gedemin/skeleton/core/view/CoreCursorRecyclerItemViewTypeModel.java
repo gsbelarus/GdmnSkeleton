@@ -11,6 +11,10 @@ public class CoreCursorRecyclerItemViewTypeModel extends CursorRecyclerItemViewT
         super(layoutResource, null, null);
    }
 
+    public CoreCursorRecyclerItemViewTypeModel(int viewTypeId, @LayoutRes int layoutResource) {
+        super(viewTypeId, layoutResource, null, null);
+    }
+
     public CoreCursorRecyclerItemViewTypeModel(@LayoutRes int layoutResource, String[] originalFrom) {
         super(layoutResource, originalFrom, null);
     }
