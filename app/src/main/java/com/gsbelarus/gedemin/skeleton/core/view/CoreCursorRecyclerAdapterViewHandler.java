@@ -38,7 +38,7 @@ public class CoreCursorRecyclerAdapterViewHandler extends CursorRecyclerAdapterV
         parent.removeViewAt(parent.getChildCount()-1);
 
         //itemViewTypeModel.setTo(coreViewHelper.getTo());
-        return new CoreCursorItemViewHolder(itemView,  new LinkedHashMap<>(valueViewLabelViewMap), onEmptyRecyclerItemBtnClickListener);
+        return new CoreCursorItemViewHolder(itemView,  new LinkedHashMap<>(valueViewLabelViewMap), viewType == ItemViewTypes.EMPTY_VIEW_TYPE ? onEmptyRecyclerItemBtnClickListener : null); //TODO
     }
 
     public void setFieldsCount(int fieldsCount) { //TODO tmp
