@@ -1,7 +1,10 @@
 package com.gsbelarus.gedemin.skeleton.core.data;
 
+import android.accounts.Account;
+import android.content.ContentProviderClient;
 import android.content.ContentValues;
-import android.content.Intent;
+import android.content.SyncResult;
+import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 
@@ -20,6 +23,7 @@ import org.apache.olingo.client.api.domain.ClientDeltaLink;
 import org.apache.olingo.client.api.domain.ClientEntity;
 import org.apache.olingo.client.api.domain.ClientEntitySet;
 import org.apache.olingo.client.api.domain.ClientProperty;
+import org.apache.olingo.client.api.http.HttpClientException;
 import org.apache.olingo.client.core.ODataClientFactory;
 import org.apache.olingo.commons.api.edm.Edm;
 import org.apache.olingo.commons.api.edm.EdmEntitySet;
@@ -47,22 +51,23 @@ import java.util.Map;
 public abstract class CoreSyncService extends BaseSyncService implements CoreDatabaseManager.Callback {
 
     private static final String HEADER_DATABASE_VERSION = "Database-Version";
-    private static final int DEFAULT_SCHEMA_VERSION = 36;
+    private static final int DEFAULT_SCHEMA_VERSION = 38;
 
     private String url;
     private String namespace;
     private CoreDatabaseManager databaseManager;
     private ODataClient oDataClient;
-
-    protected void onHandleRow(String tableName, ContentValues contentValues) {
-
-    }
+    private boolean insertedDataSent;
 
     @NonNull
     protected abstract String getUrl();
 
     @NonNull
     protected abstract String getNamespace();
+
+    protected void onHandleRow(String tableName, ContentValues contentValues) {
+
+    }
 
     @Override
     public void onCreate() {
@@ -81,11 +86,10 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
     }
 
     @Override
-    protected void handleIntentBackground(Intent intent) throws Exception {
+    protected void onPerformSync(Account account, Bundle extras, ContentProviderClient provider, SyncResult syncResult) throws Exception {
         url = getUrl();
         namespace = getNamespace();
 
-        publishProcess(100, 0);
         boolean isSuccessful = false;
         databaseManager.beginTransactionNonExclusive();
         try {
@@ -94,26 +98,33 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
             Map<String, String> tokens = databaseManager.setVersion(getDatabaseVersion(metadataResponse), this);
 
             pullData(metadataResponse.getBody(), tokens);
-            publishProcess(100, 50);
 
             try {
                 pushDeletedData();
                 pushUpdatedData(metadataResponse.getBody());
                 pushInsertedData(metadataResponse.getBody());
-//                startSync(getApplicationContext(), this.getClass(), TypeTask.FOREGROUND);
+                if (insertedDataSent) {
+                    startSync(getApplicationContext(), account, getTypeTask(extras), extras);
+                }
             } catch (Exception e) {
                 Logger.d(e.getMessage());
             }
 
             databaseManager.setTransactionSuccessful();
             isSuccessful = true;
+        } catch (HttpClientException e) {
+            Logger.e(e);
+            if (e.getCause() instanceof IOException) {
+                throw (IOException) e.getCause();
+            } else {
+                throw new RuntimeException(e);
+            }
         } finally {
             databaseManager.endTransaction();
             if (isSuccessful) {
                 databaseManager.notifyDataChanged();
             }
         }
-        publishProcess(100, 100);
     }
 
     private void test() {
@@ -203,7 +214,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
                 }
 
                 for (ClientEntity entity : entitySet.getEntities()) {
-                    storeEntity(entitySetName, entity);
+                    insertEntity(entitySetName, entity);
                 }
             } else {
                 ClientDelta delta = oDataClient.getRetrieveRequestFactory().getDeltaRequest(URI.create(tokens.get(entitySetName))).execute().getBody();
@@ -211,7 +222,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
                     databaseManager.putToken(entitySetName, delta.getDeltaLink().toString());
                 }
                 for (ClientDeltaLink link : delta.getAddedLinks()) {
-                    storeEntity(entitySetName, oDataClient.getRetrieveRequestFactory().getEntityRequest(link.getSource()).execute().getBody());
+                    insertEntity(entitySetName, oDataClient.getRetrieveRequestFactory().getEntityRequest(link.getSource()).execute().getBody());
                 }
                 for (ClientDeletedEntity deletedEntity : delta.getDeletedEntities()) {
 //                    deletedEntity.getId()                 TODO удаление, обновление
@@ -222,7 +233,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
         }
     }
 
-    private void storeEntity(String entitySetName, ClientEntity entity) {
+    private void insertEntity(String entitySetName, ClientEntity entity) {
         ContentValues cv = new ContentValues();
         for (ClientProperty property : entity.getProperties()) {
             try {
@@ -234,10 +245,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
             }
         }
         onHandleRow(entitySetName, cv);
-        if (databaseManager.insert(entitySetName, null, cv) == null) {
-//                            Logger.d(databaseManager.update(entitySetName, cv, entitySetKey + "=?",
-//                                    new String[]{cv.getAsString(entitySetKey)}));
-        }
+        databaseManager.insert(entitySetName, null, cv);
     }
 
     private void prepareChangedData(Edm metadata, Map<String, List<Map<String, String>>> changedRows, PrepareCallback prepareCallback) {
@@ -271,6 +279,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
     }
 
     private void pushInsertedData(final Edm metadata) {
+        insertedDataSent = false;                                   //temp
         prepareChangedData(metadata, getDatabaseManager().getInsertedRows(), new PrepareCallback() {
             @Override
             public void onPrepare(final String tableName, final String externalKeyName, final String internalKey,
@@ -310,6 +319,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
                                     BaseColumns._ID + "=" + internalKey,
                                     null);
                             getDatabaseManager().createLogChangesTriggers(tableName, externalKeyName);
+                            insertedDataSent = true;
                         }
                     }
                 });

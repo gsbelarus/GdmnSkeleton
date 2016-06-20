@@ -40,11 +40,6 @@ public class SyncService extends CoreSyncService {
     }
 
     @Override
-    protected Notification getProgressSyncNotification(int max, int progress) {
-        return super.getProgressSyncNotification(max, progress);
-    }
-
-    @Override
     public void onCreateDatabase(CoreDatabaseManager coreDatabaseManager) {
         super.onCreateDatabase(coreDatabaseManager);
     }

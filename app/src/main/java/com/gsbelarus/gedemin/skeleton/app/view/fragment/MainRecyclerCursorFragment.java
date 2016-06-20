@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.gsbelarus.gedemin.skeleton.R;
+import com.gsbelarus.gedemin.skeleton.app.App;
 import com.gsbelarus.gedemin.skeleton.app.SyncService;
 import com.gsbelarus.gedemin.skeleton.app.view.RequestCode;
 import com.gsbelarus.gedemin.skeleton.app.view.activity.DetailActivity;
@@ -18,6 +19,7 @@ import com.gsbelarus.gedemin.skeleton.app.view.activity.EditActivity;
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.listener.OnRecyclerItemClickListener;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreContract;
+import com.gsbelarus.gedemin.skeleton.core.util.CoreNetworkInfo;
 import com.gsbelarus.gedemin.skeleton.core.view.fragment.CoreSearchableRecyclerCursorFragment;
 
 //TODO SwipeRefreshProvider
@@ -68,7 +70,13 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
 
     @Override
     public void onRefresh() {
-        BaseSyncService.startSync(getContext(), SyncService.class, BaseSyncService.TypeTask.FOREGROUND);
+        if (!CoreNetworkInfo.isNetworkAvailable(getContext())) disableLayoutRefreshing();
+        CoreNetworkInfo.runWithNetworkConnection(getView(), new Runnable() {
+            @Override
+            public void run() {
+                SyncService.startSync(getContext(), App.getSyncAccount(getContext()), BaseSyncService.TypeTask.FOREGROUND);
+            }
+        });
     }
 
     public void disableLayoutRefreshing() {

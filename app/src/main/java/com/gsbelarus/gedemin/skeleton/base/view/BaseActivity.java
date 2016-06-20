@@ -1,11 +1,11 @@
 package com.gsbelarus.gedemin.skeleton.base.view;
 
-import android.content.ComponentName;
+import android.accounts.Account;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
+import android.content.SyncStatusObserver;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
@@ -14,11 +14,14 @@ import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.SparseBooleanArray;
 import android.view.MenuItem;
 
-import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
-import com.gsbelarus.gedemin.skeleton.core.util.Logger;
+import com.gsbelarus.gedemin.skeleton.R;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 abstract public class BaseActivity extends AppCompatActivity {
 
@@ -53,10 +56,8 @@ abstract public class BaseActivity extends AppCompatActivity {
     protected Context context;
     private Toolbar toolbar;
 
-    private BaseSyncService.SyncBinder syncBinder;
-    private ServiceConnection serviceConnection;
-    private BaseSyncService.OnSyncListener onSyncListener;
-
+    private List<Object> syncObserverHandles = new ArrayList<>();
+    private SparseBooleanArray syncActives = new SparseBooleanArray();
 
     public static <T extends AppCompatActivity> Intent newStartIntent(Context context, Class<T> cl, Bundle extrasBundle) {
         Intent intent = new Intent(context, cl);
@@ -91,6 +92,13 @@ abstract public class BaseActivity extends AppCompatActivity {
         // handle intent extras
         Bundle extras = getIntent().getExtras();
         if (extras != null) handleIntentExtras(extras);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        clearSyncStatusListeners();
     }
 
     protected void setupHighLevelActivity() {
@@ -174,44 +182,57 @@ abstract public class BaseActivity extends AppCompatActivity {
         return (T) getSupportFragmentManager().findFragmentByTag(tag);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        disconnectService();
-    }
-
-    protected boolean connectService(final Class<? extends BaseSyncService> serviceClass, final BaseSyncService.OnSyncListener onSyncListener) {
-        disconnectService();
-        this.onSyncListener = onSyncListener;
-        return BaseSyncService.bindService(getApplicationContext(), serviceClass, serviceConnection = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                syncBinder = (BaseSyncService.SyncBinder) service;
-                syncBinder.addOnSyncListener(BaseActivity.this.onSyncListener);
-                Logger.d();
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                syncBinder = null;
-                connectService(serviceClass, onSyncListener);// // FIXME: 07.06.2016
-                Logger.d();
-            }
-        });
-    }
-
-    private void disconnectService() {
-        if (syncBinder != null && onSyncListener != null) {
-            syncBinder.removeOnSyncListener(onSyncListener);
+    protected void addSyncStatusListener(final Account account, @NonNull final OnSyncStatusListener onSyncStatusListener) {
+        final int position = syncObserverHandles.size();
+        if (isSyncActive(account)) {
+            syncActives.put(position, true);
         }
-        if (serviceConnection != null) {
-            getApplicationContext().unbindService(serviceConnection);
+        syncObserverHandles.add(
+                ContentResolver.addStatusChangeListener(ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE, new SyncStatusObserver() {
+                    @Override
+                    public void onStatusChanged(int which) {
+                        if (isSyncActive(account)) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    syncActives.put(position, true);
+                                    onSyncStatusListener.onStart(account);
+                                }
+                            });
+                        } else {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (syncActives.get(position)) {
+                                        syncActives.put(position, false);
+                                        onSyncStatusListener.onFinish(account);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                })
+        );
+    }
+
+    protected void clearSyncStatusListeners() {
+        Iterator<Object> iterator = syncObserverHandles.iterator();
+        while (iterator.hasNext()) {
+            Object syncObserverHandle = iterator.next();
+            ContentResolver.removeStatusChangeListener(syncObserverHandle);
+            iterator.remove();
         }
+        syncActives.clear();
     }
 
-    public boolean isSyncProcess() {
-        return syncBinder != null;
+    public boolean isSyncActive(Account account) {
+        return ContentResolver.isSyncActive(account, getString(R.string.authority)) &&
+                !ContentResolver.isSyncPending(account, getString(R.string.authority));
     }
 
+    protected interface OnSyncStatusListener {
+        void onStart(Account account);
+
+        void onFinish(Account account);
+    }
 }

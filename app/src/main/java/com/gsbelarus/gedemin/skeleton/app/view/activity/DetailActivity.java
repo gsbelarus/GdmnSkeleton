@@ -12,7 +12,6 @@ import com.gsbelarus.gedemin.skeleton.base.view.BaseActivity;
 import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseDetailCursorFragment;
 import com.gsbelarus.gedemin.skeleton.core.view.fragment.CoreDetailCursorFragment;
 
-
 public class DetailActivity extends BaseActivity {
 
     /**

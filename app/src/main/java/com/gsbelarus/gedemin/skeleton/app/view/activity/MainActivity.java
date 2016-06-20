@@ -1,13 +1,13 @@
 package com.gsbelarus.gedemin.skeleton.app.view.activity;
 
+import android.accounts.Account;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.gsbelarus.gedemin.skeleton.R;
-import com.gsbelarus.gedemin.skeleton.app.SyncService;
+import com.gsbelarus.gedemin.skeleton.app.App;
 import com.gsbelarus.gedemin.skeleton.app.view.fragment.MainRecyclerCursorFragment;
-import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
 import com.gsbelarus.gedemin.skeleton.base.view.BaseActivity;
 import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 
@@ -41,25 +41,23 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        connectService(SyncService.class, new BaseSyncService.OnSyncListener() {
+        addSyncStatusListener(App.getSyncAccount(getApplicationContext()), new OnSyncStatusListener() {
             @Override
-            public void onStartSync() {
-                super.onStartSync();
+            public void onStart(Account account) {
                 Logger.d();
             }
 
             @Override
-            public boolean onFinishSync(@Nullable String error) {
+            public void onFinish(Account account) {
                 Logger.d();
-
                 fragment.disableLayoutRefreshing(); //TODO  onPause
-
-                return super.onFinishSync(error);
             }
         });
+
 //        setScrollFlagsToolbar(0);
 
         if (savedInstanceState == null) {
+
             fragment = new MainRecyclerCursorFragment();
             includeFragment(R.id.activity_content_fragment_place, fragment, MainRecyclerCursorFragment.class.getCanonicalName());
         } else {
