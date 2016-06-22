@@ -396,6 +396,15 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
         }
     }
 
+    /**
+     * Выполняется после загрузки, имеет доступ к UI потоку
+     *
+     * @param status статус с каким завершилась синхронизация
+     *               (NO_INTERNET_CONNECTION, INVALID_RESPONSE, EMPTY_RESPONSE, TIMEOUT, NOT_REQUIRED,
+     *               ELSE_FAILED, SUCCESSFUL, STOP_SYNC, CUSTOM_SYNC_FAILED)
+     */
+    //TODO public void onPostExecute(){}
+
     private interface HttpCallback {
         void onResponse(int responseCode);
     }

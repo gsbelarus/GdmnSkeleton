@@ -3,6 +3,14 @@
     package="com.gsbelarus.gedemin.skeleton">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+
+    <permission
+        android:name="com.gsbelarus.gedemin.skeleton.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="com.gsbelarus.gedemin.skeleton.permission.C2D_MESSAGE" />
 
     <application
         android:name="com.gsbelarus.gedemin.skeleton.app.App"
@@ -11,6 +19,34 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <receiver
+            android:name="com.google.android.gms.gcm.GcmReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
+                <category android:name="com.gsbelarus.gedemin.salary" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".app.service.SyncService"
+            android:exported="false" />
+        <service
+            android:name=".app.service.GcmService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".core.service.GcmInstanceIDService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.gms.iid.InstanceID" />
+            </intent-filter>
+        </service>
 
         <activity android:name=".app.view.activity.MainActivity">
             <intent-filter>
@@ -26,9 +62,6 @@
         <activity android:name=".app.view.activity.EditActivity"
             android:label="Изменить запись"/>
 
-        <service
-            android:name=".app.SyncService"
-            android:exported="false" />
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package com.gsbelarus.gedemin.skeleton.app;
+package com.gsbelarus.gedemin.skeleton.app.service;
 
 import android.app.Notification;
 import android.content.ContentValues;
