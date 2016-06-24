@@ -12,4 +12,12 @@
         <item>#448AFF</item>
     </array>
 
+    <color name="primary">#CC0000</color>
+    <color name="primary_dark">#880000</color>
+    <color name="accent">#808000</color>
+
+    <color name="crash_primary">#3F51B5</color>
+    <color name="crash_primary_dark">#283593</color>
+    <color name="crash_accent">#FF4081</color>
+
 </resources>

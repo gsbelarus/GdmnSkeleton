@@ -82,7 +82,9 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
         if (v.getId() == R.id.fab_add) {
             getDatabaseManager().beginTransaction();
             Long dataId = getDatabaseManager().insert(CoreContract.TEST_TABLE, CoreContract.TEST_TABLE_NULLHACK_COLUMN, new ContentValues()); //TODO create nullhack column
-            if (dataId != null) startActivityForResult(EditActivity.newStartIntent(getActivity(), dataId), RequestCode.REQUEST_CODE_EDIT_CHANGED);
+//            if (dataId != null)
+            dataId = null;
+                startActivityForResult(EditActivity.newStartIntent(getActivity(), dataId), RequestCode.REQUEST_CODE_EDIT_CHANGED);
         }
     }
 

@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.support.annotation.NonNull;
 
+import com.gsbelarus.gedemin.skeleton.core.CrashHelper;
+import com.squareup.leakcanary.LeakCanary;
+
 import java.util.Locale;
 
 abstract public class BaseApplication extends Application {
@@ -26,6 +29,8 @@ abstract public class BaseApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        LeakCanary.install(this);
+        CrashHelper.install(this);
 
         appContext = this;
         changeLocale();

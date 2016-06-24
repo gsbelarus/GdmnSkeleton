@@ -62,6 +62,16 @@
         <activity android:name=".app.view.activity.EditActivity"
             android:label="Изменить запись"/>
 
+        <activity
+            android:name="com.gsbelarus.gedemin.skeleton.core.view.activity.DefaultActivityCrash"
+            android:process=":error_activity" />
+
+        <activity
+            android:name="com.gsbelarus.gedemin.skeleton.core.view.activity.CustomActivityCrash"
+            android:label="@string/error_title"
+            android:process=":error_activity">
+        </activity>
+
     </application>
 
 </manifest>
