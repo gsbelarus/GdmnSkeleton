@@ -1,6 +1,8 @@
 package com.gsbelarus.gedemin.skeleton.app;
 
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
+import android.support.v7.preference.PreferenceManager;
 
 import com.gsbelarus.gedemin.skeleton.base.BaseApplication;
 
@@ -10,7 +12,8 @@ public class App extends BaseApplication {
     @NonNull
     @Override
     protected String getPrefLanguageCode() {
-        return "";
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        return pref.getString("lang_preference", "ru");
     }
 
 

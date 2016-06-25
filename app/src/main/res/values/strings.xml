@@ -1,3 +1,30 @@
 <resources>
     <string name="app_name">GdmnSkeleton</string>
+
+    <string name="russian" translatable="false">Русский</string>
+    <string name="belorussian" translatable="false">Беларуская</string>
+    <string name="material_light" translatable="false">Material Light</string>
+    <string name="material_dark" translatable="false">Material Dark</string>
+    <string name="lang_pref">Язык</string>
+    <string name="theme_pref">Темы</string>
+
+    <string-array name="lang_list_preference" translatable="false">
+        <item>@string/russian</item>
+        <item>@string/belorussian</item>
+    </string-array>
+
+    <string-array name="lang_values_list_preference" translatable="false">
+        <item>ru</item>
+        <item>be</item>
+    </string-array>
+
+    <string-array name="theme_list_preference" translatable="false">
+        <item>@string/material_light</item>
+        <item>@string/material_dark</item>
+    </string-array>
+
+    <string-array name="theme_values_list_preference" translatable="false">
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
 </resources>

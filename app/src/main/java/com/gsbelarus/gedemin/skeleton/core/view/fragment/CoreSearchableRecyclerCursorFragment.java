@@ -1,5 +1,6 @@
 package com.gsbelarus.gedemin.skeleton.core.view.fragment;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.FilterQueryProvider;
 
 import com.gsbelarus.gedemin.skeleton.R;
+import com.gsbelarus.gedemin.skeleton.core.SettingsActivity;
 import com.gsbelarus.gedemin.skeleton.core.view.component.DividerItemDecoration;
 import com.gsbelarus.gedemin.skeleton.base.data.loader.BasicTableCursorLoader;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.BasicCursorRecyclerViewAdapter;
@@ -204,6 +206,17 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
                 return true;
             }
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.core_action_settings:
+                Intent intent = new Intent(getActivity(), SettingsActivity.class);
+                startActivity(intent);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private boolean pressBackHandle() {

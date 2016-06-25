@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:layout="@layout/pref_category"
+        android:title="Интерфейс">
+
+        <ListPreference
+            android:defaultValue="ru"
+            android:dialogTitle="Выберите язык:"
+            android:entries="@array/lang_list_preference"
+            android:entryValues="@array/lang_values_list_preference"
+            android:key="lang_preference"
+            android:layout="@layout/pref_item"
+            android:summary="%s"
+            android:title="@string/lang_pref" />
+
+        <ListPreference
+            android:defaultValue="light"
+            android:dialogTitle="Выберите тему:"
+            android:entries="@array/theme_list_preference"
+            android:entryValues="@array/theme_values_list_preference"
+            android:key="theme_preference"
+            android:layout="@layout/pref_item"
+            android:summary="%s"
+            android:title="@string/theme_pref" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:layout="@layout/pref_category"
+        android:title="Тестовые настройки">
+
+        <CheckBoxPreference
+            android:key="checkbox_preference"
+            android:layout="@layout/pref_item"
+            android:summary="checkbox_preference"
+            android:title="checkbox_preference" />
+
+        <SwitchPreferenceCompat
+            android:key="switch_preference"
+            android:layout="@layout/pref_item"
+            android:summary="switch_preference"
+            android:title="switch_preference" />
+
+    </PreferenceCategory>
+
+</android.support.v7.preference.PreferenceScreen>

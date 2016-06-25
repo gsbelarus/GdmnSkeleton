@@ -1,0 +1,4 @@
+<resources>
+    <string name="lang_pref">Мова</string>
+    <string name="theme_pref">Тэмы</string>
+</resources>
