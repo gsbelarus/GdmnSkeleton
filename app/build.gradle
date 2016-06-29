@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.neenbedankt.android-apt'
-
 apply from: '../buildsystem/artifacts.gradle'
 
 android {
@@ -76,6 +75,7 @@ dependencies {
 
     compile 'com.google.code.gson:gson:2.6.2'
     compile 'com.google.android.gms:play-services-gcm:9.0.2'
+    compile 'com.google.android.gms:play-services-analytics:9.0.2'
 
     def appDependencies = rootProject.ext.appDependencies
     def appTestDependencies = rootProject.ext.appTestDependencies
@@ -94,3 +94,5 @@ dependencies {
 
     testCompile appTestDependencies.junit
 }
+
+apply plugin: 'com.google.gms.google-services'

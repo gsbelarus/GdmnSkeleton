@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.gsbelarus.gedemin.skeleton.core;
+package com.gsbelarus.gedemin.skeleton.core.util;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;

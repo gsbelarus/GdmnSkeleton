@@ -24,7 +24,8 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.gsbelarus.gedemin.skeleton.R;
-import com.gsbelarus.gedemin.skeleton.core.CrashHelper;
+import com.gsbelarus.gedemin.skeleton.base.BaseApplication;
+import com.gsbelarus.gedemin.skeleton.core.util.CrashHelper;
 
 public class CustomActivityCrash extends Activity {
 
@@ -64,6 +65,9 @@ public class CustomActivityCrash extends Activity {
             restartButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
+                    BaseApplication.getInstance().trackEvent("ActivityCrash", "restartButton", "");
+
                     Intent intent = new Intent(CustomActivityCrash.this, restartActivityClass);
                     CrashHelper.restartApplicationWithIntent(CustomActivityCrash.this, intent, eventListener);
                 }
@@ -72,6 +76,9 @@ public class CustomActivityCrash extends Activity {
             restartButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
+                    BaseApplication.getInstance().trackEvent("ActivityCrash", "restartButton", "");
+
                     CrashHelper.closeApplication(CustomActivityCrash.this, eventListener);
                 }
             });

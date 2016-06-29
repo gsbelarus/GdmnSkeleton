@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.gsbelarus.gedemin.skeleton.R;
+import com.gsbelarus.gedemin.skeleton.app.App;
 import com.gsbelarus.gedemin.skeleton.app.service.SyncService;
 import com.gsbelarus.gedemin.skeleton.app.view.RequestCode;
 import com.gsbelarus.gedemin.skeleton.app.view.activity.DetailActivity;
@@ -51,6 +52,15 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        // Tracking the screen view
+        //TODO call the name of fragment programmatically
+        App.getInstance().trackScreenView("MainRecyclerCursorFragment");
+    }
+
+    @Override
     protected void doOnCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
         super.doOnCreateView(rootView, savedInstanceState);
 
@@ -82,8 +92,7 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
         if (v.getId() == R.id.fab_add) {
             getDatabaseManager().beginTransaction();
             Long dataId = getDatabaseManager().insert(CoreContract.TEST_TABLE, CoreContract.TEST_TABLE_NULLHACK_COLUMN, new ContentValues()); //TODO create nullhack column
-//            if (dataId != null)
-            dataId = null;
+            if (dataId != null)
                 startActivityForResult(EditActivity.newStartIntent(getActivity(), dataId), RequestCode.REQUEST_CODE_EDIT_CHANGED);
         }
     }

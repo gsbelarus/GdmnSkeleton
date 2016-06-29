@@ -32,7 +32,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gsbelarus.gedemin.skeleton.R;
-import com.gsbelarus.gedemin.skeleton.core.CrashHelper;
+import com.gsbelarus.gedemin.skeleton.base.BaseApplication;
+import com.gsbelarus.gedemin.skeleton.core.util.CrashHelper;
 
 public final class DefaultActivityCrash extends Activity {
 
@@ -56,6 +57,9 @@ public final class DefaultActivityCrash extends Activity {
             restartButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
+                    BaseApplication.getInstance().trackEvent("ActivityCrash", "restartButton", "");
+
                     Intent intent = new Intent(DefaultActivityCrash.this, restartActivityClass);
                     CrashHelper.restartApplicationWithIntent(DefaultActivityCrash.this, intent, eventListener);
                 }
@@ -64,6 +68,9 @@ public final class DefaultActivityCrash extends Activity {
             restartButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
+                    BaseApplication.getInstance().trackEvent("ActivityCrash", "restartButton", "");
+
                     CrashHelper.closeApplication(DefaultActivityCrash.this, eventListener);
                 }
             });
@@ -77,6 +84,8 @@ public final class DefaultActivityCrash extends Activity {
                 @Override
                 public void onClick(View v) {
                     //We retrieve all the error data and show it
+
+                    BaseApplication.getInstance().trackEvent("ActivityCrash", "restartButton", "");
 
                     AlertDialog dialog = new AlertDialog.Builder(DefaultActivityCrash.this)
                             .setTitle(R.string.crash_details_title)

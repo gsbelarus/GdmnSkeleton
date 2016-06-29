@@ -1,0 +1,38 @@
+{
+  "project_info": {
+    "project_number": "884379891331",
+    "project_id": "skeleton-7c0c5"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:884379891331:android:de63eaddb3df90a3",
+        "android_client_info": {
+          "package_name": "com.gsbelarus.gedemin.skeleton"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8ZTcU2ys17DG8AqBcqjzsvZH2_fVdBPQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 2,
+          "analytics_property": {
+            "tracking_id": "UA-79845358-2"
+          }
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
