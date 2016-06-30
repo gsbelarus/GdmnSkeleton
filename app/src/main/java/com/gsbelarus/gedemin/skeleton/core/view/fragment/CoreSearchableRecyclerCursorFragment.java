@@ -182,13 +182,15 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
         SpannableStringBuilder ssb = new SpannableStringBuilder("");
         ssb.append("Поиск...");
         searchAutoComplete.setHint(ssb);
-        //        try {
-        //            // меняем курсор
-        //            Field f = TextView.class.getDeclaredField("mCursorDrawableRes");
-        //            f.setAccessible(true);
-        //            f.set(searchAutoComplete, R.drawable.edittext_cursor_white);
-        //        } catch (Exception ignored) {
-        //        }
+//                try {
+//                    // меняем курсор
+//                    Field f = TextView.class.getDeclaredField("mCursorDrawableRes");
+//                    f.setAccessible(true);
+//                    f.set(searchAutoComplete, R.drawable.edittext_cursor_white);
+//                } catch (Exception ignored) {
+//                    // Tracking exception
+//                    BaseApplication.getInstance().trackException(ignored);
+//                }
         // убираем полосу снизу
         View searchPlate = searchView.findViewById(android.support.v7.appcompat.R.id.search_plate);
         searchPlate.setBackgroundColor(Color.TRANSPARENT);

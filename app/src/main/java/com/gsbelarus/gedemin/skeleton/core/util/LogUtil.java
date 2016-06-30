@@ -2,6 +2,8 @@ package com.gsbelarus.gedemin.skeleton.core.util;
 
 import android.text.TextUtils;
 
+import com.gsbelarus.gedemin.skeleton.base.BaseApplication;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -138,6 +140,8 @@ public final class LogUtil {
                     found = true;
 
             } catch (ClassNotFoundException e) {
+                // Tracking exception
+                BaseApplication.getInstance().trackException(e);
             }
         }
 

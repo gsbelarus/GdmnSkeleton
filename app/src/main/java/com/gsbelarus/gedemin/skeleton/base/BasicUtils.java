@@ -53,6 +53,9 @@ public class BasicUtils {
             imageView.setImageResource(Integer.parseInt(value));
         } catch (NumberFormatException nfe) {
             imageView.setImageURI(Uri.parse(value));
+
+            // Tracking exception
+            BaseApplication.getInstance().trackException(nfe);
         }
     }
 

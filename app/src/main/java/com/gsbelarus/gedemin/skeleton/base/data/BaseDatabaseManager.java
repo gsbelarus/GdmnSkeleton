@@ -14,6 +14,8 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.gsbelarus.gedemin.skeleton.base.BaseApplication;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -140,6 +142,10 @@ public abstract class BaseDatabaseManager {
             return setNotifier(db.query(tableName, columnNames, selection, selectionArgs, null, null, order));
         } catch (Exception e) {
             Log.e(TAG, "Error selecting: " + SQLiteQueryBuilder.buildQueryString(false, tableName, columnNames, selection, null, null, order, null), e);
+
+            // Tracking exception
+            BaseApplication.getInstance().trackException(e);
+
             return null;
         }
     }
@@ -151,6 +157,10 @@ public abstract class BaseDatabaseManager {
 
         } catch (SQLException e) {
             Log.e(TAG, "Error inserting " + tableName + ": " + contentValues, e);
+
+            // Tracking exception
+            BaseApplication.getInstance().trackException(e);
+
             return null;
         }
     }
@@ -162,6 +172,10 @@ public abstract class BaseDatabaseManager {
 
         } catch (Exception e) {
             Log.e(TAG, "Error updating " + tableName + ": " + contentValues, e);
+
+            // Tracking exception
+            BaseApplication.getInstance().trackException(e);
+
             return null;
         }
     }
@@ -173,6 +187,10 @@ public abstract class BaseDatabaseManager {
 
         } catch (SQLException e) {
             Log.e(TAG, "Error replacing " + tableName + ": " + initialValues, e);
+
+            // Tracking exception
+            BaseApplication.getInstance().trackException(e);
+
             return null;
         }
     }
@@ -184,6 +202,10 @@ public abstract class BaseDatabaseManager {
 
         } catch (SQLException e) {
             Log.e(TAG, "Error deleting: DELETE FROM " + tableName + (!TextUtils.isEmpty(whereClause) ? " WHERE " + whereClause : ""), e);
+
+            // Tracking exception
+            BaseApplication.getInstance().trackException(e);
+
             return null;
         }
     }

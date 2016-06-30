@@ -10,6 +10,7 @@ import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.gsbelarus.gedemin.skeleton.base.BaseApplication;
 import com.gsbelarus.gedemin.skeleton.base.data.BaseDatabaseManager;
 import com.gsbelarus.gedemin.skeleton.base.data.BasicDatabaseOpenHelper;
 import com.gsbelarus.gedemin.skeleton.base.data.SQLiteDataType.SQLiteStorageTypes;
@@ -145,6 +146,9 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
 //                insertQueries.add(insertColumns.values(BigInteger.valueOf(9223372036854775807l), "CHAR text 14", dateFormat.parse("31.12.9999"), 9000.5678, 9.23, 2147483647, 9000.5, 32767, java.sql.Time.valueOf("23:59:59"), dateTimeFormat.parse("31.12.9999 23:59:59"), "VARCHAR text 14"));
 //            } catch (ParseException e) {
 //                e.printStackTrace();
+//
+//                // Tracking exception
+//                BaseApplication.getInstance().trackException(e);
 //            }
 //
 //            for (FinishedSqlPart insertQuery : insertQueries) {
@@ -207,6 +211,9 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
             return new SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).parse(date);
         } catch (Exception e) {
             LogUtil.d(e.getMessage());
+
+            // Tracking exception
+            BaseApplication.getInstance().trackException(e);
         }
         return null;
     }
@@ -234,6 +241,9 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
             if (version == 0) version = db.getVersion();
         } catch (SQLiteException e) {
             LogUtil.d(e.getMessage());
+
+            // Tracking exception
+            BaseApplication.getInstance().trackException(e);
         }
         return version;
     }

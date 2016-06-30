@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
 import com.gsbelarus.gedemin.skeleton.R;
+import com.gsbelarus.gedemin.skeleton.base.BaseApplication;
 import com.gsbelarus.gedemin.skeleton.base.view.BaseActivity;
 import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseDetailCursorFragment;
 import com.gsbelarus.gedemin.skeleton.core.view.fragment.CoreDetailCursorFragment;
@@ -60,8 +61,14 @@ public class DetailActivity extends BaseActivity {
 
             } catch (InstantiationException e) {
                 e.printStackTrace();
+
+                // Tracking exception
+                BaseApplication.getInstance().trackException(e);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
+
+                // Tracking exception
+                BaseApplication.getInstance().trackException(e);
             }
 
             includeFragment(R.id.activity_content_fragment_place, fragment, cl.getCanonicalName());

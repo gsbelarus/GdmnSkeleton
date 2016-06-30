@@ -10,6 +10,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.gsbelarus.gedemin.skeleton.base.BaseApplication;
+
 
 abstract public class BaseFragment extends Fragment {
 
@@ -67,8 +69,14 @@ abstract public class BaseFragment extends Fragment {
 
         } catch (java.lang.InstantiationException e) {
             e.printStackTrace();
+
+            // Tracking exception
+            BaseApplication.getInstance().trackException(e);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
+
+            // Tracking exception
+            BaseApplication.getInstance().trackException(e);
         }
 
         return fragment;

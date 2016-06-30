@@ -18,6 +18,9 @@ public class GcmService extends GcmListenerService {
 
 //            } catch (IOException e) {
 //                e.printStackTrace();
+//
+//                // Tracking exception
+//                BaseApplication.getInstance().trackException(e);
 //            }
         }
 

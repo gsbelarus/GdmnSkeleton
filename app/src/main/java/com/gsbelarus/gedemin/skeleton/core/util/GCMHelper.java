@@ -8,6 +8,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
+import com.gsbelarus.gedemin.skeleton.base.BaseApplication;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -59,6 +60,9 @@ public class GCMHelper {
 
                         } catch (Exception ex) {
                             LogUtil.i("Error : " + ex.getMessage());
+
+                            // Tracking exception
+                            BaseApplication.getInstance().trackException(ex);
                         }
                     }
                 }
@@ -87,6 +91,9 @@ public class GCMHelper {
 
                 } catch (Exception ex) {
                     LogUtil.i("Error : " + ex.getMessage());
+
+                    // Tracking exception
+                    BaseApplication.getInstance().trackException(ex);
                 }
             }
         });

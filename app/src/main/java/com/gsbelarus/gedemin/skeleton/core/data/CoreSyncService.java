@@ -6,6 +6,7 @@ import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 
 import com.google.gson.Gson;
+import com.gsbelarus.gedemin.skeleton.base.BaseApplication;
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
 import com.gsbelarus.gedemin.skeleton.core.UnsupportedDataTypeException;
 import com.gsbelarus.gedemin.skeleton.core.util.LogUtil;
@@ -103,6 +104,9 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
 //                startSync(getApplicationContext(), this.getClass(), TypeTask.FOREGROUND);
             } catch (Exception e) {
                 LogUtil.d(e.getMessage());
+
+                // Tracking exception
+                BaseApplication.getInstance().trackException(e);
             }
 
             databaseManager.setTransactionSuccessful();
@@ -178,6 +182,9 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
 
             } catch (UnsupportedDataTypeException e) {
                 LogUtil.d(e.getMessage());
+
+                // Tracking exception
+                BaseApplication.getInstance().trackException(e);
             }
         }
         if (edmEntityType.getBaseType() != null) {
@@ -231,6 +238,9 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
                 }
             } catch (UnsupportedDataTypeException e) {
                 LogUtil.d(e.getMessage());
+
+                // Tracking exception
+                BaseApplication.getInstance().trackException(e);
             }
         }
         onHandleRow(entitySetName, cv);
@@ -393,6 +403,9 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
             httpCallback.onResponse(conn.getResponseCode());
         } catch (IOException e) {
             e.printStackTrace();
+
+            // Tracking exception
+            BaseApplication.getInstance().trackException(e);
         }
     }
 

@@ -30,6 +30,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.gsbelarus.gedemin.skeleton.R;
+import com.gsbelarus.gedemin.skeleton.base.BaseApplication;
 import com.gsbelarus.gedemin.skeleton.core.view.activity.DefaultActivityCrash;
 
 import java.io.PrintWriter;
@@ -589,6 +590,9 @@ public final class CrashHelper {
             zf.close();
         } catch (Exception e) {
             buildDate = "Unknown";
+
+            // Tracking exception
+            BaseApplication.getInstance().trackException(e);
         }
         return buildDate;
     }
@@ -604,6 +608,9 @@ public final class CrashHelper {
             PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             return packageInfo.versionName;
         } catch (Exception e) {
+            // Tracking exception
+            BaseApplication.getInstance().trackException(e);
+
             return "Unknown";
         }
     }
@@ -685,6 +692,9 @@ public final class CrashHelper {
             } catch (ClassNotFoundException e) {
                 //Should not happen, print it to the log!
                 Log.e(TAG, "Failed when resolving the restart activity class via intent filter, stack trace follows!", e);
+
+                // Tracking exception
+                BaseApplication.getInstance().trackException(e);
             }
         }
 
@@ -707,6 +717,9 @@ public final class CrashHelper {
             } catch (ClassNotFoundException e) {
                 //Should not happen, print it to the log!
                 Log.e(TAG, "Failed when resolving the restart activity class via getLaunchIntentForPackage, stack trace follows!", e);
+
+                // Tracking exception
+                BaseApplication.getInstance().trackException(e);
             }
         }
 
@@ -755,6 +768,9 @@ public final class CrashHelper {
             } catch (ClassNotFoundException e) {
                 //Should not happen, print it to the log!
                 Log.e(TAG, "Failed when resolving the error activity class via intent filter, stack trace follows!", e);
+
+                // Tracking exception
+                BaseApplication.getInstance().trackException(e);
             }
         }
 

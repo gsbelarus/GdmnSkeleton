@@ -88,6 +88,9 @@ public abstract class BaseSyncService extends IntentService {
             } catch (Exception e) {
                 LogUtil.e(e);
                 error = e.getMessage();
+
+                // Tracking exception
+                BaseApplication.getInstance().trackException(e);
             }
 
             stopForeground(true);
@@ -175,6 +178,9 @@ public abstract class BaseSyncService extends IntentService {
                         onSyncListener.onProcessChange(max, progress);
                     } catch (Exception e) {
                         LogUtil.d(e);
+
+                        // Tracking exception
+                        BaseApplication.getInstance().trackException(e);
                     }
                 }
             }
