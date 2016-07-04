@@ -66,7 +66,7 @@ public class CustomActivityCrash extends Activity {
                 @Override
                 public void onClick(View v) {
 
-                    BaseApplication.getInstance().trackEvent("ActivityCrash", "restartButton", "");
+                    BaseApplication.getInstance().trackEvent(this.getClass().getSimpleName(), "restart_button", "");
 
                     Intent intent = new Intent(CustomActivityCrash.this, restartActivityClass);
                     CrashHelper.restartApplicationWithIntent(CustomActivityCrash.this, intent, eventListener);
@@ -77,7 +77,7 @@ public class CustomActivityCrash extends Activity {
                 @Override
                 public void onClick(View v) {
 
-                    BaseApplication.getInstance().trackEvent("ActivityCrash", "restartButton", "");
+                    BaseApplication.getInstance().trackEvent(this.getClass().getSimpleName(), "restart_button", "");
 
                     CrashHelper.closeApplication(CustomActivityCrash.this, eventListener);
                 }

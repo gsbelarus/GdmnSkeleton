@@ -56,8 +56,7 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
         super.onResume();
 
         // Tracking the screen view
-        //TODO call the name of fragment programmatically
-        App.getInstance().trackScreenView("MainRecyclerCursorFragment");
+        App.getInstance().trackScreenView(this.getClass().getSimpleName());
     }
 
     @Override

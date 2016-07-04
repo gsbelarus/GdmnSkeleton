@@ -58,7 +58,7 @@ public final class DefaultActivityCrash extends Activity {
                 @Override
                 public void onClick(View v) {
 
-                    BaseApplication.getInstance().trackEvent("ActivityCrash", "restartButton", "");
+                    BaseApplication.getInstance().trackEvent(this.getClass().getSimpleName(), "restart_button", "");
 
                     Intent intent = new Intent(DefaultActivityCrash.this, restartActivityClass);
                     CrashHelper.restartApplicationWithIntent(DefaultActivityCrash.this, intent, eventListener);
@@ -69,7 +69,7 @@ public final class DefaultActivityCrash extends Activity {
                 @Override
                 public void onClick(View v) {
 
-                    BaseApplication.getInstance().trackEvent("ActivityCrash", "restartButton", "");
+                    BaseApplication.getInstance().trackEvent(this.getClass().getSimpleName(), "restart_button", "");
 
                     CrashHelper.closeApplication(DefaultActivityCrash.this, eventListener);
                 }
@@ -85,7 +85,7 @@ public final class DefaultActivityCrash extends Activity {
                 public void onClick(View v) {
                     //We retrieve all the error data and show it
 
-                    BaseApplication.getInstance().trackEvent("ActivityCrash", "restartButton", "");
+                    BaseApplication.getInstance().trackEvent(this.getClass().getSimpleName(), "restart_button", "");
 
                     AlertDialog dialog = new AlertDialog.Builder(DefaultActivityCrash.this)
                             .setTitle(R.string.crash_details_title)
