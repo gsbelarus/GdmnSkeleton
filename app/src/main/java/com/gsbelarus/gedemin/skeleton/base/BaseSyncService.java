@@ -6,7 +6,6 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SyncResult;
@@ -20,6 +19,7 @@ import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 
 import javax.net.ssl.SSLHandshakeException;
 
@@ -28,41 +28,19 @@ public abstract class BaseSyncService extends Service {
     private static final int ID_SYNC_NOTIFICATION = 1001;
     private static final int ID_ERROR_NOTIFICATION = 1002;
 
-    private CoreSyncAdapter syncAdapter;
+    private BaseSyncAdapter syncAdapter;
     private NotificationManager notificationManager;
 
-    public static void startSync(Context context, Account account, TypeTask typeTask) {
-        startSync(context, account, typeTask, new Bundle());
+    public static Bundle getTaskBundle(TypeTask typeTask) {
+        return getTaskBundle(typeTask, new Bundle());
     }
 
-    public static void startSync(Context context, Account account, TypeTask typeTask, Bundle bundle) {
+    public static Bundle getTaskBundle(TypeTask typeTask, Bundle bundle) {
         bundle.putString(TypeTask.class.getSimpleName(), typeTask.name());
-        ContentResolver.requestSync(account, context.getString(R.string.authority), bundle);
+        return bundle;
     }
 
-    public static void cancelSync(Context context, Account account) {
-        ContentResolver.cancelSync(account, context.getString(R.string.authority));
-    }
-
-    public static void addPeriodicSync(Context context, Account account, long pollFrequency) {
-        addPeriodicSync(context, account, new Bundle(), pollFrequency);
-    }
-
-    public static void addPeriodicSync(Context context, Account account, Bundle bundle, long pollFrequency) {
-        bundle.putString(TypeTask.class.getSimpleName(), TypeTask.BACKGROUND.name());
-        ContentResolver.addPeriodicSync(account, context.getString(R.string.authority), bundle, pollFrequency);
-    }
-
-    public static void removePeriodicSync(Context context, Account account) {
-        removePeriodicSync(context, account, new Bundle());
-    }
-
-    public static void removePeriodicSync(Context context, Account account, Bundle bundle) {
-        bundle.putString(TypeTask.class.getSimpleName(), TypeTask.BACKGROUND.name());
-        ContentResolver.removePeriodicSync(account, context.getString(R.string.authority), bundle);
-    }
-
-    protected abstract void onPerformSync(Account account, Bundle extras, ContentProviderClient provider, SyncResult syncResult) throws Exception;
+    protected abstract void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) throws IOException;
 
     @Nullable
     @Override
@@ -76,7 +54,7 @@ public abstract class BaseSyncService extends Service {
 
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancel(ID_SYNC_NOTIFICATION);
-        syncAdapter = new CoreSyncAdapter(getApplicationContext(), true);
+        syncAdapter = new BaseSyncAdapter(getApplicationContext(), true);
         Logger.d();
     }
 
@@ -110,7 +88,7 @@ public abstract class BaseSyncService extends Service {
                 .setWhen(System.currentTimeMillis())
                 .setStyle((new NotificationCompat.BigTextStyle()
                         .setBigContentTitle("GDMN")
-                        .bigText("Error: " + errorMessage)
+                        .bigText(errorMessage)
                 ))
                 .build();
     }
@@ -123,9 +101,9 @@ public abstract class BaseSyncService extends Service {
 
     public enum TypeTask {FOREGROUND, BACKGROUND}
 
-    private class CoreSyncAdapter extends AbstractThreadedSyncAdapter {
+    private class BaseSyncAdapter extends AbstractThreadedSyncAdapter {
 
-        public CoreSyncAdapter(Context context, boolean autoInitialize) {
+        public BaseSyncAdapter(Context context, boolean autoInitialize) {
             super(context, autoInitialize);
         }
 
@@ -137,7 +115,7 @@ public abstract class BaseSyncService extends Service {
 
             String error = null;
             try {
-                BaseSyncService.this.onPerformSync(account, extras, provider, syncResult);
+                BaseSyncService.this.onPerformSync(account, extras, authority, provider, syncResult);
             } catch (SSLHandshakeException e) {
                 Logger.e(e);
                 error = getString(R.string.sync_certificate_error);
@@ -147,12 +125,18 @@ public abstract class BaseSyncService extends Service {
                 if (getTypeTask(extras) == TypeTask.BACKGROUND) {
                     syncResult.stats.numIoExceptions++;
                 }
+            } catch (UnknownHostException e) {
+                Logger.e(e);
+                error = getString(R.string.sync_error_unknown_host);
             } catch (IOException e) {
                 Logger.e(e);
                 error = getString(R.string.sync_error_connection);
                 if (getTypeTask(extras) == TypeTask.BACKGROUND) {
                     syncResult.stats.numIoExceptions++;
                 }
+            } catch (RuntimeException e) {
+                Logger.e(e);
+                error = e.getMessage();
             } catch (Exception e) {
                 Logger.e(e);
                 error = getString(R.string.sync_unknown) + ": " + e.getMessage();

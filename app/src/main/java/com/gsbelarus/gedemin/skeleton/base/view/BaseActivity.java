@@ -1,10 +1,7 @@
 package com.gsbelarus.gedemin.skeleton.base.view;
 
-import android.accounts.Account;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SyncStatusObserver;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
@@ -14,14 +11,7 @@ import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.SparseBooleanArray;
 import android.view.MenuItem;
-
-import com.gsbelarus.gedemin.skeleton.R;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 abstract public class BaseActivity extends AppCompatActivity {
 
@@ -56,8 +46,6 @@ abstract public class BaseActivity extends AppCompatActivity {
     protected Context context;
     private Toolbar toolbar;
 
-    private List<Object> syncObserverHandles = new ArrayList<>();
-    private SparseBooleanArray syncActives = new SparseBooleanArray();
 
     public static <T extends AppCompatActivity> Intent newStartIntent(Context context, Class<T> cl, Bundle extrasBundle) {
         Intent intent = new Intent(context, cl);
@@ -92,13 +80,6 @@ abstract public class BaseActivity extends AppCompatActivity {
         // handle intent extras
         Bundle extras = getIntent().getExtras();
         if (extras != null) handleIntentExtras(extras);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        clearSyncStatusListeners();
     }
 
     protected void setupHighLevelActivity() {
@@ -180,59 +161,5 @@ abstract public class BaseActivity extends AppCompatActivity {
     @Nullable
     protected <T extends Fragment> T findSupportFragment(String tag) {
         return (T) getSupportFragmentManager().findFragmentByTag(tag);
-    }
-
-    protected void addSyncStatusListener(final Account account, @NonNull final OnSyncStatusListener onSyncStatusListener) {
-        final int position = syncObserverHandles.size();
-        if (isSyncActive(account)) {
-            syncActives.put(position, true);
-        }
-        syncObserverHandles.add(
-                ContentResolver.addStatusChangeListener(ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE, new SyncStatusObserver() {
-                    @Override
-                    public void onStatusChanged(int which) {
-                        if (isSyncActive(account)) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    syncActives.put(position, true);
-                                    onSyncStatusListener.onStart(account);
-                                }
-                            });
-                        } else {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (syncActives.get(position)) {
-                                        syncActives.put(position, false);
-                                        onSyncStatusListener.onFinish(account);
-                                    }
-                                }
-                            });
-                        }
-                    }
-                })
-        );
-    }
-
-    protected void clearSyncStatusListeners() {
-        Iterator<Object> iterator = syncObserverHandles.iterator();
-        while (iterator.hasNext()) {
-            Object syncObserverHandle = iterator.next();
-            ContentResolver.removeStatusChangeListener(syncObserverHandle);
-            iterator.remove();
-        }
-        syncActives.clear();
-    }
-
-    public boolean isSyncActive(Account account) {
-        return ContentResolver.isSyncActive(account, getString(R.string.authority)) &&
-                !ContentResolver.isSyncPending(account, getString(R.string.authority));
-    }
-
-    protected interface OnSyncStatusListener {
-        void onStart(Account account);
-
-        void onFinish(Account account);
     }
 }

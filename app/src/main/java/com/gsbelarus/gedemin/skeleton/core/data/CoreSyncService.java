@@ -2,6 +2,7 @@ package com.gsbelarus.gedemin.skeleton.core.data;
 
 import android.accounts.Account;
 import android.content.ContentProviderClient;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.SyncResult;
 import android.os.Bundle;
@@ -42,6 +43,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -59,8 +61,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
     private ODataClient oDataClient;
     private boolean insertedDataSent;
 
-    @NonNull
-    protected abstract String getUrl();
+    protected abstract String getUrl(Account account);
 
     @NonNull
     protected abstract String getNamespace();
@@ -86,13 +87,12 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
     }
 
     @Override
-    protected void onPerformSync(Account account, Bundle extras, ContentProviderClient provider, SyncResult syncResult) throws Exception {
-        url = getUrl();
-        namespace = getNamespace();
-
+    protected void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) throws IOException {
         boolean isSuccessful = false;
         databaseManager.beginTransactionNonExclusive();
         try {
+            url = getUrl(account);
+            namespace = getNamespace();
 
             ODataRetrieveResponse<Edm> metadataResponse = oDataClient.getRetrieveRequestFactory().getMetadataRequest(url).execute();
             Map<String, String> tokens = databaseManager.setVersion(getDatabaseVersion(metadataResponse), this);
@@ -104,7 +104,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
                 pushUpdatedData(metadataResponse.getBody());
                 pushInsertedData(metadataResponse.getBody());
                 if (insertedDataSent) {
-                    startSync(getApplicationContext(), account, getTypeTask(extras), extras);
+                    ContentResolver.requestSync(account, authority, extras);
                 }
             } catch (Exception e) {
                 Logger.d(e.getMessage());
@@ -116,6 +116,8 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
             Logger.e(e);
             if (e.getCause() instanceof IOException) {
                 throw (IOException) e.getCause();
+            } else if (e.getCause() instanceof IllegalStateException) {
+                throw new UnknownHostException(e.toString());
             } else {
                 throw new RuntimeException(e);
             }
