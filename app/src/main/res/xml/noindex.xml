@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search-engine xmlns:android="http://schemas.android.com/apk/res/android">
+<!-- TODO In this file can control which app elements appear in Google Search. There is an-->
+<!-- TODO opportunity exclude specific pages from Search results and exclude real-time app-->
+<!-- TODO notifications from Search result.-->
+
+</search-engine>

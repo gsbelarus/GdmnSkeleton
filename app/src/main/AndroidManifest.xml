@@ -74,6 +74,22 @@
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <!-- TODO: Add autoVerify if necessary. More information
+                 TODO: https://developer.android.com/training/app-links/index.html#request-verify -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- TODO: Change the host or pathPrefix as necessary. -->
+                <data
+                    android:host="skeleton.gedemin.gsbelarus.com"
+                    android:pathPrefix="/main"
+                    android:scheme="http" />
+            </intent-filter>
+
         </activity>
 
         <activity android:name=".app.view.activity.DetailActivity"
@@ -91,6 +107,8 @@
             android:label="@string/error_title"
             android:process=":error_activity">
         </activity>
+
+        <meta-data android:name="search-engine" android:resource="@xml/noindex"/>
 
     </application>
 
