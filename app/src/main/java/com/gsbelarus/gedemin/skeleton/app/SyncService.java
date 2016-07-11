@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.PeriodicSync;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreDatabaseManager;
@@ -19,17 +20,14 @@ public class SyncService extends CoreSyncService {
 
     public static final String TAG_SERVER_URL = "server_url";
 
-    public static final String SYNC_ACCOUNT_NAME = "Sync Account";
-
-    public static Account getSyncAccount(Context context, Bundle bundle) {
+    public static Account getSyncAccount(Context context, String name, Bundle bundle) {
         String authority = context.getString(R.string.authority);
-        Account account = new Account(SYNC_ACCOUNT_NAME, context.getString(R.string.account_type));
-        AccountManager accountManager = AccountManager.get(context);
-        if (accountManager.addAccountExplicitly(account, null, bundle)) {
-            Logger.d(SYNC_ACCOUNT_NAME + " created");
-            ContentResolver.setSyncAutomatically(account, authority, true);
-            ContentResolver.setIsSyncable(account, authority, 1);
-        }
+        Account account = new Account(name, context.getString(R.string.account_type));
+        AccountManager.get(context).addAccountExplicitly(account, null, bundle);
+        ContentResolver.removePeriodicSync(account, authority, Bundle.EMPTY);
+        ContentResolver.setSyncAutomatically(account, authority, true);
+        ContentResolver.setIsSyncable(account, authority, 1);
+
         for (PeriodicSync periodicSync : ContentResolver.getPeriodicSyncs(account, authority)) {
             Logger.d(periodicSync.account.name, "period: " + periodicSync.period + " s");
         }
@@ -40,11 +38,18 @@ public class SyncService extends CoreSyncService {
     public static Account getDefaultSyncAccount(Context context) {
         Bundle bundle = new Bundle();
         bundle.putString(SyncService.TAG_SERVER_URL, "http://services.odata.org/V4/(S(5i2qvfszd0uktnpibrgfu2qs))/OData/OData.svc/");
-        return getSyncAccount(context, bundle);
+        Account account = getSyncAccount(context, "Default Sync Account", bundle);
+        ContentResolver.addPeriodicSync(account, context.getString(R.string.authority), getTaskBundle(TypeTask.BACKGROUND), 86400);
+        return account;
     }
 
+    public static Account getDemoSyncAccount(Context context) {
+        return getSyncAccount(context, "Demo Account", Bundle.EMPTY);
+    }
+
+    @Nullable
     @Override
-    protected String getUrl(Account account) {
+    protected String getUrl(Account account, Bundle extras) {
         AccountManager accountManager = AccountManager.get(getApplicationContext());
         return accountManager.getUserData(account, TAG_SERVER_URL);
     }
@@ -69,6 +74,11 @@ public class SyncService extends CoreSyncService {
     @Override
     protected Notification getErrorSyncNotification(String errorMessage) {
         return super.getErrorSyncNotification(errorMessage);
+    }
+
+    @Override
+    public void onCreateDemoDatabase(CoreDatabaseManager coreDatabaseManager) {
+        super.onCreateDemoDatabase(coreDatabaseManager);
     }
 
     @Override

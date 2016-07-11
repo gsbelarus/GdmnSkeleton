@@ -290,6 +290,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
 
     public void recreateDatabase() {
         dropAll();
+        db.setVersion(1);
         dbOpenHelperImpl.onCreate(db);
     }
 

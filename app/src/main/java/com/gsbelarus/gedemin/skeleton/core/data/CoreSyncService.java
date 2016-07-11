@@ -8,6 +8,7 @@ import android.content.SyncResult;
 import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
@@ -53,7 +54,8 @@ import java.util.Map;
 public abstract class CoreSyncService extends BaseSyncService implements CoreDatabaseManager.Callback {
 
     private static final String HEADER_DATABASE_VERSION = "Database-Version";
-    private static final int DEFAULT_SCHEMA_VERSION = 38;
+    private static final int DEFAULT_DEMO_VERSION = 1;
+    private static final int DEFAULT_SCHEMA_VERSION = 2;
 
     private String url;
     private String namespace;
@@ -61,7 +63,12 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
     private ODataClient oDataClient;
     private boolean insertedDataSent;
 
-    protected abstract String getUrl(Account account);
+    /**
+     * @return url для соединения или null для создания демо данных.
+     * Если null, вызывается {@link CoreSyncService#onCreateDemoDatabase(CoreDatabaseManager)}
+     */
+    @Nullable
+    protected abstract String getUrl(Account account, Bundle extras);
 
     @NonNull
     protected abstract String getNamespace();
@@ -91,23 +98,33 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
         boolean isSuccessful = false;
         databaseManager.beginTransactionNonExclusive();
         try {
-            url = getUrl(account);
-            namespace = getNamespace();
+            url = getUrl(account, extras);
+            if (url == null) {
+                databaseManager.recreateDatabase();
+                databaseManager.setVersion(DEFAULT_DEMO_VERSION, this);
+                onCreateDemoDatabase(databaseManager);
 
-            ODataRetrieveResponse<Edm> metadataResponse = oDataClient.getRetrieveRequestFactory().getMetadataRequest(url).execute();
-            Map<String, String> tokens = databaseManager.setVersion(getDatabaseVersion(metadataResponse), this);
-
-            pullData(metadataResponse.getBody(), tokens);
-
-            try {
-                pushDeletedData();
-                pushUpdatedData(metadataResponse.getBody());
-                pushInsertedData(metadataResponse.getBody());
-                if (insertedDataSent) {
-                    ContentResolver.requestSync(account, authority, extras);
+            } else {
+                if (databaseManager.getVersion() == DEFAULT_DEMO_VERSION) {
+                    databaseManager.recreateDatabase();
                 }
-            } catch (Exception e) {
-                Logger.d(e.getMessage());
+                namespace = getNamespace();
+
+                ODataRetrieveResponse<Edm> metadataResponse = oDataClient.getRetrieveRequestFactory().getMetadataRequest(url).execute();
+                Map<String, String> tokens = databaseManager.setVersion(getDatabaseVersion(metadataResponse), this);
+
+                pullData(metadataResponse.getBody(), tokens);
+
+                try {
+                    pushDeletedData();
+                    pushUpdatedData(metadataResponse.getBody());
+                    pushInsertedData(metadataResponse.getBody());
+                    if (insertedDataSent) {
+                        ContentResolver.requestSync(account, authority, extras);
+                    }
+                } catch (Exception e) {
+                    Logger.d(e.getMessage());
+                }
             }
 
             databaseManager.setTransactionSuccessful();
@@ -145,12 +162,25 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
         Logger.d(request.execute().getStatusCode());
     }
 
+    /**
+     * Смотри {@link CoreSyncService#getUrl(Account, Bundle)}
+     */
+    public void onCreateDemoDatabase(CoreDatabaseManager coreDatabaseManager) {
+        Logger.d();
+    }
+
+    /**
+     * Вызывается при первой синхронизации, создает схему данных БД
+     */
     @Override
     public void onCreateDatabase(CoreDatabaseManager coreDatabaseManager) {
         Logger.d();
         createDatabase(oDataClient.getRetrieveRequestFactory().getMetadataRequest(url).execute().getBody());
     }
 
+    /**
+     * Вызывается при необходимости обновить схему данных. По умолчанию пересоздает бд
+     */
     @Override
     public void onUpgradeDatabase(CoreDatabaseManager coreDatabaseManager, int oldVersion, int newVersion) {
         Logger.d();

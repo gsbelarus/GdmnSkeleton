@@ -65,8 +65,7 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
 
         initRefreshLayout(rootView);
 
-        syncStatusNotifier = new BasicSyncStatusNotifier(getString(R.string.authority));
-        syncStatusNotifier.addSyncStatusListener(SyncService.getDefaultSyncAccount(getContext()), new BasicSyncStatusNotifier.OnSyncStatusListener() {
+        BasicSyncStatusNotifier.OnSyncStatusListener onSyncStatusListener = new BasicSyncStatusNotifier.OnSyncStatusListener() {
             @Override
             public void onStart(Account account) {
                 Logger.d();
@@ -77,7 +76,10 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
                 Logger.d();
                 swipeRefreshLayout.setRefreshing(false);
             }
-        });
+        };
+        syncStatusNotifier = new BasicSyncStatusNotifier(getString(R.string.authority));
+        syncStatusNotifier.addSyncStatusListener(SyncService.getDefaultSyncAccount(getContext()), onSyncStatusListener);
+        syncStatusNotifier.addSyncStatusListener(SyncService.getDemoSyncAccount(getContext()), onSyncStatusListener);
     }
 
     @Override
