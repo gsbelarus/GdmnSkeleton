@@ -16,7 +16,7 @@ ext {
     jUnitVersion = '4.12'
 
     //Libraries
-    supportVersion = '23.4.0'
+    supportVersion = '24.0.0'
     supportConstraintVersion = '1.0.0-alpha1'
     sqliteQueryBuilderVersion = '0.2.0'
     sqliteQueryBuilder2Version = '0.1.0'

@@ -12,6 +12,11 @@
         android:protectionLevel="signature" />
 
     <uses-permission android:name="com.gsbelarus.gedemin.skeleton.permission.C2D_MESSAGE" />
+    <uses-permission android:name="android.permission.READ_SYNC_STATS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name="com.gsbelarus.gedemin.skeleton.app.App"
@@ -70,9 +75,9 @@
 
         <activity android:name=".app.view.activity.MainActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
             <!-- TODO: Add autoVerify if necessary. More information
@@ -92,12 +97,40 @@
 
         </activity>
 
-        <activity android:name=".app.view.activity.DetailActivity"
-            android:label="Подробно"/>
+        <activity
+            android:name=".app.view.activity.DetailActivity"
+            android:configChanges="orientation"
+            android:label="Подробно" />
 
-        <activity android:name=".app.view.activity.EditActivity"
-            android:label="Изменить запись"/>
+        <activity
+            android:name=".app.view.activity.EditActivity"
+            android:label="Изменить запись" />
 
+        <service android:name=".core.data.CoreAuthenticatorService">
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator" />
+        </service>
+
+        <service
+            android:name=".app.SyncService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/sync_adapter" />
+        </service>
+
+        <provider
+            android:name=".core.data.CoreDummyProvider"
+            android:authorities="@string/authority"
+            android:exported="false"
+            android:syncable="true" />
         <activity
             android:name="com.gsbelarus.gedemin.skeleton.core.view.activity.DefaultActivityCrash"
             android:process=":error_activity" />

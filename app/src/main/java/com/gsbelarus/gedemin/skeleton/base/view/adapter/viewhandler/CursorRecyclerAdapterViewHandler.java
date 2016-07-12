@@ -48,9 +48,7 @@ public class CursorRecyclerAdapterViewHandler
 //        }
         CursorRecyclerItemViewTypeModel itemViewTypeModel = getViewTypeModel(viewType);
 
-        if (dataItem != null) {
-            holder.bindView(dataItem, itemViewTypeModel.getFrom(dataItem), itemViewTypeModel.getTo());
-        }
+        holder.bindView(dataItem, dataItem != null ? itemViewTypeModel.getFrom(dataItem) : null, itemViewTypeModel.getTo());
     }
 
 
@@ -60,7 +58,7 @@ public class CursorRecyclerAdapterViewHandler
             super(itemView);
         }
 
-        public void bindView(@Nullable Cursor cursor, final int[] from, final int[] to) {
+        public void bindView(@Nullable Cursor cursor, @Nullable final int[] from, final int[] to) {
             BasicUtils.bindViews(cursor, from, to, itemView);
         }
     }

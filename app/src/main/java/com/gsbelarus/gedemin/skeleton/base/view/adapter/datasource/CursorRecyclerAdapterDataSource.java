@@ -43,7 +43,7 @@ public class CursorRecyclerAdapterDataSource implements RecyclerAdapterDataSourc
     @Nullable
     @Override
     public Cursor getItem(int position) {
-        if (dataValid && dataCursor != null && dataCursor.moveToPosition(position)) {
+        if (dataValid && dataCursor.moveToPosition(position)) {
             return dataCursor;
         } else {
             return null;
@@ -73,6 +73,8 @@ public class CursorRecyclerAdapterDataSource implements RecyclerAdapterDataSourc
         return oldCursor;
     }
 
+    // generated accessors
+
     public void setDataValid(boolean dataValid) {
         this.dataValid = dataValid;
     }
@@ -84,4 +86,5 @@ public class CursorRecyclerAdapterDataSource implements RecyclerAdapterDataSourc
     public Cursor getDataCursor() {
         return dataCursor;
     }
+
 }

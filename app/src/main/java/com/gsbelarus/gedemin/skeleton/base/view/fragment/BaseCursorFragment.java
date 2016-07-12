@@ -9,7 +9,7 @@ import android.support.v4.content.Loader;
 import com.gsbelarus.gedemin.skeleton.base.data.BaseDatabaseManager;
 
 
-abstract public class BaseCursorFragment extends BaseFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+abstract public class BaseCursorFragment<FRAGMENTSTATE_T extends BaseFragment.BasicState> extends BaseFragment<FRAGMENTSTATE_T> implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final int LOADER_ID = 0;
 
@@ -59,11 +59,9 @@ abstract public class BaseCursorFragment extends BaseFragment implements LoaderM
     @Override
     public void onLoadFinished(Loader<Cursor> loader, final Cursor cursor) {
         swapCursor(cursor);
-        bindViewOnCursorLoaded();
     }
 
-    abstract protected void bindViewOnCursorLoaded();
-
+    protected void bindViewOnCursorLoaded() {}
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
@@ -75,8 +73,12 @@ abstract public class BaseCursorFragment extends BaseFragment implements LoaderM
         final Cursor oldCursor = getDataCursor();
         setDataCursor(newCursor);
 
+        bindViewOnCursorLoaded();
+
         return oldCursor;
     }
+
+    // accessors
 
     protected BaseDatabaseManager getDatabaseManager() {
         return databaseManager;

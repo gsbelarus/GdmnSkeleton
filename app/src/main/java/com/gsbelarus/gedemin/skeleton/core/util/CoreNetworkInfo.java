@@ -1,9 +1,13 @@
 package com.gsbelarus.gedemin.skeleton.core.util;
 
-
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.view.View;
+
+import com.gsbelarus.gedemin.skeleton.R;
 
 public class CoreNetworkInfo {
 
@@ -22,4 +26,20 @@ public class CoreNetworkInfo {
         return false;
     }
 
+    public static void runWithNetworkConnection(final View view, @NonNull final Runnable runnable) {
+        if (view != null) {
+            if (isNetworkAvailable(view.getContext())) {
+                runnable.run();
+            } else {
+                Snackbar.make(view, view.getContext().getString(R.string.network_unavailable), Snackbar.LENGTH_LONG)
+                        .setAction(view.getContext().getString(R.string.replay), new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                runWithNetworkConnection(view, runnable);
+                            }
+                        })
+                        .show();
+            }
+        }
+    }
 }

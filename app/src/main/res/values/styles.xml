@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
@@ -21,6 +21,30 @@
         <item name="borderWidth">0dp</item>
         <item name="elevation">6dp</item>
         <item name="rippleColor">@color/fab_ripple</item>
+    </style>
+
+
+    <style name="App"/>
+    <!-- Buttons -->
+    <style name="App.Button" parent="Base.Widget.AppCompat.Button">
+        <item name="colorButtonNormal">@android:color/white</item>
+        <item name="android:textAlignment" tools:targetApi="jelly_bean_mr1">center</item>
+        <!--TODO -->
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="App.Button.Big">
+        <item name="android:padding">12dp</item>
+    </style>
+
+    <style name="App.Button.Big.EmptyView" parent="Base.Widget.AppCompat.Button.Colored">
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="App.Button.Big.EmptyView.Light">
+        <item name="colorButtonNormal">#40727272</item>
+        <item name="android:textColor">#df000000</item>
     </style>
 
 </resources>

@@ -19,11 +19,4 @@ public class App extends BaseApplication {
 
         return getResources().getStringArray(R.array.language_list_values)[lang];
     }
-
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        //
-    }
 }

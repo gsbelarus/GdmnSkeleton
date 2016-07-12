@@ -2,6 +2,7 @@ package com.gsbelarus.gedemin.skeleton.core.view.fragment;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.provider.BaseColumns;
@@ -14,18 +15,24 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import com.gsbelarus.gedemin.skeleton.R;
-import com.gsbelarus.gedemin.skeleton.core.view.TextWatcherAdapter;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreContract;
 import com.gsbelarus.gedemin.skeleton.core.util.CoreUtils;
+import com.gsbelarus.gedemin.skeleton.core.view.TextWatcherAdapter;
+import com.gsbelarus.gedemin.skeleton.core.view.fragment.viewstate.CoreEditFragmentState;
 
-
-public class CoreEditCursorFragment extends CoreDetailCursorFragment {
+//TODO save focus, edittext values, check tarnsact restore
+public class CoreEditCursorFragment extends CoreDetailCursorFragment<CoreEditFragmentState> {
 
     private boolean dataChanged;
-    private boolean dataSaved; // было хотя бы одино сохранение
+    private boolean dataSaved; // было хотя бы одно сохранение
+
+    private boolean confirmDlgShowing;
+
+
     private View.OnKeyListener onKeyBackListener;
     private MenuItem saveMenuItem;
 
@@ -35,7 +42,7 @@ public class CoreEditCursorFragment extends CoreDetailCursorFragment {
     }
 
     @Override
-    protected void doOnCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
+    protected void onCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
         onKeyBackListener = new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -47,7 +54,11 @@ public class CoreEditCursorFragment extends CoreDetailCursorFragment {
             }
         };
 
-        //
+        if (getSavedFragmentState() != null) {
+            dataChanged = getSavedFragmentState().dataChanged;
+            dataSaved = getSavedFragmentState().dataSaved;
+            confirmDlgShowing = getSavedFragmentState().confirmDlgShowing;
+        }
     }
 
     @Override
@@ -67,18 +78,48 @@ public class CoreEditCursorFragment extends CoreDetailCursorFragment {
             public void onTextChanged(String newValue) {
                 if (!newValue.equals(oldValue)) setDataChanged(true);
             }
-
         };
-
 
         if (getOriginalFrom() == null)
             setOriginalFrom(getDataCursor().getColumnNames());
 
         toValueViewLabelViewMap = CoreUtils.includeCoreEditView((ViewGroup) getView(), getOriginalFrom().length, onKeyBackListener, valueChangedTextWatcher);
 
+        boolean oldDataChanged = dataChanged;
+
         CoreUtils.bindViews(getDataCursor(), getOriginalFrom(), toValueViewLabelViewMap);
 
-        setDataChanged(false); // т.к. valueChangedTextWatcher сработал
+        setDataChanged(oldDataChanged); // т.к. valueChangedTextWatcher сработал
+
+        //restoreInputFocus();
+    }
+
+    private void restoreInputFocus() { //TODO id
+        if (getSavedFragmentState() != null) {
+
+            final EditText et = (EditText)toValueViewLabelViewMap.keySet().iterator().next();
+
+
+            final InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+
+            if (!et.hasFocus()) {
+                et.requestFocus();
+            }
+
+            et.post(new Runnable() {
+                @Override
+                public void run() {
+                    imm.showSoftInput(et, InputMethodManager.SHOW_FORCED);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+
+        if (confirmDlgShowing) confirmDlgShow();
     }
 
     @Override
@@ -111,7 +152,7 @@ public class CoreEditCursorFragment extends CoreDetailCursorFragment {
 
     private ContentValues getContentValues() {
         ContentValues contentValues = new ContentValues();
-        View[] valueViews = toValueViewLabelViewMap.keySet().toArray(new View[toValueViewLabelViewMap.keySet().size()]);
+        View[] valueViews = toValueViewLabelViewMap.keySet().<View>toArray(new View[toValueViewLabelViewMap.keySet().size()]);
 
         for (int i = 0; i < valueViews.length; i++) { //TODO
             contentValues.put(getDataCursor().getColumnName(i), String.valueOf(((EditText)valueViews[i]).getText()));
@@ -140,25 +181,41 @@ public class CoreEditCursorFragment extends CoreDetailCursorFragment {
     }
 
     private void pressBackHandle() {
-
         if (dataChanged) {
-            //TODO не пересоздавать
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());//, R.style.AppCompatAlertDialogStyle);
-            builder.setMessage("Отменить несохраненные изменения и завершить редактирование?")
-                    .setPositiveButton("Отменить", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            finishWithResult();
-                        }
-                    })
-                    .setNegativeButton("Продолжить редактирование", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.cancel();
-                        }
-                    })
-                    .show();
+            confirmDlgShow();
         } else {
             finishWithResult();
         }
+    }
+
+    private void confirmDlgShow() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());//, R.style.AppCompatAlertDialogStyle);
+
+        AlertDialog dialog  = builder.setMessage("Отменить несохраненные изменения и завершить редактирование?")
+                .setPositiveButton("Отменить", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        finishWithResult();
+                    }
+                })
+                .setNegativeButton("Продолжить редактирование", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                })
+                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        confirmDlgShowing = false;
+                    }
+                }).create();
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialog) {
+                confirmDlgShowing = true;
+            }
+        });
+
+        dialog.show();
     }
 
     private void finishWithResult() {
@@ -174,4 +231,22 @@ public class CoreEditCursorFragment extends CoreDetailCursorFragment {
         }
     }
 
+    @Override
+    protected CoreEditFragmentState newInstanceState() {
+        return new CoreEditFragmentState(this);
+    }
+
+    // accessors tmp
+
+    public boolean isDataChanged() {
+        return dataChanged;
+    }
+
+    public boolean isDataSaved() {
+        return dataSaved;
+    }
+
+    public boolean isConfirmDlgShowing() {
+        return confirmDlgShowing;
+    }
 }

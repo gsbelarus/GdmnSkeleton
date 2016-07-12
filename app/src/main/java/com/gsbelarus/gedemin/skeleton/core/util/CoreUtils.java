@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.view.ViewCompat;
+import android.text.InputType;
 import android.text.SpannableString;
 import android.text.TextWatcher;
 import android.text.style.StyleSpan;
@@ -23,6 +24,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.gsbelarus.gedemin.skeleton.R;
+import com.gsbelarus.gedemin.skeleton.base.data.SQLiteDataType;
 import com.gsbelarus.gedemin.skeleton.core.view.TextWatcherAdapter;
 
 import java.util.LinkedHashMap;
@@ -125,8 +127,12 @@ public class CoreUtils {
                 valueView = rowView.findViewById(R.id.core_edit_item_et);
                 labelView = rowView.findViewById(R.id.core_edit_item_input);
 
-                if ((i == columnCount-1) && ((EditText)valueView).getImeOptions() == EditorInfo.IME_ACTION_NEXT) {
-                    ((EditText) valueView).setImeOptions(EditorInfo.IME_ACTION_DONE);
+                int imeOptions = ((EditText)valueView).getImeOptions();
+                boolean imeContainsActionNext = (imeOptions != ((imeOptions & ~EditorInfo.IME_MASK_ACTION) & ~EditorInfo.IME_ACTION_NEXT));
+
+                if ((i == columnCount-1) && imeContainsActionNext) {
+                    imeOptions = ((imeOptions & ~EditorInfo.IME_MASK_ACTION) & ~EditorInfo.IME_ACTION_NEXT) | EditorInfo.IME_ACTION_DONE;
+                    ((EditText) valueView).setImeOptions(imeOptions);
                 }
 
                 if (onKeyBackListener != null) valueView.setOnKeyListener(onKeyBackListener);
@@ -191,7 +197,7 @@ public class CoreUtils {
                 TextWatcherAdapter notNullInputValidator = null; //TODO if have constraint NOT NULL !
                 if (labelView == null) {
                     hint = cursor.getColumnName(columnIndex);
-                } else if (labelView instanceof TextInputLayout){
+                } else if (labelView instanceof TextInputLayout) {
 //                    notNullInputValidator = new TextWatcherAdapter() {
 //                        @Override
 //                        public void onTextChanged(String text) {
@@ -204,7 +210,7 @@ public class CoreUtils {
 //                    };
                 }
 
-                bindEditText((EditText) valueView, CoreUtils.getFieldValueString(columnIndex, cursor), hint, notNullInputValidator);
+                bindEditText((EditText) valueView, CoreUtils.getFieldValueString(columnIndex, cursor), hint, cursor.getType(columnIndex), notNullInputValidator);
 
             } else if (valueView instanceof TextView) {
                 bindTextView((TextView) valueView, CoreUtils.getFieldValueString(columnIndex, cursor));
@@ -232,10 +238,22 @@ public class CoreUtils {
         imageView.setImageBitmap(BitmapFactory.decodeByteArray(value, 0, value.length));
     }
 
-    private static void bindEditText(EditText editText, @Nullable CharSequence value, @Nullable CharSequence hint, @Nullable TextWatcher textWatcher) {
+    private static void bindEditText(EditText editText, @Nullable CharSequence value, @Nullable CharSequence hint, int columnType, @Nullable TextWatcher textWatcher) {
         editText.setText(value);
         editText.setHint(hint);
         if (textWatcher != null) editText.addTextChangedListener(textWatcher);
+
+        switch (SQLiteDataType.SQLiteDataTypes.values()[columnType]) {
+            case INTEGER :
+                editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED);
+                break;
+            case FLOAT :
+                editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+                break;
+            case STRING :
+                editText.setInputType(InputType.TYPE_CLASS_TEXT);
+                break;
+        }
     }
 
     private static void bindTextInputLayout(final TextInputLayout textInputLayout, CharSequence hint) {

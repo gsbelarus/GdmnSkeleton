@@ -17,7 +17,7 @@ import com.gsbelarus.gedemin.skeleton.base.data.SQLiteDataType.SQLiteStorageType
 import com.gsbelarus.gedemin.skeleton.core.data.CoreContract.TableLogChanges;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreContract.TableSyncSchema;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreContract.TableSyncSchemaVersion;
-import com.gsbelarus.gedemin.skeleton.core.util.LogUtil;
+import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -73,7 +73,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
     private BasicDatabaseOpenHelper.Delegate dbOpenHelperImpl = new BasicDatabaseOpenHelper.Delegate() {
         @Override
         public void onCreate(SQLiteDatabase db) {
-            LogUtil.d();
+            Logger.d();
             db.execSQL(CREATE_TABLE_LOG_CHANGES);
             db.execSQL(CREATE_TABLE_LOG_SYNC);
             db.execSQL(CREATE_TABLE_LOG_SYNC_TOKENS);
@@ -214,6 +214,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
 
             // Tracking exception
             BaseApplication.getInstance().trackException(e);
+            Logger.d(e.getMessage());
         }
         return null;
     }
@@ -226,7 +227,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
 
     private void notifyVersionDB(SQLiteDatabase db) {
         db.setVersion(getMaxSchemaVersion(db));
-        LogUtil.d("local db version: " + db.getVersion());
+        Logger.d("local db version: " + db.getVersion());
     }
 
     private int getMaxSchemaVersion(SQLiteDatabase db) {
@@ -244,12 +245,13 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
 
             // Tracking exception
             BaseApplication.getInstance().trackException(e);
+            Logger.d(e.getMessage());
         }
         return version;
     }
 
     protected Map<String, String> setVersion(int version, @NonNull Callback callback) {     //TODO protected
-        LogUtil.d("local db version: " + getVersion(), "server db version: " + version);
+        Logger.d("local db version: " + getVersion(), "server db version: " + version);
         if (getVersion() < version) {
             if (getVersion() == 1) callback.onCreateDatabase(this);
             else callback.onUpgradeDatabase(this, getVersion(), version);
@@ -300,6 +302,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
 
     public void recreateDatabase() {
         dropAll();
+        db.setVersion(1);
         dbOpenHelperImpl.onCreate(db);
     }
 
@@ -317,7 +320,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
 
         sql += ")";
 
-        LogUtil.d(sql);
+        Logger.d(sql);
         db.execSQL(sql);
 
         createLogChangesTriggers(tableName, externalId);
