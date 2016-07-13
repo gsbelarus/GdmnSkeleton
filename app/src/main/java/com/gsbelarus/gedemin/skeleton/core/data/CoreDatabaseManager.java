@@ -210,7 +210,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
         try {
             return new SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).parse(date);
         } catch (Exception e) {
-            LogUtil.d(e.getMessage());
+            Logger.d(e.getMessage());
 
             // Tracking exception
             BaseApplication.getInstance().trackException(e);
@@ -241,7 +241,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
             cursor.close();
             if (version == 0) version = db.getVersion();
         } catch (SQLiteException e) {
-            LogUtil.d(e.getMessage());
+            Logger.d(e.getMessage());
 
             // Tracking exception
             BaseApplication.getInstance().trackException(e);

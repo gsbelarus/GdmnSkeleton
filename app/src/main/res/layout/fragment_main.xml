@@ -19,6 +19,7 @@
                 android:layout_height="match_parent">
 
                 <com.gsbelarus.gedemin.skeleton.core.view.component.EmptyRecyclerView
+                    android:id="@+id/recycler_view"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scrollbars="vertical"/>
@@ -27,12 +28,12 @@
 
             </FrameLayout>
 
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/recycler_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scrollbars="vertical"
-                tools:listitem="@layout/core_recycler_empty_item" />
+            <!--<android.support.v7.widget.RecyclerView-->
+                <!--android:id="@+id/recycler_view"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:scrollbars="vertical"-->
+                <!--tools:listitem="@layout/core_recycler_empty_item" />-->
 
         </android.support.v4.widget.SwipeRefreshLayout>
 

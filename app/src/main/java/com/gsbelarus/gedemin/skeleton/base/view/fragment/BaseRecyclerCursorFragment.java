@@ -1,14 +1,11 @@
 package com.gsbelarus.gedemin.skeleton.base.view.fragment;
 
 import android.database.Cursor;
-import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
-import android.view.ViewGroup;
 
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.BasicCursorRecyclerViewAdapter;
-import com.gsbelarus.gedemin.skeleton.core.view.component.EmptyRecyclerView;
 import com.gsbelarus.gedemin.skeleton.base.view.fragment.viewstate.BasicRecyclerFragmentState;
 
 
@@ -26,15 +23,6 @@ public abstract class BaseRecyclerCursorFragment<FRAGMENTSTATE_T extends BasicRe
 
     protected abstract BasicCursorRecyclerViewAdapter getAdapter();
     protected abstract RecyclerView.LayoutManager createLayoutManager();
-
-
-    protected void setupRecyclerView(EmptyRecyclerView recyclerView, ViewGroup rootView) {   //TODO избавиться
-    @Override
-    protected void onCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
-        RecyclerView rv = (RecyclerView) rootView.findViewById(getRecyclerResId());
-        setupRecyclerView(rv);
-    }
-    
 
     protected void setupRecyclerView(RecyclerView recyclerView) {
         layoutManager = createLayoutManager();

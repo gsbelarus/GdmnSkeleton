@@ -1,5 +1,4 @@
 package com.gsbelarus.gedemin.skeleton.app.service;
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Notification;

@@ -28,8 +28,6 @@ import com.gsbelarus.gedemin.skeleton.core.data.CoreDatabaseManager;
 import com.gsbelarus.gedemin.skeleton.core.view.CoreCursorRecyclerAdapterViewHandler;
 import com.gsbelarus.gedemin.skeleton.core.view.CoreCursorRecyclerItemViewTypeModel;
 import com.gsbelarus.gedemin.skeleton.core.view.component.DividerItemDecoration;
-import com.gsbelarus.gedemin.skeleton.core.view.component.EmptyRecyclerView;
-import com.gsbelarus.gedemin.skeleton.core.view.component.DividerItemDecoration;
 import com.gsbelarus.gedemin.skeleton.core.view.fragment.viewstate.CoreRecyclerFragmentState;
 
 import java.util.Arrays;
@@ -82,11 +80,6 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
         cursorAdapter.setAdapterViewHandler(viewHandler);
     }
 
-    @Override
-    protected void doOnCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
-
-        EmptyRecyclerView emptyRecyclerView = (EmptyRecyclerView) rootView.findViewById(R.id.recycler_view);
-        setupRecyclerView(emptyRecyclerView, rootView);
     protected void onCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
         super.onCreateView(rootView, savedInstanceState);
 
@@ -105,8 +98,8 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
     }
 
     @Override
-    protected void setupRecyclerView(EmptyRecyclerView recyclerView, ViewGroup rootView) {
-        super.setupRecyclerView(recyclerView, rootView);
+    protected void setupRecyclerView(RecyclerView recyclerView) {
+        super.setupRecyclerView(recyclerView);
 
 //        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 //            @Override
@@ -124,7 +117,6 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
 //        }).attachToRecyclerView(recyclerView);
         recyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
         recyclerView.setHasFixedSize(true);
-        recyclerView.setEmptyView(rootView);
     }
 
     @Override

@@ -116,16 +116,6 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
 
                 pullData(metadataResponse.getBody(), tokens);
 
-            try {
-                pushDeletedData();
-                pushUpdatedData(metadataResponse.getBody());
-                pushInsertedData(metadataResponse.getBody());
-//                startSync(getApplicationContext(), this.getClass(), TypeTask.FOREGROUND);
-            } catch (Exception e) {
-                LogUtil.d(e.getMessage());
-
-                // Tracking exception
-                BaseApplication.getInstance().trackException(e);
                 try {
                     pushDeletedData();
                     pushUpdatedData(metadataResponse.getBody());
@@ -135,6 +125,9 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
                     }
                 } catch (Exception e) {
                     Logger.d(e.getMessage());
+
+                    // Tracking exception
+                    BaseApplication.getInstance().trackException(e);
                 }
             }
 
@@ -142,6 +135,9 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
             isSuccessful = true;
         } catch (HttpClientException e) {
             Logger.e(e);
+
+            // Tracking exception
+            BaseApplication.getInstance().trackException(e);
             if (e.getCause() instanceof IOException) {
                 throw (IOException) e.getCause();
             } else if (e.getCause() instanceof IllegalStateException) {
@@ -231,11 +227,10 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
                                 TypeProvider.getDefaultValue(edmProperty));
 
             } catch (UnsupportedDataTypeException e) {
-                LogUtil.d(e.getMessage());
+                Logger.d(e.getMessage());
 
                 // Tracking exception
                 BaseApplication.getInstance().trackException(e);
-                Logger.d(e.getMessage());
             }
         }
         if (edmEntityType.getBaseType() != null) {
@@ -288,11 +283,10 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
                     TypeProvider.putProperty(property, cv);
                 }
             } catch (UnsupportedDataTypeException e) {
-                LogUtil.d(e.getMessage());
+                Logger.d(e.getMessage());
 
                 // Tracking exception
                 BaseApplication.getInstance().trackException(e);
-                Logger.d(e.getMessage());
             }
         }
         onHandleRow(entitySetName, cv);

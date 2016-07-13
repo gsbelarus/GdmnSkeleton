@@ -56,10 +56,10 @@ public class GCMHelper {
                             InstanceID instanceID = InstanceID.getInstance(context);
                             instanceID.deleteToken(loadPrefValue(PREF_SENDER_ID), GoogleCloudMessaging.INSTANCE_ID_SCOPE);
                             savePrefValue(PREF_SENDER_ID, "");
-                            LogUtil.i("GCM Registration ID deleted");
+                            Logger.i("GCM Registration ID deleted");
 
                         } catch (Exception ex) {
-                            LogUtil.i("Error : " + ex.getMessage());
+                            Logger.i("Error : " + ex.getMessage());
 
                             // Tracking exception
                             BaseApplication.getInstance().trackException(ex);
@@ -79,18 +79,18 @@ public class GCMHelper {
                     InstanceID instanceID = InstanceID.getInstance(context);
                     String token = instanceID.getToken(loadPrefValue(PREF_SENDER_ID),
                             GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
-                    LogUtil.i("GCM Registration ID: " + token);
+                    Logger.i("GCM Registration ID: " + token);
 
                     if (!loadPrefValue(PREF_DEVICE_TOKEN).equals(token)) {
                         savePrefValue(PREF_DEVICE_TOKEN, "");
                         if (sendRegistrationIdToBackend(token)) {
                             savePrefValue(PREF_DEVICE_TOKEN, token);
-                            LogUtil.i("GCM Registration ID sent to the server");
+                            Logger.i("GCM Registration ID sent to the server");
                         }
                     }
 
                 } catch (Exception ex) {
-                    LogUtil.i("Error : " + ex.getMessage());
+                    Logger.i("Error : " + ex.getMessage());
 
                     // Tracking exception
                     BaseApplication.getInstance().trackException(ex);
@@ -136,7 +136,7 @@ public class GCMHelper {
             if (googleAPI.isUserResolvableError(result)) {
                 googleAPI.getErrorDialog(activity, result, 9000).show();
             } else {
-                LogUtil.i("This device is not supported.");
+                Logger.i("This device is not supported.");
                 activity.finish();
             }
             return false;
