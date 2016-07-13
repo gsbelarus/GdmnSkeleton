@@ -240,6 +240,6 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
     }
 
     public String getSearchQuery() { //TODO tmp
-        return !searchView.isIconified() ? searchView.getQuery().toString() : null;
+        return searchView != null && !searchView.isIconified() ? searchView.getQuery().toString() : null;
     }
 }

@@ -11,7 +11,7 @@ import com.gsbelarus.gedemin.skeleton.base.data.BaseDatabaseManager;
 
 abstract public class BaseCursorFragment<FRAGMENTSTATE_T extends BaseFragment.BasicState> extends BaseFragment<FRAGMENTSTATE_T> implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    public static final int LOADER_ID = 0;
+    private static final int LOADER_ID = 0;
 
     private BaseDatabaseManager databaseManager;
 
@@ -26,6 +26,13 @@ abstract public class BaseCursorFragment<FRAGMENTSTATE_T extends BaseFragment.Ba
 
         databaseManager = createDatabaseManager();
         databaseManager.open();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        databaseManager.close();
     }
 
     @Override
@@ -46,11 +53,8 @@ abstract public class BaseCursorFragment<FRAGMENTSTATE_T extends BaseFragment.Ba
         super.onDestroyView();
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        databaseManager.close();
+    public void restartLoader() {
+        getLoaderManager().restartLoader(LOADER_ID, null, this);
     }
 
     @Override

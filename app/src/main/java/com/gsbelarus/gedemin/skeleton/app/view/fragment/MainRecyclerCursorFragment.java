@@ -67,13 +67,16 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
 
         BasicSyncStatusNotifier.OnSyncStatusListener onSyncStatusListener = new BasicSyncStatusNotifier.OnSyncStatusListener() {
             @Override
-            public void onStart(Account account) {
+            public void onStartSync(Account account) {
                 Logger.d();
             }
 
             @Override
-            public void onFinish(Account account) {
+            public void onFinishSync(Account account) {
                 Logger.d();
+                if (getDataCursor() == null) {
+                    restartLoader();            //TODO temp
+                }
                 swipeRefreshLayout.setRefreshing(false);
             }
         };

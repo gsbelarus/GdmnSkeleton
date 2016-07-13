@@ -84,7 +84,7 @@ public abstract class BaseSyncService extends Service {
         return new NotificationCompat.Builder(getApplicationContext())
                 .setContentTitle("GDMN")
                 .setContentText(errorMessage)
-                .setSmallIcon(R.drawable.ic_sync_problem_black_24dp)
+                .setSmallIcon(R.mipmap.ic_sync_alert)
                 .setWhen(System.currentTimeMillis())
                 .setStyle((new NotificationCompat.BigTextStyle()
                         .setBigContentTitle("GDMN")

@@ -2,12 +2,9 @@ package com.gsbelarus.gedemin.skeleton.base;
 
 import android.accounts.Account;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.SyncStatusObserver;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-
-import com.gsbelarus.gedemin.skeleton.R;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -42,11 +39,11 @@ public final class BasicSyncStatusNotifier {
                         if (syncAccounts.containsKey(account)) {
                             if (isSyncActive) {
                                 params.syncActive = true;
-                                onSyncStatusListener.onStart(account);
+                                onSyncStatusListener.onStartSync(account);
                             } else {
                                 if (params.syncActive) {
                                     params.syncActive = false;
-                                    onSyncStatusListener.onFinish(account);
+                                    onSyncStatusListener.onFinishSync(account);
                                 }
                             }
                         }
@@ -79,9 +76,9 @@ public final class BasicSyncStatusNotifier {
     }
 
     public interface OnSyncStatusListener {
-        void onStart(Account account);
+        void onStartSync(Account account);
 
-        void onFinish(Account account);
+        void onFinishSync(Account account);
     }
 
     private class Params {
