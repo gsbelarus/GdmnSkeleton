@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.gsbelarus.gedemin.skeleton">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -25,53 +26,6 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
-        <receiver
-            android:name="com.google.android.gms.gcm.GcmReceiver"
-            android:permission="com.google.android.c2dm.permission.SEND">
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-
-                <category android:name="com.gsbelarus.gedemin.salary" />
-            </intent-filter>
-        </receiver>
-        <receiver
-            android:name="com.google.android.gms.analytics.AnalyticsReceiver"
-            android:enabled="true">
-            <intent-filter>
-                <action android:name="com.google.android.gms.analytics.ANALYTICS_DISPATCH" />
-            </intent-filter>
-        </receiver>
-        <receiver
-            android:name="com.google.android.gms.analytics.CampaignTrackingReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.android.vending.INSTALL_REFERRER" />
-            </intent-filter>
-        </receiver>
-
-        <service
-            android:name=".app.service.SyncService"
-            android:exported="false" />
-        <service
-            android:name=".app.service.GcmService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-            </intent-filter>
-        </service>
-        <service
-            android:name=".core.service.GcmInstanceIDService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.android.gms.iid.InstanceID" />
-            </intent-filter>
-        </service>
-        <service
-            android:name="com.google.android.gms.analytics.AnalyticsService"
-            android:enabled="true"
-            android:exported="false" />
-        <service android:name="com.google.android.gms.analytics.CampaignTrackingService" />
 
         <activity android:name=".app.view.activity.MainActivity">
             <intent-filter>
@@ -106,6 +60,16 @@
             android:name=".app.view.activity.EditActivity"
             android:label="Изменить запись" />
 
+        <activity
+            android:name="com.gsbelarus.gedemin.skeleton.core.view.activity.DefaultActivityCrash"
+            android:process=":error_activity" />
+
+        <activity
+            android:name="com.gsbelarus.gedemin.skeleton.core.view.activity.CustomActivityCrash"
+            android:label="@string/error_title"
+            android:process=":error_activity"/>
+
+
         <service android:name=".core.data.CoreAuthenticatorService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
@@ -116,7 +80,7 @@
         </service>
 
         <service
-            android:name=".app.SyncService"
+            android:name=".app.service.SyncService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -126,20 +90,55 @@
                 android:resource="@xml/sync_adapter" />
         </service>
 
+        <service
+            android:name=".app.service.GcmService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".core.service.GcmInstanceIDService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.gms.iid.InstanceID" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="com.google.android.gms.analytics.AnalyticsService"
+            android:enabled="true"
+            android:exported="false" />
+        <service android:name="com.google.android.gms.analytics.CampaignTrackingService" />
+
+        <receiver
+            android:name="com.google.android.gms.gcm.GcmReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
+                <category android:name="com.gsbelarus.gedemin.salary" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name="com.google.android.gms.analytics.AnalyticsReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.analytics.ANALYTICS_DISPATCH" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name="com.google.android.gms.analytics.CampaignTrackingReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
+            </intent-filter>
+        </receiver>
+
         <provider
             android:name=".core.data.CoreDummyProvider"
             android:authorities="@string/authority"
             android:exported="false"
             android:syncable="true" />
-        <activity
-            android:name="com.gsbelarus.gedemin.skeleton.core.view.activity.DefaultActivityCrash"
-            android:process=":error_activity" />
-
-        <activity
-            android:name="com.gsbelarus.gedemin.skeleton.core.view.activity.CustomActivityCrash"
-            android:label="@string/error_title"
-            android:process=":error_activity">
-        </activity>
 
         <meta-data android:name="search-engine" android:resource="@xml/noindex"/>
 
