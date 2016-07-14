@@ -36,14 +36,14 @@ public abstract class BaseDatabaseManager {
     protected SQLiteDatabase db = null;
 
 
-    protected BaseDatabaseManager(Context сontext, String dbName, int dbVersion) {
+    protected BaseDatabaseManager(@NonNull Context сontext, String dbName, int dbVersion) {
         this.dbName = dbName;
         this.dbVersion = dbVersion;
         this.appContext = сontext.getApplicationContext();
     }
 
     @NonNull
-    protected abstract BasicDatabaseOpenHelper.Delegate getDbOpenHelperImpl();
+    protected abstract BaseDatabaseOpenHelperDelegate getDatabaseOpenHelperDelegate();
 
     public boolean isOpen() {
         return (db != null && db.isOpen());
@@ -51,7 +51,7 @@ public abstract class BaseDatabaseManager {
 
     public synchronized void open() {                   //TODO check
         if (basicDatabaseOpenHelper == null) {
-            basicDatabaseOpenHelper = new BasicDatabaseOpenHelper(appContext, dbName, dbVersion, getDbOpenHelperImpl());
+            basicDatabaseOpenHelper = new BasicDatabaseOpenHelper(appContext, dbName, dbVersion, getDatabaseOpenHelperDelegate());
         }
         basicDatabaseOpenHelper.addConnection();
 

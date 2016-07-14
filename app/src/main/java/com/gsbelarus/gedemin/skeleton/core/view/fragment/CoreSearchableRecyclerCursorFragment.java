@@ -25,6 +25,7 @@ import com.gsbelarus.gedemin.skeleton.base.view.adapter.item.ItemViewTypes;
 import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseRecyclerCursorFragment;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreContract;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreDatabaseManager;
+import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 import com.gsbelarus.gedemin.skeleton.core.view.CoreCursorRecyclerAdapterViewHandler;
 import com.gsbelarus.gedemin.skeleton.core.view.CoreCursorRecyclerItemViewTypeModel;
 import com.gsbelarus.gedemin.skeleton.core.view.component.DividerItemDecoration;
@@ -74,7 +75,7 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
         viewHandler.setOnEmptyRecyclerItemBtnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO
+                Logger.d("OnEmptyRecyclerItemBtnClickListener");
             }
         });
         cursorAdapter.setAdapterViewHandler(viewHandler);

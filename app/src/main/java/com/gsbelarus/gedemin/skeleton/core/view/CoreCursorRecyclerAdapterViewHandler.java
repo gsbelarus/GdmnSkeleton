@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.item.ItemViewTypes;
@@ -28,17 +29,17 @@ public class CoreCursorRecyclerAdapterViewHandler extends CursorRecyclerAdapterV
     @Override
     public BasicCursorItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == ItemViewTypes.EMPTY_VIEW_TYPE) {
-            return super.onCreateViewHolder(parent, viewType);
+            return new CoreCursorItemViewHolder(super.onCreateViewHolder(parent,viewType).itemView,  null, onEmptyRecyclerItemBtnClickListener); //TODO переделать
+        } else {
+            CoreCursorRecyclerItemViewTypeModel itemViewTypeModel = (CoreCursorRecyclerItemViewTypeModel) getViewTypeModel(viewType);
+            LinkedHashMap<View, View> valueViewLabelViewMap = CoreUtils.includeCoreView(
+                    itemViewTypeModel.getLayoutResource(), parent, fieldsCount, CoreUtils.CoreViewType.LABELED_DATA_VIEW, null, null);
+            View itemView = parent.getChildAt(parent.getChildCount()-1);
+            parent.removeViewAt(parent.getChildCount()-1);
+
+            //itemViewTypeModel.setTo(coreViewHelper.getTo());
+            return new CoreCursorItemViewHolder(itemView,  new LinkedHashMap<>(valueViewLabelViewMap), null);
         }
-
-        CoreCursorRecyclerItemViewTypeModel itemViewTypeModel = (CoreCursorRecyclerItemViewTypeModel) getViewTypeModel(viewType);
-        LinkedHashMap<View, View> valueViewLabelViewMap = CoreUtils.includeCoreView(
-                itemViewTypeModel.getLayoutResource(), parent, fieldsCount, CoreUtils.CoreViewType.LABELED_DATA_VIEW, null, null);
-        View itemView = parent.getChildAt(parent.getChildCount()-1);
-        parent.removeViewAt(parent.getChildCount()-1);
-
-        //itemViewTypeModel.setTo(coreViewHelper.getTo());
-        return new CoreCursorItemViewHolder(itemView,  new LinkedHashMap<>(valueViewLabelViewMap), viewType == ItemViewTypes.EMPTY_VIEW_TYPE ? onEmptyRecyclerItemBtnClickListener : null); //TODO
     }
 
     public void setFieldsCount(int fieldsCount) { //TODO tmp
