@@ -1,0 +1,51 @@
+{
+  "project_info": {
+    "project_number": "884379891331",
+    "project_id": "skeleton-7c0c5"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:884379891331:android:de63eaddb3df90a3",
+        "android_client_info": {
+          "package_name": "com.gsbelarus.gedemin.skeleton"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "884379891331-pgga0vm29u2iv5aiv7ai77abifjv86ae.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gsbelarus.gedemin.skeleton",
+            "certificate_hash": "9A8B81D0C1392AA5B6D252732E19EC8C5465587E"
+          }
+        },
+        {
+          "client_id": "884379891331-chpb68rf1887kbkb1q6qqe2jpbp1t7g1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8ZTcU2ys17DG8AqBcqjzsvZH2_fVdBPQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 2,
+          "analytics_property": {
+            "tracking_id": "UA-80039229-1"
+          }
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

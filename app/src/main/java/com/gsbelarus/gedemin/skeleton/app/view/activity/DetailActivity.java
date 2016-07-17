@@ -15,7 +15,7 @@ import com.gsbelarus.gedemin.skeleton.core.view.fragment.CoreDetailCursorFragmen
 public class DetailActivity extends BaseActivity {
 
     /**
-     * Сonfiguration
+     * Configuration
      */
 
     @Override

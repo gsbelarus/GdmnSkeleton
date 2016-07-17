@@ -31,7 +31,7 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
         SwipeRefreshLayout.OnRefreshListener {
 
     /**
-     * Сonfiguration
+     * Configuration
      */
     @Override
     protected int getLayoutResource() {

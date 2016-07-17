@@ -34,10 +34,15 @@
             android:name=".app.view.activity.EditActivity"
             android:label="Изменить запись" />
 
+        <activity
+            android:name=".app.view.activity.AuthActivity"
+            android:label="Авторизация" />
+
         <service android:name=".core.data.CoreAuthenticatorService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
+
             <meta-data
                 android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
@@ -49,6 +54,7 @@
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
+
             <meta-data
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/sync_adapter" />

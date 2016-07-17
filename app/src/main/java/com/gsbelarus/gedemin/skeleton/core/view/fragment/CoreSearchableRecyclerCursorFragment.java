@@ -1,5 +1,6 @@
 package com.gsbelarus.gedemin.skeleton.core.view.fragment;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -28,6 +29,7 @@ import com.gsbelarus.gedemin.skeleton.core.data.CoreDatabaseManager;
 import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 import com.gsbelarus.gedemin.skeleton.core.view.CoreCursorRecyclerAdapterViewHandler;
 import com.gsbelarus.gedemin.skeleton.core.view.CoreCursorRecyclerItemViewTypeModel;
+import com.gsbelarus.gedemin.skeleton.app.view.activity.AuthActivity;
 import com.gsbelarus.gedemin.skeleton.core.view.component.DividerItemDecoration;
 import com.gsbelarus.gedemin.skeleton.core.view.fragment.viewstate.CoreRecyclerFragmentState;
 
@@ -37,7 +39,7 @@ import java.util.Arrays;
 public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFragment<CoreRecyclerFragmentState> {
 
     /**
-     * Сonfiguration
+     * Configuration
      */
 
     @Override
@@ -76,6 +78,9 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
             @Override
             public void onClick(View v) {
                 Logger.d("OnEmptyRecyclerItemBtnClickListener");
+
+                startActivity(new Intent(getContext(), AuthActivity.class));
+
             }
         });
         cursorAdapter.setAdapterViewHandler(viewHandler);

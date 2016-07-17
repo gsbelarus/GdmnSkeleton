@@ -17,7 +17,7 @@ import com.gsbelarus.gedemin.skeleton.core.util.CoreNetworkInfo;
 public class MainActivity extends BaseActivity {
 
     /**
-     * Сonfiguration
+     * Configuration
      */
 
     @Override
