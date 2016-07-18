@@ -2,6 +2,7 @@ package com.gsbelarus.gedemin.skeleton.app.view.fragment;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -56,6 +57,7 @@ public class AuthFragment extends BaseFragment implements
         this.rootView = rootView;
 
         SignInButton signInButton = (SignInButton) rootView.findViewById(R.id.google_sign_in_button);
+        String serverClientId = getString(R.string.server_client_id);
 
         signInButton.setOnClickListener(this);
         rootView.findViewById(R.id.google_sign_out_button).setOnClickListener(this);
@@ -63,6 +65,8 @@ public class AuthFragment extends BaseFragment implements
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestScopes(new Scope(Scopes.DRIVE_APPFOLDER))
+                .requestIdToken(serverClientId)
+                .requestServerAuthCode(serverClientId)
                 .requestEmail()
                 .build();
 
@@ -109,10 +113,37 @@ public class AuthFragment extends BaseFragment implements
 
     private void handleSignInResult(GoogleSignInResult result) {
         Logger.d("handleSignInResult:" + result.isSuccess());
+        Logger.d("handleSignInResult:GET_TOKEN & GET_AUTH_CODE:success:" + result.getStatus().isSuccess());
+
         if (result.isSuccess()) {
             // Signed in successfully, show authenticated UI.
+
+            // Getting profile information
             GoogleSignInAccount acct = result.getSignInAccount();
-            Logger.d(getString(R.string.signed_in_fmt, acct.getDisplayName()));
+            String personDisplayName = acct.getDisplayName();
+            String personFamilyName = acct.getFamilyName();
+            String personGivenName = acct.getGivenName();
+            String personEmail = acct.getEmail();
+            String personId = acct.getId();
+            Uri personPhoto = acct.getPhotoUrl();
+
+            Logger.d("\n" + getString(R.string.signed_display_name_fmt, personDisplayName) + "\n" +
+                    getString(R.string.signed_family_name_fmt, personFamilyName) + "\n" +
+                    getString(R.string.signed_given_name_fmt, personGivenName) + "\n" +
+                    getString(R.string.signed_email_fmt, personEmail) + "\n" +
+                    getString(R.string.signed_id_fmt, personId) + "\n" +
+                    getString(R.string.signed_photo_fmt, personPhoto));
+
+            // Getting id token
+            String idToken = acct.getIdToken();
+            Logger.d("idToken:" + idToken + "\n" + getString(R.string.id_token_fmt, idToken));
+
+            // Getting authorization code
+            String authCode = acct.getServerAuthCode();
+            Logger.d("authCode:" + authCode + "\n" + getString(R.string.auth_code_fmt, authCode));
+
+            //TODO save google drive
+
             updateUI(true);
         } else {
             // Signed out, show unauthenticated UI.

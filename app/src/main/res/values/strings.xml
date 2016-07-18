@@ -12,10 +12,24 @@
     <string name="sync_certificate_error">Certificate error</string>
     <string name="sync_unknown">Unknown error</string>
 
-    <string name="signed_in_fmt">Signed in as: %s</string>
     <string name="signed_out">Signed out</string>
     <string name="sign_out">Sign Out</string>
     <string name="disconnect">Disconnect</string>
     <string name="loading">Loading…</string>
+    <string name="signed_display_name_fmt">User display name: %s</string>
+    <string name="signed_family_name_fmt">User family name: %s</string>
+    <string name="signed_given_name_fmt">User given name: %s</string>
+    <string name="signed_email_fmt">User email: %s</string>
+    <string name="signed_id_fmt">User id: %s</string>
+    <string name="signed_photo_fmt">User url photo: %s</string>
+    <string name="id_token_fmt">ID Token: %s</string>
+    <string name="auth_code_fmt">Auth Code: %s</string>
+
+    <!-- TODO(user): replace with your real server client ID -->
+    <!-- Server Client ID.  This should be a valid Web OAuth 2.0 Client ID obtained
+         from https://console.developers.google.com/ -->
+    <!--Client ID: 884379891331-arnustr7ntb1doiav5rdm1244adehhr3.apps.googleusercontent.com
+        Secret client: fk2Nvwu7GwKmJCutFsxMGy3U-->
+    <string name="server_client_id">884379891331-arnustr7ntb1doiav5rdm1244adehhr3.apps.googleusercontent.com</string>
 
 </resources>
