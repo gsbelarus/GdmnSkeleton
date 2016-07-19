@@ -35,7 +35,7 @@ public class AuthFragment extends BaseFragment implements
 
     @Override
     protected int getLayoutResource() {
-        return R.layout.fragment_auth;
+        return R.layout.app_fragment_auth;
     }
 
     private static final int REQUEST_CODE_SIGN_IN = 9001;

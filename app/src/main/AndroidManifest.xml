@@ -28,15 +28,15 @@
         <activity
             android:name=".app.view.activity.DetailActivity"
             android:configChanges="orientation"
-            android:label="Подробно" />
+            android:label="@string/label_detail" />
 
         <activity
             android:name=".app.view.activity.EditActivity"
-            android:label="Изменить запись" />
+            android:label="@string/label_edit_entry" />
 
         <activity
             android:name=".app.view.activity.AuthActivity"
-            android:label="Авторизация" />
+            android:label="@string/label_auth" />
 
         <service android:name=".core.data.CoreAuthenticatorService">
             <intent-filter>

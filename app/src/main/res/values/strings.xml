@@ -3,6 +3,15 @@
     <string name="account_type">com.gsbelarus.gedemin.skeleton.sync</string>
     <string name="authority">com.gsbelarus.gedemin.skeleton</string>
 
+    <string name="label_detail">Подробно</string>
+    <string name="label_edit_entry">Изменить запись</string>
+    <string name="label_auth">Авторизация</string>
+    <string name="gdmsgs_is_empty">Сообщений нет</string>
+    <string name="auth_btn">Авторизация</string>
+    <string name="sign_out_btn">Выход</string>
+    <string name="disconnect_btn">Отключение</string>
+    <string name="loading">Загрузка…</string>
+
     <string name="replay">Replay</string>
     <string name="network_unavailable">Network unavailable</string>
     <string name="sync_error_timeout">Timed out, please try again later</string>
@@ -13,9 +22,6 @@
     <string name="sync_unknown">Unknown error</string>
 
     <string name="signed_out">Signed out</string>
-    <string name="sign_out">Sign Out</string>
-    <string name="disconnect">Disconnect</string>
-    <string name="loading">Loading…</string>
     <string name="signed_display_name_fmt">User display name: %s</string>
     <string name="signed_family_name_fmt">User family name: %s</string>
     <string name="signed_given_name_fmt">User given name: %s</string>
@@ -24,6 +30,12 @@
     <string name="signed_photo_fmt">User url photo: %s</string>
     <string name="id_token_fmt">ID Token: %s</string>
     <string name="auth_code_fmt">Auth Code: %s</string>
+
+    <string-array name="language_list_values" translatable="false">
+        <item>ru</item>
+        <item>be</item>
+        <item>en</item>
+    </string-array>
 
     <!-- TODO(user): replace with your real server client ID -->
     <!-- Server Client ID.  This should be a valid Web OAuth 2.0 Client ID obtained

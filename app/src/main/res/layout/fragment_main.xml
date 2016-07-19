@@ -19,6 +19,24 @@
                 android:layout_height="match_parent"
                 android:scrollbars="vertical"
                 tools:listitem="@layout/core_recycler_empty_item" />
+
+            <!-- EmptyRecyclerView by CoOstOFF -->
+
+            <!--<FrameLayout-->
+                <!--android:id="@+id/frame_layout"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent">-->
+
+                <!--<com.gsbelarus.gedemin.skeleton.core.view.component.EmptyRecyclerView-->
+                    <!--android:id="@+id/recycler_view"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="match_parent"-->
+                    <!--android:scrollbars="vertical"/>-->
+
+                <!-- app:empty_layout="@layout/core_empty_recycler_view" -->
+
+            <!--</FrameLayout>-->
+
         </android.support.v4.widget.SwipeRefreshLayout>
 
         <android.support.design.widget.FloatingActionButton
