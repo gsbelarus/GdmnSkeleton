@@ -30,6 +30,7 @@
     <string name="signed_photo_fmt">User url photo: %s</string>
     <string name="id_token_fmt">ID Token: %s</string>
     <string name="auth_code_fmt">Auth Code: %s</string>
+    <string name="no_internet_connect">Отсутствует подключение к интернету</string>
 
     <string-array name="language_list_values" translatable="false">
         <item>ru</item>

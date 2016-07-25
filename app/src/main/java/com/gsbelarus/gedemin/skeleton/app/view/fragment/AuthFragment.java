@@ -1,11 +1,15 @@
 package com.gsbelarus.gedemin.skeleton.app.view.fragment;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -43,12 +47,6 @@ public class AuthFragment extends BaseFragment implements
     private GoogleApiClient googleApiClient;
     private ProgressDialog progressDialog;
     private ViewGroup rootView;
-
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
 
     @Override
     protected void onCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
@@ -152,8 +150,23 @@ public class AuthFragment extends BaseFragment implements
     }
 
     private void signIn() {
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
-        startActivityForResult(signInIntent, REQUEST_CODE_SIGN_IN);
+
+        ConnectivityManager conMgr = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo netInfo = conMgr.getActiveNetworkInfo();
+
+        if (netInfo == null) {
+
+            new AlertDialog.Builder(getActivity())
+                    .setTitle(getResources().getString(R.string.app_name))
+                    .setMessage(R.string.no_internet_connect)
+                    .setPositiveButton("OK", null).show();
+
+        } else {
+            Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
+            startActivityForResult(signInIntent, REQUEST_CODE_SIGN_IN);
+        }
+
     }
 
     private void signOut() {

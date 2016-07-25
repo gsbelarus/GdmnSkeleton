@@ -6,8 +6,17 @@
     <uses-permission android:name="android.permission.READ_SYNC_STATS" />
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+
+    <permission
+        android:name="com.gsbelarus.gedemin.skeleton.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="com.gsbelarus.gedemin.skeleton.permission.C2D_MESSAGE" />
 
     <application
         android:name=".app.App"
@@ -23,6 +32,22 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- TODO: Add autoVerify if necessary. More information
+                 TODO: https://developer.android.com/training/app-links/index.html#request-verify -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- TODO: Change the host or pathPrefix as necessary. -->
+                <data
+                    android:host="skeleton.gedemin.gsbelarus.com"
+                    android:pathPrefix="/main"
+                    android:scheme="http" />
+            </intent-filter>
+
         </activity>
 
         <activity
@@ -38,6 +63,16 @@
             android:name=".app.view.activity.AuthActivity"
             android:label="@string/label_auth" />
 
+        <receiver
+            android:name="com.google.android.gms.gcm.GcmReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
+                <category android:name="com.gsbelarus.gedemin.salary" />
+            </intent-filter>
+        </receiver>
+
         <service android:name=".core.data.CoreAuthenticatorService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
@@ -49,7 +84,7 @@
         </service>
 
         <service
-            android:name=".app.SyncService"
+            android:name=".app.service.SyncService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -60,11 +95,32 @@
                 android:resource="@xml/sync_adapter" />
         </service>
 
+        <service
+            android:name=".app.service.GcmService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".core.data.GcmInstanceIDService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.gms.iid.InstanceID" />
+            </intent-filter>
+        </service>
+
         <provider
             android:name=".core.data.CoreDummyProvider"
             android:authorities="@string/authority"
             android:exported="false"
             android:syncable="true" />
+
+        <meta-data
+            android:name="search-engine"
+            android:resource="@xml/noindex" />
+
     </application>
 
 </manifest>
