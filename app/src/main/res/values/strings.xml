@@ -32,6 +32,9 @@
     <string name="auth_code_fmt">Auth Code: %s</string>
     <string name="no_internet_connect">Отсутствует подключение к интернету</string>
 
+    <string name="google_drive_create_file">Создать файл на Google Drive</string>
+    <string name="google_drive_open_file">Открыть файл из Google Drive</string>
+
     <string-array name="language_list_values" translatable="false">
         <item>ru</item>
         <item>be</item>

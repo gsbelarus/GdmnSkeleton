@@ -3,6 +3,7 @@ package com.gsbelarus.gedemin.skeleton.app.view.fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -10,8 +11,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -25,13 +28,22 @@ import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.DriveApi;
+import com.google.android.gms.drive.DriveContents;
+import com.google.android.gms.drive.DriveFolder;
+import com.google.android.gms.drive.MetadataChangeSet;
 import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseFragment;
 import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 
-public class AuthFragment extends BaseFragment implements
-        GoogleApiClient.OnConnectionFailedListener,
-        View.OnClickListener {
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
+public class AuthFragment extends BaseFragment implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
 
     /**
      * Configuration
@@ -43,8 +55,10 @@ public class AuthFragment extends BaseFragment implements
     }
 
     private static final int REQUEST_CODE_SIGN_IN = 9001;
+    private static final  int REQUEST_CODE_DRIVE_OPENER = 9002;
 
     private GoogleApiClient googleApiClient;
+    private GoogleApiClient driveApiClient;
     private ProgressDialog progressDialog;
     private ViewGroup rootView;
 
@@ -60,6 +74,8 @@ public class AuthFragment extends BaseFragment implements
         signInButton.setOnClickListener(this);
         rootView.findViewById(R.id.google_sign_out_button).setOnClickListener(this);
         rootView.findViewById(R.id.google_disconnect_button).setOnClickListener(this);
+        rootView.findViewById(R.id.google_drive_create_file).setOnClickListener(this);
+        rootView.findViewById(R.id.google_drive_open_file).setOnClickListener(this);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestScopes(new Scope(Scopes.DRIVE_APPFOLDER))
@@ -100,13 +116,65 @@ public class AuthFragment extends BaseFragment implements
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        if(driveApiClient == null) {
+
+            driveApiClient = new GoogleApiClient.Builder(getContext())
+                    .addApi(Drive.API)
+                    .addScope(Drive.SCOPE_FILE)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .build();
+        }
+
+        Logger.d(TAG, "driveApiClient connect");
+        driveApiClient.connect();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if(driveApiClient != null) {
+
+            Logger.d(TAG, "driveApiClient disconnect");
+            driveApiClient.disconnect();
+        }
+        super.onPause();
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_CODE_SIGN_IN) {
+
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleSignInResult(result);
         }
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Logger.d("onConnectionFailed:" + connectionResult);
+    }
+
+    /**
+     * It invoked when Google API client connected
+     */
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Logger.d(getActivity().getApplicationContext(), "Connected");
+        Toast.makeText(getActivity().getApplicationContext(), "Connected", Toast.LENGTH_LONG).show();
+    }
+
+    /**
+     * It invoked when connection suspend
+     */
+    @Override
+    public void onConnectionSuspended(int i) {
+        Logger.d(TAG, "DriveApiClient connection suspended");
     }
 
     private void handleSignInResult(GoogleSignInResult result) {
@@ -140,7 +208,7 @@ public class AuthFragment extends BaseFragment implements
             String authCode = acct.getServerAuthCode();
             Logger.d("authCode:" + authCode + "\n" + getString(R.string.auth_code_fmt, authCode));
 
-            //TODO save google drive
+            //TODO get necessary key and save on Google Drive
 
             updateUI(true);
         } else {
@@ -189,9 +257,86 @@ public class AuthFragment extends BaseFragment implements
                 });
     }
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Logger.d("onConnectionFailed:" + connectionResult);
+    private void createFileOnDrive() {
+
+        Drive.DriveApi.newDriveContents(driveApiClient).setResultCallback(
+                new ResultCallback<DriveApi.DriveContentsResult>() {
+
+                    @Override
+                    public void onResult(final DriveApi.DriveContentsResult result) {
+                        if (result.getStatus().isSuccess()) {
+
+                            final DriveContents driveContents = result.getDriveContents();
+
+                            // Perform I/O off the UI thread.
+                            new Thread() {
+                                @Override
+                                public void run() {
+
+                                    // write content to DriveContents
+                                    OutputStream outputStream = driveContents.getOutputStream();
+                                    Writer writer = new OutputStreamWriter(outputStream);
+                                    try {
+                                        writer.write("Hello abhay!"); //TODO change text
+                                        writer.close();
+                                    } catch (IOException e) {
+                                        Log.e(TAG, e.getMessage());
+                                    }
+
+                                    //TODO update text
+                                    MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                                            .setTitle("abhaytest2")
+                                            .setMimeType("text/plain")
+                                            .setStarred(true)
+                                            .build();
+
+                                    // create a file in root folder
+                                    Drive.DriveApi.getRootFolder(driveApiClient)
+                                            .createFile(driveApiClient, changeSet, driveContents)
+                                            .setResultCallback(
+                                                    new ResultCallback<DriveFolder.DriveFileResult>() {
+                                                        @Override
+                                                        public void onResult(@NonNull DriveFolder.DriveFileResult driveFileResult) {
+                                                            if (driveFileResult.getStatus().isSuccess()) {
+                                                                Logger.d(getActivity().getApplicationContext(), "file created: " +
+                                                                        "" + driveFileResult.getDriveFile().getDriveId());
+                                                            }
+                                                        }
+                                                    }
+                                            );
+                                }
+                            }.start();
+                        }
+                    }
+                });
+    }
+
+
+    private void openFileFromDrive() {
+
+        Drive.DriveApi.newDriveContents(driveApiClient).setResultCallback(
+                new ResultCallback<DriveApi.DriveContentsResult>() {
+
+                    @Override
+                    public void onResult(final DriveApi.DriveContentsResult result) {
+                        if(result.getStatus().isSuccess()) {
+
+                            IntentSender intentSender = Drive.DriveApi
+                                    .newOpenFileActivityBuilder()
+                                    .setMimeType(new String[] { "text/plain", "text/html" })
+                                    .build(driveApiClient);
+
+                            try {
+
+                                getActivity().startIntentSenderForResult(intentSender, REQUEST_CODE_DRIVE_OPENER, null, 0, 0, 0);
+
+                            } catch (IntentSender.SendIntentException e) {
+
+                                Log.w(TAG, "Unable to send intent", e);
+                            }
+                        }
+                    }
+                });
     }
 
     private void showProgressDialog() {
@@ -214,11 +359,15 @@ public class AuthFragment extends BaseFragment implements
         if (signedIn) {
             rootView.findViewById(R.id.google_sign_in_button).setVisibility(View.GONE);
             rootView.findViewById(R.id.google_sign_out_and_disconnect).setVisibility(View.VISIBLE);
+            rootView.findViewById(R.id.google_drive_create_file).setVisibility(View.VISIBLE);
+            rootView.findViewById(R.id.google_drive_open_file).setVisibility(View.VISIBLE);
         } else {
             Logger.d(R.string.signed_out);
 
             rootView.findViewById(R.id.google_sign_in_button).setVisibility(View.VISIBLE);
             rootView.findViewById(R.id.google_sign_out_and_disconnect).setVisibility(View.GONE);
+            rootView.findViewById(R.id.google_drive_create_file).setVisibility(View.GONE);
+            rootView.findViewById(R.id.google_drive_open_file).setVisibility(View.GONE);
         }
     }
 
@@ -233,6 +382,14 @@ public class AuthFragment extends BaseFragment implements
                 break;
             case R.id.google_disconnect_button:
                 revokeAccess();
+                break;
+            case R.id.google_drive_create_file:
+                createFileOnDrive();
+                break;
+            case R.id.google_drive_open_file:
+                openFileFromDrive();
+                break;
+            default:
                 break;
         }
     }

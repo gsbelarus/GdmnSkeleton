@@ -10,4 +10,7 @@
     <string name="loading">Загрузка…</string>
     <string name="no_internet_connect">Адсутнічае падлучэнне да інтэрнэту</string>
 
+    <string name="google_drive_create_file">Стварыць файл на Google Drive</string>
+    <string name="google_drive_open_file">Адкрыць файл з Google Drive</string>
+
 </resources>
