@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 
 import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.app.view.activity.EditActivity;
+import com.gsbelarus.gedemin.skeleton.base.BasicAccountHelper;
 import com.gsbelarus.gedemin.skeleton.base.data.BaseDatabaseManager;
 import com.gsbelarus.gedemin.skeleton.base.data.loader.BasicTableCursorLoader;
 import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseDetailCursorFragment;
@@ -76,7 +77,7 @@ public class CoreDetailCursorFragment<FRAGMENTSTATE_T extends CoreDetailFragment
 
     @Override
     protected BaseDatabaseManager createDatabaseManager() {
-        return CoreDatabaseManager.getInstance(getContext());
+        return CoreDatabaseManager.getInstance(getContext(), BasicAccountHelper.getSelectedAccount(getContext()));
     }
 
     @Override

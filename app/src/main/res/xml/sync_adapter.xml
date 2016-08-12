@@ -3,4 +3,4 @@
     android:accountType="@string/account_type"
     android:allowParallelSyncs="false"
     android:contentAuthority="@string/authority"
-    android:userVisible="false" />
+    android:userVisible="true" />

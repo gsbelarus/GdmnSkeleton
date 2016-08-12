@@ -1,5 +1,6 @@
 package com.gsbelarus.gedemin.skeleton.base.view;
 
+import android.accounts.Account;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,6 +13,8 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+
+import com.gsbelarus.gedemin.skeleton.base.BasicAccountHelper;
 
 abstract public class BaseActivity extends AppCompatActivity {
 
@@ -45,6 +48,7 @@ abstract public class BaseActivity extends AppCompatActivity {
 
     protected Context context;
     private Toolbar toolbar;
+    private BasicAccountHelper.AccountChangeManager accountChangeManager;
 
 
     public static <T extends AppCompatActivity> Intent newStartIntent(Context context, Class<T> cl, Bundle extrasBundle) {
@@ -59,6 +63,15 @@ abstract public class BaseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(getLayoutResource());
+
+        BasicAccountHelper basicAccountHelper = new BasicAccountHelper(getApplicationContext());
+        accountChangeManager = basicAccountHelper.setOnChangedListener(new BasicAccountHelper.OnChangedListener() {
+            @Override
+            public void onChanged(Account oldAccount, Account newAccount) {
+                onAccountChanged(oldAccount, newAccount);
+            }
+        });
+        accountChangeManager.onCreate();
 
         context = getBaseContext();
 //        setupContentFragment();
@@ -80,6 +93,20 @@ abstract public class BaseActivity extends AppCompatActivity {
         // handle intent extras
         Bundle extras = getIntent().getExtras();
         if (extras != null) handleIntentExtras(extras);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        accountChangeManager.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        accountChangeManager.onResume();
     }
 
     protected void setupHighLevelActivity() {
@@ -130,9 +157,9 @@ abstract public class BaseActivity extends AppCompatActivity {
 //        setVisibilityAppBarShadow(true);
     }
 
-    protected  void handleSavedInstanceState(@NonNull Bundle savedInstanceState) {};
-
-    protected  void handleIntentExtras(@NonNull Bundle extras) {};
+    protected void handleSavedInstanceState(@NonNull Bundle savedInstanceState) {}
+    protected void handleIntentExtras(@NonNull Bundle extras) {}
+    protected void onAccountChanged(Account oldAccount, Account newAccount) {}
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -151,6 +178,12 @@ abstract public class BaseActivity extends AppCompatActivity {
         return toolbar;
     }
 
+    protected void replaceFragment(@IdRes int fragmentPlaceIdResource, Fragment fragment, @Nullable String tag) {
+        getSupportFragmentManager().beginTransaction()
+                .replace(fragmentPlaceIdResource, fragment, tag)
+                .commitAllowingStateLoss();
+    }
+
     protected void includeFragment(@IdRes int fragmentPlaceIdResource, Fragment fragment, @Nullable String tag) {
         getSupportFragmentManager().beginTransaction()
                 .add(fragmentPlaceIdResource, fragment, tag)
@@ -161,5 +194,17 @@ abstract public class BaseActivity extends AppCompatActivity {
     @Nullable
     protected <T extends Fragment> T findSupportFragment(String tag) {
         return (T) getSupportFragmentManager().findFragmentByTag(tag);
+    }
+
+    protected void setSelectedAccount(Account account) {
+        accountChangeManager.setSelectedAccount(account);
+    }
+
+    protected Account getSelectedAccount() {
+        return BasicAccountHelper.getSelectedAccount(context);
+    }
+
+    protected void chooseAccount(String accountType) {
+        accountChangeManager.chooseAccount(this, accountType);
     }
 }

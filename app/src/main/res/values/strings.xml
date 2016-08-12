@@ -20,6 +20,7 @@
     <string name="sync_error_connection">Connection error</string>
     <string name="sync_certificate_error">Certificate error</string>
     <string name="sync_unknown">Unknown error</string>
+    <string name="sign_error_already_exists">Account already exists</string>
 
     <string name="signed_out">Signed out</string>
     <string name="signed_display_name_fmt">User display name: %s</string>

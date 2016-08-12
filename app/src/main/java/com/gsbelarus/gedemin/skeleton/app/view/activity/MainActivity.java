@@ -1,6 +1,6 @@
 package com.gsbelarus.gedemin.skeleton.app.view.activity;
 
-import android.content.ContentResolver;
+import android.accounts.Account;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,11 +10,8 @@ import android.view.MenuItem;
 
 import com.google.android.gms.appindexing.AppIndex;
 import com.gsbelarus.gedemin.skeleton.R;
-import com.gsbelarus.gedemin.skeleton.app.service.SyncService;
 import com.gsbelarus.gedemin.skeleton.app.view.fragment.MainRecyclerCursorFragment;
-import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
 import com.gsbelarus.gedemin.skeleton.base.view.BaseActivity;
-import com.gsbelarus.gedemin.skeleton.core.util.CoreNetworkInfo;
 import com.gsbelarus.gedemin.skeleton.core.util.IndexingHelper;
 
 public class MainActivity extends BaseActivity {
@@ -80,32 +77,38 @@ public class MainActivity extends BaseActivity {
         indexingHelper.getClient().disconnect();
     }
 
-
     @Override
     protected void handleSavedInstanceState(@NonNull Bundle savedInstanceState) {
+        super.handleSavedInstanceState(savedInstanceState);
     }
 
     @Override
     protected void handleIntentExtras(@NonNull Bundle extras) {
+        super.handleIntentExtras(extras);
+    }
+
+    @Override
+    protected void onAccountChanged(Account oldAccount, Account newAccount) {
+        super.onAccountChanged(oldAccount, newAccount);
+
+        fragment = new MainRecyclerCursorFragment();
+        replaceFragment(R.id.activity_content_fragment_place, fragment, MainRecyclerCursorFragment.class.getCanonicalName());
+        if (newAccount == null) {
+            chooseAccount(getString(R.string.account_type));
+        }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.demo_sync, menu);          //TODO for tests
+        getMenuInflater().inflate(R.menu.choose_account_menu, menu);          //TODO for tests
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_demo_sync:                             //TODO for tests
-                CoreNetworkInfo.runWithNetworkConnection(getWindow().getDecorView(), new Runnable() {
-                    @Override
-                    public void run() {
-                        ContentResolver.requestSync(SyncService.getDemoSyncAccount(getApplicationContext()),
-                                getString(R.string.authority), SyncService.getTaskBundle(BaseSyncService.TypeTask.FOREGROUND));
-                    }
-                });
+            case R.id.action_choose_account:                             //TODO for tests
+                chooseAccount(getString(R.string.account_type));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

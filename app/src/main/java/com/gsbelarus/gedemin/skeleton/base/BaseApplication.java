@@ -48,5 +48,4 @@ abstract public class BaseApplication extends Application {
 
         changeLocale();
     }
-
 }

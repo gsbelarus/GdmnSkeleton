@@ -1,7 +1,9 @@
 package com.gsbelarus.gedemin.skeleton.base;
 
 import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.SyncStatusObserver;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -22,9 +24,15 @@ public final class BasicSyncStatusNotifier {
         handler = new Handler();
     }
 
-    public void addSyncStatusListener(@NonNull final Account account, @NonNull final OnSyncStatusListener onSyncStatusListener) {
+    public void addSyncStatusListenerForAll(@NonNull Context context, @NonNull final Callback callback) {
+        for (Account account : AccountManager.get(context).getAccounts()) {
+            addSyncStatusListener(account, callback);
+        }
+    }
+
+    public void addSyncStatusListener(@NonNull final Account account, @NonNull final Callback callback) {
         if (syncAccounts.containsKey(account)) {
-            throw new IllegalArgumentException("account already has listener");
+            throw new IllegalArgumentException("account already has SyncStatusCallback");
         }
         final Params params = new Params();
         syncAccounts.put(account, params);
@@ -39,11 +47,11 @@ public final class BasicSyncStatusNotifier {
                         if (syncAccounts.containsKey(account)) {
                             if (isSyncActive) {
                                 params.syncActive = true;
-                                onSyncStatusListener.onStartSync(account);
+                                callback.onStartSync(account);
                             } else {
                                 if (params.syncActive) {
                                     params.syncActive = false;
-                                    onSyncStatusListener.onFinishSync(account);
+                                    callback.onFinishSync(account);
                                 }
                             }
                         }
@@ -55,7 +63,7 @@ public final class BasicSyncStatusNotifier {
 
     public void removeSyncStatusListener(Account account) {
         if (!syncAccounts.containsKey(account)) {
-            throw new IllegalArgumentException("account has no listener");
+            throw new IllegalArgumentException("account has no SyncStatusCallback");
         }
         ContentResolver.removeStatusChangeListener(syncAccounts.get(account).syncObserverHandle);
         syncAccounts.remove(account);
@@ -75,7 +83,7 @@ public final class BasicSyncStatusNotifier {
                 !ContentResolver.isSyncPending(account, authority);
     }
 
-    public interface OnSyncStatusListener {
+    public interface Callback {
         void onStartSync(Account account);
 
         void onFinishSync(Account account);

@@ -20,6 +20,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.FilterQueryProvider;
 
 import com.gsbelarus.gedemin.skeleton.R;
+import com.gsbelarus.gedemin.skeleton.base.BasicAccountHelper;
 import com.gsbelarus.gedemin.skeleton.base.data.loader.BasicTableCursorLoader;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.BasicCursorRecyclerViewAdapter;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.item.ItemViewTypes;
@@ -138,7 +139,7 @@ public class CoreSearchableRecyclerCursorFragment extends BaseRecyclerCursorFrag
 
     @Override
     protected CoreDatabaseManager createDatabaseManager() {
-        return CoreDatabaseManager.getInstance(getContext());
+        return CoreDatabaseManager.getInstance(getContext(), BasicAccountHelper.getSelectedAccount(getContext()));
     }
 
     @Override

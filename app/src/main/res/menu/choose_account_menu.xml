@@ -3,9 +3,9 @@
     xmlns:appcompat="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_demo_sync"
+        android:id="@+id/action_choose_account"
         android:icon="@drawable/ic_sync_problem_black_24dp"
-        android:title="Демо режим"
+        android:title="Choose account"
         appcompat:showAsAction="ifRoom" />
 
 </menu>

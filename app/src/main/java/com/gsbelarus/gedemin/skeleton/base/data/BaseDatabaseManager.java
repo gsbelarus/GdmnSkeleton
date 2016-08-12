@@ -21,29 +21,27 @@ import java.util.Map;
 
 public abstract class BaseDatabaseManager {
 
-    private final String TAG = this.getClass().getCanonicalName();
-
-    //private static BaseDatabaseManager instance = null; //TODO singleton factory
-
     private static String CONTENT_URI_AUTHORITY = "gdmn";
     private static String CONTENT_URI_SCHEME = "content";
+
+    private final String TAG = this.getClass().getCanonicalName();
+
+    private final Context appContext;
 
     protected int dbVersion;
     protected String dbName;
 
-    private final Context appContext;
-    private BasicDatabaseOpenHelper basicDatabaseOpenHelper = null;
-    protected SQLiteDatabase db = null;
+    protected SQLiteDatabase db;
+    private BasicDatabaseOpenHelper basicDatabaseOpenHelper;
 
-
-    protected BaseDatabaseManager(@NonNull Context сontext, String dbName, int dbVersion) {
+    protected BaseDatabaseManager(@NonNull Context context, String dbName, int dbVersion) {
         this.dbName = dbName;
         this.dbVersion = dbVersion;
-        this.appContext = сontext.getApplicationContext();
+        this.appContext = context.getApplicationContext();
     }
 
     @NonNull
-    protected abstract BaseDatabaseOpenHelperDelegate getDatabaseOpenHelperDelegate();
+    protected abstract BasicDatabaseOpenHelper.Delegate getDbOpenDelegate();
 
     public boolean isOpen() {
         return (db != null && db.isOpen());
@@ -51,11 +49,11 @@ public abstract class BaseDatabaseManager {
 
     public synchronized void open() {                   //TODO check
         if (basicDatabaseOpenHelper == null) {
-            basicDatabaseOpenHelper = new BasicDatabaseOpenHelper(appContext, dbName, dbVersion, getDatabaseOpenHelperDelegate());
+            basicDatabaseOpenHelper = new BasicDatabaseOpenHelper(appContext, dbName, dbVersion, getDbOpenDelegate());
         }
         basicDatabaseOpenHelper.addConnection();
 
-        if(!isOpen()) {
+        if (!isOpen()) {
             db = basicDatabaseOpenHelper.getWritableDatabase();
         }
     }
@@ -63,7 +61,7 @@ public abstract class BaseDatabaseManager {
     public synchronized boolean close() {
         basicDatabaseOpenHelper.removeConnection();
 
-        if(basicDatabaseOpenHelper.getConnectCounter() == 0) {
+        if (basicDatabaseOpenHelper.getConnectCounter() == 0) {
             if (db.inTransaction()) db.endTransaction();
             basicDatabaseOpenHelper.close();
             db = null;
@@ -72,7 +70,6 @@ public abstract class BaseDatabaseManager {
         }
         return false;
     }
-
 
     public void beginTransaction() {
         db.beginTransaction();
@@ -133,11 +130,12 @@ public abstract class BaseDatabaseManager {
                 null, false);
     }
 
-
     @Nullable
     public Cursor select(String tableName, String[] columnNames, String selection, String[] selectionArgs, String order) {
         try {
-            return setNotifier(db.query(tableName, columnNames, selection, selectionArgs, null, null, order));
+            Cursor cursor = db.query(tableName, columnNames, selection, selectionArgs, null, null, order);
+            cursor.getCount();              //// FIXME: 12.08.2016 why?
+            return setNotifier(cursor);
         } catch (Exception e) {
             Log.e(TAG, "Error selecting: " + SQLiteQueryBuilder.buildQueryString(false, tableName, columnNames, selection, null, null, order, null), e);
             return null;
@@ -188,13 +186,19 @@ public abstract class BaseDatabaseManager {
         }
     }
 
-    public void deleteDatabase(Context appContext) {
+    public void execSQL(String sql) {
+        execSQL(sql, null);
+    }
+
+    public void execSQL(String sql, Object[] bindArgs) {
+        db.execSQL(sql, bindArgs);
+    }
+
+    public void deleteDatabase() {
         appContext.deleteDatabase(dbName);
     }
 
-
     //////////////
-
 
     public void dropAll() {
         dropAll(db);
@@ -227,5 +231,4 @@ public abstract class BaseDatabaseManager {
         cursor.close();
         return rows;
     }
-
 }

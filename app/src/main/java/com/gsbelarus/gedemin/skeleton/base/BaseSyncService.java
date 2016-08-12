@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SyncResult;
@@ -37,6 +38,15 @@ public abstract class BaseSyncService extends Service {
 
     public static Bundle getTaskBundle(TypeTask typeTask, Bundle bundle) {
         bundle.putString(TypeTask.class.getSimpleName(), typeTask.name());
+        switch (typeTask) {
+            case BACKGROUND:
+                break;
+            case FOREGROUND:
+                bundle.putBoolean(ContentResolver.SYNC_EXTRAS_DO_NOT_RETRY, true);
+                bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+                bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+                break;
+        }
         return bundle;
     }
 
@@ -122,18 +132,14 @@ public abstract class BaseSyncService extends Service {
             } catch (SocketTimeoutException e) {
                 Logger.e(e);
                 error = getString(R.string.sync_error_timeout);
-                if (getTypeTask(extras) == TypeTask.BACKGROUND) {
-                    syncResult.stats.numIoExceptions++;
-                }
+                syncResult.stats.numIoExceptions++;
             } catch (UnknownHostException e) {
                 Logger.e(e);
                 error = getString(R.string.sync_error_unknown_host);
             } catch (IOException e) {
                 Logger.e(e);
                 error = getString(R.string.sync_error_connection);
-                if (getTypeTask(extras) == TypeTask.BACKGROUND) {
-                    syncResult.stats.numIoExceptions++;
-                }
+                syncResult.stats.numIoExceptions++;
             } catch (RuntimeException e) {
                 Logger.e(e);
                 error = e.getMessage();

@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
+import com.gsbelarus.gedemin.skeleton.base.BasicAccountHelper;
 import com.gsbelarus.gedemin.skeleton.core.UnsupportedDataTypeException;
 import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 
@@ -63,12 +64,9 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
     private ODataClient oDataClient;
     private boolean insertedDataSent;
 
-    /**
-     * @return url для соединения или null для создания демо данных.
-     * Если null, вызывается {@link CoreSyncService#onCreateDemoDatabase(CoreDatabaseManager)}
-     */
-    @Nullable
     protected abstract String getUrl(Account account, Bundle extras);
+
+    protected abstract boolean isDemoDatabase(Account account, Bundle extras);
 
     @NonNull
     protected abstract String getNamespace();
@@ -81,33 +79,25 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
     public void onCreate() {
         super.onCreate();
 
-        databaseManager = CoreDatabaseManager.getInstance(getApplicationContext());
-        databaseManager.open();
         oDataClient = ODataClientFactory.getClient();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        databaseManager.close();
     }
 
     @Override
     protected void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) throws IOException {
         boolean isSuccessful = false;
+        Logger.d("Start synchronization for account \"" + account.name + "\"");
+        databaseManager = CoreDatabaseManager.getInstance(getApplicationContext(), account);
+        databaseManager.open();
+
         databaseManager.beginTransactionNonExclusive();
         try {
-            url = getUrl(account, extras);
-            if (url == null) {
+            if (isDemoDatabase(account, extras)) {
                 databaseManager.recreateDatabase();
                 databaseManager.setVersion(DEFAULT_DEMO_VERSION, this);
                 onCreateDemoDatabase(databaseManager);
 
             } else {
-                if (databaseManager.getVersion() == DEFAULT_DEMO_VERSION) {
-                    databaseManager.recreateDatabase();
-                }
+                url = getUrl(account, extras);
                 namespace = getNamespace();
 
                 ODataRetrieveResponse<Edm> metadataResponse = oDataClient.getRetrieveRequestFactory().getMetadataRequest(url).execute();
@@ -143,6 +133,7 @@ public abstract class CoreSyncService extends BaseSyncService implements CoreDat
             if (isSuccessful) {
                 databaseManager.notifyDataChanged();
             }
+            databaseManager.close();
         }
     }
 

@@ -18,6 +18,7 @@ import com.gsbelarus.gedemin.skeleton.app.view.RequestCode;
 import com.gsbelarus.gedemin.skeleton.app.view.activity.DetailActivity;
 import com.gsbelarus.gedemin.skeleton.app.view.activity.EditActivity;
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
+import com.gsbelarus.gedemin.skeleton.base.BasicAccountHelper;
 import com.gsbelarus.gedemin.skeleton.base.BasicSyncStatusNotifier;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.listener.OnRecyclerItemClickListener;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreContract;
@@ -65,7 +66,8 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
 
         initRefreshLayout(rootView);
 
-        BasicSyncStatusNotifier.OnSyncStatusListener onSyncStatusListener = new BasicSyncStatusNotifier.OnSyncStatusListener() {
+        syncStatusNotifier = new BasicSyncStatusNotifier(getString(R.string.authority));
+        syncStatusNotifier.addSyncStatusListenerForAll(getContext(), new BasicSyncStatusNotifier.Callback() {
             @Override
             public void onStartSync(Account account) {
                 Logger.d();
@@ -79,10 +81,7 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
                 }
                 swipeRefreshLayout.setRefreshing(false);
             }
-        };
-        syncStatusNotifier = new BasicSyncStatusNotifier(getString(R.string.authority));
-        syncStatusNotifier.addSyncStatusListener(SyncService.getDefaultSyncAccount(getContext()), onSyncStatusListener);
-        syncStatusNotifier.addSyncStatusListener(SyncService.getDemoSyncAccount(getContext()), onSyncStatusListener);
+        });
     }
 
     @Override
@@ -100,11 +99,12 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
 
     @Override
     public void onRefresh() {
-        if (!CoreNetworkInfo.isNetworkAvailable(getContext())) swipeRefreshLayout.setRefreshing(false);
+        if (!CoreNetworkInfo.isNetworkAvailable(getContext()))
+            swipeRefreshLayout.setRefreshing(false);
         CoreNetworkInfo.runWithNetworkConnection(getView(), new Runnable() {
             @Override
             public void run() {
-                ContentResolver.requestSync(SyncService.getDefaultSyncAccount(getContext()),
+                ContentResolver.requestSync(BasicAccountHelper.getSelectedAccount(getContext()),
                         getString(R.string.authority), SyncService.getTaskBundle(BaseSyncService.TypeTask.FOREGROUND));
             }
         });
@@ -117,7 +117,8 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
         if (v.getId() == R.id.fab_add) {
             getDatabaseManager().beginTransaction();
             Long dataId = getDatabaseManager().insert(CoreContract.TEST_TABLE, CoreContract.TEST_TABLE_NULLHACK_COLUMN, new ContentValues()); //TODO create nullhack column
-            if (dataId != null) startActivityForResult(EditActivity.newStartIntent(getActivity(), dataId), RequestCode.REQUEST_CODE_EDIT_CHANGED);
+            if (dataId != null)
+                startActivityForResult(EditActivity.newStartIntent(getActivity(), dataId), RequestCode.REQUEST_CODE_EDIT_CHANGED);
         }
     }
 
