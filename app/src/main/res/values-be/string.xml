@@ -13,4 +13,6 @@
     <string name="google_drive_create_file">Стварыць файл на Google Drive</string>
     <string name="google_drive_open_file">Адкрыць файл з Google Drive</string>
 
+    <string name="choose_auth_api">Выберыце спосаб аўтарызацыі</string>
+
 </resources>
