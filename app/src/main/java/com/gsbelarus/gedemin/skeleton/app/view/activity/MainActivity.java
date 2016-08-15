@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.android.gms.appindexing.AppIndex;
 import com.gsbelarus.gedemin.skeleton.R;
@@ -100,7 +101,7 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.choose_account_menu, menu);          //TODO for tests
+        getMenuInflater().inflate(R.menu.choose_account_menu, menu);          //TODO for etsts
         return super.onCreateOptionsMenu(menu);
     }
 

@@ -24,7 +24,7 @@ public abstract class CoreAuthenticatorService extends Service {
 
     protected abstract Class<? extends CoreAccountAuthenticatorActivity> getAuthActivity();
 
-    protected void onDeleteAccount(Account account) {
+    protected void onDeleteAccount(CoreDatabaseManager coreDatabaseManager, Account account) {
     }
 
     @Override
@@ -38,11 +38,12 @@ public abstract class CoreAuthenticatorService extends Service {
         lifeCycleDelegate = basicAccountHelper.setOnDeletedListener(new BasicAccountHelper.OnDeletedListener() {
             @Override
             public void onDeleted(Account account) {
-                onDeleteAccount(account);
                 CoreDatabaseManager coreDatabaseManager = CoreDatabaseManager.getInstance(getApplicationContext(), account);
                 coreDatabaseManager.open();
+                onDeleteAccount(coreDatabaseManager, account);
                 coreDatabaseManager.deleteDatabase();
                 coreDatabaseManager.close();
+                CoreDatabaseManager.deleteInstance(account);
             }
         });
         lifeCycleDelegate.onCreate();

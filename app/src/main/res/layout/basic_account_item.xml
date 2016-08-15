@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?selectableItemBackground"
+    android:clipToPadding="false"
+    android:minHeight="52dp"
+    android:paddingLeft="24dp"
+    android:paddingRight="24dp">
+
+    <RadioButton
+        android:id="@+id/basic_account_check"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:background="@null"
+        android:clickable="false"
+        android:paddingRight="24dp" />
+
+    <TextView
+        android:id="@+id/basic_account_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/basic_account_check"
+        android:layout_toLeftOf="@+id/basic_account_remove"
+        android:layout_toRightOf="@+id/basic_account_check"
+        android:layout_toStartOf="@+id/basic_account_remove"
+        android:lines="1"
+        android:textColor="?textColorAlertDialogListItem"
+        android:textSize="15sp" />
+
+    <ImageView
+        android:id="@+id/basic_account_remove"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_centerVertical="true"
+        android:padding="3dp"
+        android:background="?selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_delete_24dp" />
+
+</RelativeLayout>

@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -75,7 +76,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
                     "FOREIGN KEY(" + TableSyncSchema.COLUMN_SYNC_SCHEMA_VERSION_KEY + ") REFERENCES " + TableSyncSchemaVersion.TABLE_NAME + "(" + TableSyncSchemaVersion._ID + ")" +
                     " )";
 
-    private static List<CoreDatabaseManager> instances = new ArrayList<>();     //// TODO: 12.08.2016 memory leaks
+    private static List<CoreDatabaseManager> instances = new ArrayList<>();
 
     private Account account;
 
@@ -129,7 +130,7 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
     @NotNull
     public static synchronized CoreDatabaseManager getInstance(Context context, Account account) {
         if (account == null) {
-            account = new Account(EMPTY_DATABASE_NAME, "empty_type");
+            account = getEmptyAccount();
         }
         for (CoreDatabaseManager instance : instances) {
             if (instance.account.equals(account)) {
@@ -139,6 +140,21 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
         CoreDatabaseManager instance = new CoreDatabaseManager(context, account);
         instances.add(instance);
         return instance;
+    }
+
+    public static synchronized void deleteInstance(Account account) {
+        Iterator<CoreDatabaseManager> iterator = instances.iterator();
+        while (iterator.hasNext()) {
+            CoreDatabaseManager instance = iterator.next();
+            if (instance.account.equals(account)) {
+                iterator.remove();
+                break;
+            }
+        }
+    }
+
+    public static Account getEmptyAccount() {
+        return new Account(EMPTY_DATABASE_NAME, "empty_type");
     }
 
     public static String getDateTime(Date date) {
