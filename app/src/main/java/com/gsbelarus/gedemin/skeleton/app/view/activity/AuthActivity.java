@@ -2,18 +2,15 @@ package com.gsbelarus.gedemin.skeleton.app.view.activity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 
-import com.google.android.gms.drive.DriveId;
-import com.google.android.gms.drive.OpenFileActivityBuilder;
 import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.app.view.fragment.AuthDriveFragment;
 import com.gsbelarus.gedemin.skeleton.app.view.fragment.AuthSignInFragment;
 import com.gsbelarus.gedemin.skeleton.base.view.BaseActivity;
+import com.gsbelarus.gedemin.skeleton.core.util.AuthDriveHelper;
 
 public class AuthActivity extends BaseActivity {
 
@@ -37,25 +34,23 @@ public class AuthActivity extends BaseActivity {
         return ActivityType.TITLED_SUB_LEVEL;
     }
 
-    private static final int REQUEST_CODE_OPENER = 9002;
-
     private AuthSignInFragment authFragment;
     private AuthDriveFragment driveFragment;
-    private int posAuthItem;
-    private DriveId mFileId;
+    private int posAuthItem = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        String names[] = {"AuthAPI", "DriveAPI"};
+        if(savedInstanceState != null) {
+            posAuthItem = savedInstanceState.getInt("posAuthItem");
+        }
 
-        //TODO fixed state for AlertDialog
-        if (savedInstanceState == null) {
+        if (posAuthItem == -1) {
 
             new AlertDialog.Builder(this)
                     .setTitle(R.string.choose_auth_api)
-                    .setItems(names, new DialogInterface.OnClickListener() {
+                    .setItems(R.array.auth_api_list, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
@@ -91,6 +86,13 @@ public class AuthActivity extends BaseActivity {
         }
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putInt("posAuthItem", posAuthItem);
+    }
+
     /**
      * Handle Response of selected file
      *
@@ -103,18 +105,13 @@ public class AuthActivity extends BaseActivity {
                                     final int resultCode, final Intent data) {
         switch (requestCode) {
 
-            case REQUEST_CODE_OPENER:
+            case AuthDriveHelper.REQUEST_CODE_OPENER:
 
                 if (resultCode == RESULT_OK) {
 
-                    mFileId = data.getParcelableExtra(
-                            OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
+                    AuthDriveHelper authDriveHelper = new AuthDriveHelper();
 
-                    Log.e("file id", mFileId.getResourceId() + "");
-
-                    String url = "https://drive.google.com/open?id=" + mFileId.getResourceId();
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse(url));
+                    Intent i = authDriveHelper.openFileFromGoogleDriveResponse(data, "https://drive.google.com/open?id=");
                     startActivity(i);
                 }
 

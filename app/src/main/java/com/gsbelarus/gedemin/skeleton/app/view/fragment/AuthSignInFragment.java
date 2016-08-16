@@ -1,32 +1,24 @@
 package com.gsbelarus.gedemin.skeleton.app.view.fragment;
 
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.common.api.Status;
 import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.base.view.fragment.BaseFragment;
+import com.gsbelarus.gedemin.skeleton.core.util.AuthSignInHelper;
 import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 
 public class AuthSignInFragment extends BaseFragment implements
@@ -42,11 +34,13 @@ public class AuthSignInFragment extends BaseFragment implements
         return R.layout.app_fragment_auth_signin;
     }
 
-    private static final int REQUEST_CODE_SIGN_IN = 9001;
-
-    private GoogleApiClient googleApiClient;
-    private ProgressDialog progressDialog;
+    private AuthSignInHelper authSignInHelper;
     private ViewGroup rootView;
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Logger.d("onConnectionFailed:" + connectionResult);
+    }
 
     @Override
     protected void onCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
@@ -55,44 +49,36 @@ public class AuthSignInFragment extends BaseFragment implements
         this.rootView = rootView;
 
         SignInButton signInButton = (SignInButton) rootView.findViewById(R.id.google_sign_in_button);
-        String serverClientId = getString(R.string.server_client_id);
 
         signInButton.setOnClickListener(this);
         rootView.findViewById(R.id.google_sign_out_button).setOnClickListener(this);
         rootView.findViewById(R.id.google_disconnect_button).setOnClickListener(this);
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestScopes(new Scope(Scopes.DRIVE_APPFOLDER))
-                .requestIdToken(serverClientId)
-                .requestServerAuthCode(serverClientId)
-                .requestEmail()
-                .build();
+        authSignInHelper = new AuthSignInHelper(getActivity(), getContext(), getResources());
 
-        googleApiClient = new GoogleApiClient.Builder(getContext())
-                .enableAutoManage(getActivity() /* FragmentActivity */, this /* OnConnectionFailedListener */)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
+        String serverClientId = getString(R.string.server_client_id);
 
-        signInButton.setSize(SignInButton.SIZE_STANDARD);
-        signInButton.setScopes(gso.getScopeArray());
+        authSignInHelper.createAPIClient(serverClientId, signInButton);
+
     }
 
     @Override
     public void onStart() {
         super.onStart();
 
-        OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(googleApiClient);
+        OptionalPendingResult<GoogleSignInResult> opr = authSignInHelper.optionalPendingResult();
+
         if (opr.isDone()) {
             Logger.d("Got cached sign-in");
 
             GoogleSignInResult result = opr.get();
             handleSignInResult(result);
         } else {
-            showProgressDialog();
+            authSignInHelper.showProgressDialog();
             opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
                 @Override
                 public void onResult(GoogleSignInResult googleSignInResult) {
-                    hideProgressDialog();
+                    authSignInHelper.hideProgressDialog();
                     handleSignInResult(googleSignInResult);
                 }
             });
@@ -103,16 +89,11 @@ public class AuthSignInFragment extends BaseFragment implements
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_CODE_SIGN_IN) {
+        if (requestCode == AuthSignInHelper.REQUEST_CODE_SIGN_IN) {
 
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleSignInResult(result);
         }
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Logger.d("onConnectionFailed:" + connectionResult);
     }
 
     private void handleSignInResult(GoogleSignInResult result) {
@@ -120,33 +101,8 @@ public class AuthSignInFragment extends BaseFragment implements
         Logger.d("handleSignInResult:GET_TOKEN & GET_AUTH_CODE:success:" + result.getStatus().isSuccess());
 
         if (result.isSuccess()) {
-            // Signed in successfully, show authenticated UI.
 
-            // Getting profile information
-            GoogleSignInAccount acct = result.getSignInAccount();
-            String personDisplayName = acct.getDisplayName();
-            String personFamilyName = acct.getFamilyName();
-            String personGivenName = acct.getGivenName();
-            String personEmail = acct.getEmail();
-            String personId = acct.getId();
-            Uri personPhoto = acct.getPhotoUrl();
-
-            Logger.d("\n" + getString(R.string.signed_display_name_fmt, personDisplayName) + "\n" +
-                    getString(R.string.signed_family_name_fmt, personFamilyName) + "\n" +
-                    getString(R.string.signed_given_name_fmt, personGivenName) + "\n" +
-                    getString(R.string.signed_email_fmt, personEmail) + "\n" +
-                    getString(R.string.signed_id_fmt, personId) + "\n" +
-                    getString(R.string.signed_photo_fmt, personPhoto));
-
-            // Getting id token
-            String idToken = acct.getIdToken();
-            Logger.d("idToken:" + idToken + "\n" + getString(R.string.id_token_fmt, idToken));
-
-            // Getting authorization code
-            String authCode = acct.getServerAuthCode();
-            Logger.d("authCode:" + authCode + "\n" + getString(R.string.auth_code_fmt, authCode));
-
-            //TODO getting necessary key and saving
+            authSignInHelper.signInResult(result);
 
             updateUI(true);
         } else {
@@ -157,26 +113,18 @@ public class AuthSignInFragment extends BaseFragment implements
 
     private void signIn() {
 
-        ConnectivityManager conMgr = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = authSignInHelper.signInNetInfo();
 
-        NetworkInfo netInfo = conMgr.getActiveNetworkInfo();
-
-        if (netInfo == null) {
-
-            new AlertDialog.Builder(getActivity())
-                    .setTitle(getResources().getString(R.string.app_name))
-                    .setMessage(R.string.no_internet_connect)
-                    .setPositiveButton("OK", null).show();
-
-        } else {
-            Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
-            startActivityForResult(signInIntent, REQUEST_CODE_SIGN_IN);
+        if(netInfo != null) {
+            Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(authSignInHelper.getGoogleApiClient());
+            startActivityForResult(signInIntent, AuthSignInHelper.REQUEST_CODE_SIGN_IN);
         }
+
 
     }
 
     private void signOut() {
-        Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(
+        Auth.GoogleSignInApi.signOut(authSignInHelper.getGoogleApiClient()).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
@@ -186,29 +134,13 @@ public class AuthSignInFragment extends BaseFragment implements
     }
 
     private void revokeAccess() {
-        Auth.GoogleSignInApi.revokeAccess(googleApiClient).setResultCallback(
+        Auth.GoogleSignInApi.revokeAccess(authSignInHelper.getGoogleApiClient()).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
                         updateUI(false);
                     }
                 });
-    }
-
-    private void showProgressDialog() {
-        if (progressDialog == null) {
-            progressDialog = new ProgressDialog(getContext());
-            progressDialog.setMessage(getString(R.string.loading));
-            progressDialog.setIndeterminate(true);
-        }
-
-        progressDialog.show();
-    }
-
-    private void hideProgressDialog() {
-        if (progressDialog != null && progressDialog.isShowing()) {
-            progressDialog.hide();
-        }
     }
 
     private void updateUI(boolean signedIn) {
@@ -221,6 +153,7 @@ public class AuthSignInFragment extends BaseFragment implements
             rootView.findViewById(R.id.google_sign_in_button).setVisibility(View.VISIBLE);
             rootView.findViewById(R.id.google_sign_out_and_disconnect).setVisibility(View.GONE);
         }
+
     }
 
     @Override
