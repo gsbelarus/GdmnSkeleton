@@ -18,6 +18,8 @@ android {
         versionName      globalConfiguration.getAt("androidVersionName")
 
         vectorDrawables.useSupportLibrary = true
+
+        multiDexEnabled true
     }
 
     dataBinding {
@@ -92,11 +94,14 @@ dependencies {
 
     testCompile appTestDependencies.junit
 
+    compile 'com.android.support:multidex:1.0.0'
+
     compile 'com.google.code.gson:gson:2.6.2'
     compile 'com.google.android.gms:play-services-gcm:9.0.0'
     compile 'com.google.android.gms:play-services-appindexing:9.0.0'
     compile 'com.google.android.gms:play-services-auth:9.0.0'
     compile 'com.google.android.gms:play-services-drive:9.0.0'
+    compile 'com.google.android.gms:play-services-analytics:9.0.0'
     compile 'com.android.support:recyclerview-v7:24.0.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha1'
     compile 'junit:junit:4.12'
