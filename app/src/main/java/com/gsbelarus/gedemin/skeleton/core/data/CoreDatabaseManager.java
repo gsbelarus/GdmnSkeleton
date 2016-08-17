@@ -129,8 +129,11 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
 
     @NotNull
     public static synchronized CoreDatabaseManager getInstance(Context context, Account account) {
+        Account emptyAccount = new Account(EMPTY_DATABASE_NAME, "empty_type");
         if (account == null) {
-            account = getEmptyAccount();
+            account = emptyAccount;
+        } else {
+            deleteInstance(emptyAccount);
         }
         for (CoreDatabaseManager instance : instances) {
             if (instance.account.equals(account)) {
@@ -151,10 +154,6 @@ public class CoreDatabaseManager extends BaseDatabaseManager {
                 break;
             }
         }
-    }
-
-    public static Account getEmptyAccount() {
-        return new Account(EMPTY_DATABASE_NAME, "empty_type");
     }
 
     public static String getDateTime(Date date) {

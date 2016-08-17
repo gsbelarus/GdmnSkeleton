@@ -128,7 +128,7 @@ public abstract class BaseSyncService extends Service {
                 BaseSyncService.this.onPerformSync(account, extras, authority, provider, syncResult);
             } catch (SSLHandshakeException e) {
                 Logger.e(e);
-                error = getString(R.string.sync_certificate_error);
+                error = getString(R.string.sync_error_certificate);
             } catch (SocketTimeoutException e) {
                 Logger.e(e);
                 error = getString(R.string.sync_error_timeout);

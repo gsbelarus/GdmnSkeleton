@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
@@ -24,7 +25,7 @@ public abstract class CoreAuthenticatorService extends Service {
 
     protected abstract Class<? extends CoreAccountAuthenticatorActivity> getAuthActivity();
 
-    protected void onDeleteAccount(CoreDatabaseManager coreDatabaseManager, Account account) {
+    protected void onDeleteAccount(CoreDatabaseManager coreDatabaseManager, @NonNull Account account) {
     }
 
     @Override
@@ -37,7 +38,7 @@ public abstract class CoreAuthenticatorService extends Service {
         BasicAccountHelper basicAccountHelper = new BasicAccountHelper(getApplicationContext());
         lifeCycleDelegate = basicAccountHelper.setOnDeletedListener(new BasicAccountHelper.OnDeletedListener() {
             @Override
-            public void onDeleted(Account account) {
+            public void onDeleted(@NonNull Account account) {
                 CoreDatabaseManager coreDatabaseManager = CoreDatabaseManager.getInstance(getApplicationContext(), account);
                 coreDatabaseManager.open();
                 onDeleteAccount(coreDatabaseManager, account);

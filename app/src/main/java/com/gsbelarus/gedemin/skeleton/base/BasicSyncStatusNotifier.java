@@ -7,6 +7,9 @@ import android.content.Context;
 import android.content.SyncStatusObserver;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.util.Log;
+
+import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -36,18 +39,20 @@ public final class BasicSyncStatusNotifier {
         }
         final Params params = new Params();
         syncAccounts.put(account, params);
-        params.syncActive = isSyncActive(account);
+        params.syncActive = isSyncActive(account) && !isSyncPending(account);
         params.syncObserverHandle = ContentResolver.addStatusChangeListener(ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE, new SyncStatusObserver() {
             @Override
             public void onStatusChanged(int which) {
-                final boolean isSyncActive = isSyncActive(account);
+                final boolean isSyncActive = isSyncActive(account) && !isSyncPending(account);
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         if (syncAccounts.containsKey(account)) {
                             if (isSyncActive) {
-                                params.syncActive = true;
-                                callback.onStartSync(account);
+                                if (!params.syncActive) {
+                                    params.syncActive = true;
+                                    callback.onStartSync(account);
+                                }
                             } else {
                                 if (params.syncActive) {
                                     params.syncActive = false;
@@ -61,7 +66,7 @@ public final class BasicSyncStatusNotifier {
         });
     }
 
-    public void removeSyncStatusListener(Account account) {
+    public void removeSyncStatusListener(@NonNull Account account) {
         if (!syncAccounts.containsKey(account)) {
             throw new IllegalArgumentException("account has no SyncStatusCallback");
         }
@@ -78,9 +83,12 @@ public final class BasicSyncStatusNotifier {
         }
     }
 
-    public boolean isSyncActive(Account account) {
-        return ContentResolver.isSyncActive(account, authority) &&
-                !ContentResolver.isSyncPending(account, authority);
+    public boolean isSyncPending(@NonNull Account account) {
+        return ContentResolver.isSyncPending(account, authority);
+    }
+
+    public boolean isSyncActive(@NonNull Account account) {
+        return ContentResolver.isSyncActive(account, authority);
     }
 
     public interface Callback {

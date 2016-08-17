@@ -67,7 +67,7 @@ abstract public class BaseActivity extends AppCompatActivity {
         BasicAccountHelper basicAccountHelper = new BasicAccountHelper(getApplicationContext());
         accountChangeManager = basicAccountHelper.setOnChangedListener(new BasicAccountHelper.OnChangedListener() {
             @Override
-            public void onChanged(Account oldAccount, Account newAccount) {
+            public void onChanged(@Nullable Account oldAccount, @Nullable Account newAccount) {
                 onAccountChanged(oldAccount, newAccount);
             }
         });
@@ -159,7 +159,7 @@ abstract public class BaseActivity extends AppCompatActivity {
 
     protected void handleSavedInstanceState(@NonNull Bundle savedInstanceState) {}
     protected void handleIntentExtras(@NonNull Bundle extras) {}
-    protected void onAccountChanged(Account oldAccount, Account newAccount) {}
+    protected void onAccountChanged(@Nullable Account oldAccount, @Nullable Account newAccount) {}
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -196,15 +196,16 @@ abstract public class BaseActivity extends AppCompatActivity {
         return (T) getSupportFragmentManager().findFragmentByTag(tag);
     }
 
-    protected void setSelectedAccount(Account account) {
+    protected void setSelectedAccount(@Nullable Account account) {
         accountChangeManager.setSelectedAccount(account);
     }
 
+    @Nullable
     protected Account getSelectedAccount() {
         return BasicAccountHelper.getSelectedAccount(context);
     }
 
-    protected void chooseAccount(String accountType) {
-        accountChangeManager.chooseAccount(this, accountType);
+    protected void showAccountChooser(@NonNull String accountType) {
+        accountChangeManager.showAccountManager(this, accountType);
     }
 }

@@ -1,6 +1,7 @@
 package com.gsbelarus.gedemin.skeleton.app.service;
 
 import android.accounts.Account;
+import android.support.annotation.NonNull;
 
 import com.gsbelarus.gedemin.skeleton.app.view.activity.LoginActivity;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreAuthenticatorService;
@@ -15,7 +16,7 @@ public class AuthService extends CoreAuthenticatorService {
     }
 
     @Override
-    protected void onDeleteAccount(CoreDatabaseManager coreDatabaseManager, Account account) {
+    protected void onDeleteAccount(CoreDatabaseManager coreDatabaseManager, @NonNull Account account) {
         super.onDeleteAccount(coreDatabaseManager, account);
     }
 }

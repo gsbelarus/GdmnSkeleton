@@ -3,6 +3,7 @@ package com.gsbelarus.gedemin.skeleton.core.view;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
+import android.accounts.AccountsException;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -10,6 +11,8 @@ import android.support.v4.content.Loader;
 import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.base.view.BaseActivity;
 import com.gsbelarus.gedemin.skeleton.core.util.CoreAuthTokenLoader;
+import com.gsbelarus.gedemin.skeleton.core.util.CoreNetworkInfo;
+import com.gsbelarus.gedemin.skeleton.core.util.CoreUtils;
 import com.gsbelarus.gedemin.skeleton.core.util.Result;
 
 import java.util.LinkedHashMap;
@@ -92,17 +95,26 @@ public abstract class CoreAccountAuthenticatorActivity extends BaseActivity {
         super.finish();
     }
 
-    protected void login(String url, String login, String password, LinkedHashMap<String, String> params) {
-        Bundle bundle = new Bundle();
-        bundle.putString(TAG_URL, url);
-        bundle.putString(TAG_LOGIN, login);
-        bundle.putString(TAG_PASSWORD, password);
-        bundle.putSerializable(TAG_PARAMS, params);
-        if (getSupportLoaderManager().getLoader(LOADER_ID) == null) {
-            getSupportLoaderManager().initLoader(LOADER_ID, bundle, loaderCallbacks);
-        } else {
-            getSupportLoaderManager().restartLoader(LOADER_ID, bundle, loaderCallbacks);
-        }
+    protected void login(final String url, final String login, final String password, final LinkedHashMap<String, String> params) {
+        CoreUtils.runWithRetry(findViewById(android.R.id.content), getString(R.string.network_unavailable), new CoreUtils.Callback() {
+            @Override
+            public boolean run() {
+                if (CoreNetworkInfo.isNetworkAvailable(getApplicationContext())) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString(TAG_URL, url);
+                    bundle.putString(TAG_LOGIN, login);
+                    bundle.putString(TAG_PASSWORD, password);
+                    bundle.putSerializable(TAG_PARAMS, params);
+                    if (getSupportLoaderManager().getLoader(LOADER_ID) == null) {
+                        getSupportLoaderManager().initLoader(LOADER_ID, bundle, loaderCallbacks);
+                    } else {
+                        getSupportLoaderManager().restartLoader(LOADER_ID, bundle, loaderCallbacks);
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     private void onTokenReceived(String login, String password, String token, LinkedHashMap<String, String> params) {
@@ -114,13 +126,15 @@ public abstract class CoreAccountAuthenticatorActivity extends BaseActivity {
             result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
             result.putString(AccountManager.KEY_AUTHTOKEN, token);
             am.setAuthToken(account, account.type, token);
+
+            setAccountAuthenticatorResult(result);
+            setResult(RESULT_OK);
+            onSignInSuccess(account);
+            finish();
+
         } else {
-            result.putString(AccountManager.KEY_ERROR_MESSAGE, getString(R.string.sign_error_already_exists));
+            onSignInError(new AccountsException("Account already exists"));
         }
-        onSignInSuccess(account);
-        setAccountAuthenticatorResult(result);
-        setResult(RESULT_OK);
-        finish();
     }
 
     private Bundle mapToBundle(Bundle bundle, Map<String, String> map) {
@@ -132,7 +146,11 @@ public abstract class CoreAccountAuthenticatorActivity extends BaseActivity {
         return bundle;
     }
 
-    private void setAccountAuthenticatorResult(Bundle result) {
+    protected void setAccountAuthenticatorResult(Bundle result) {
         mResultBundle = result;
+    }
+
+    protected Bundle getAccountAuthenticatorResult() {
+        return mResultBundle;
     }
 }

@@ -1,5 +1,7 @@
 package com.gsbelarus.gedemin.skeleton.core.util;
 
+import android.accounts.Account;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
@@ -7,13 +9,13 @@ import android.graphics.Typeface;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.view.ViewCompat;
 import android.text.InputType;
 import android.text.SpannableString;
 import android.text.TextWatcher;
 import android.text.style.StyleSpan;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,13 +26,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.gsbelarus.gedemin.skeleton.R;
+import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
+import com.gsbelarus.gedemin.skeleton.base.BasicAccountHelper;
+import com.gsbelarus.gedemin.skeleton.base.BasicSyncStatusNotifier;
 import com.gsbelarus.gedemin.skeleton.base.data.SQLiteDataType;
 import com.gsbelarus.gedemin.skeleton.core.view.TextWatcherAdapter;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
 
 public class CoreUtils {
 
@@ -55,7 +59,7 @@ public class CoreUtils {
                 value = nullString;
                 break;
             case Cursor.FIELD_TYPE_BLOB:
-                value =  String.format("(%d bytes)", dataCursor.getBlob(columnIndex).length);
+                value = String.format("(%d bytes)", dataCursor.getBlob(columnIndex).length);
                 break;
             default:
                 throw new AssertionError("Unknown type: " + dataCursor.getType(columnIndex));
@@ -80,11 +84,6 @@ public class CoreUtils {
         } while (!nextGeneratedViewId.compareAndSet(result, newValue));
 
         return result;
-    }
-
-    public static int dpToPixel(float dp, Context context) {
-        return (int) (dp * ((float)  context.getResources().
-                getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
     /////////////////////////////////////////////
@@ -127,16 +126,17 @@ public class CoreUtils {
                 valueView = rowView.findViewById(R.id.core_edit_item_et);
                 labelView = rowView.findViewById(R.id.core_edit_item_input);
 
-                int imeOptions = ((EditText)valueView).getImeOptions();
+                int imeOptions = ((EditText) valueView).getImeOptions();
                 boolean imeContainsActionNext = (imeOptions != ((imeOptions & ~EditorInfo.IME_MASK_ACTION) & ~EditorInfo.IME_ACTION_NEXT));
 
-                if ((i == columnCount-1) && imeContainsActionNext) {
+                if ((i == columnCount - 1) && imeContainsActionNext) {
                     imeOptions = ((imeOptions & ~EditorInfo.IME_MASK_ACTION) & ~EditorInfo.IME_ACTION_NEXT) | EditorInfo.IME_ACTION_DONE;
                     ((EditText) valueView).setImeOptions(imeOptions);
                 }
 
                 if (onKeyBackListener != null) valueView.setOnKeyListener(onKeyBackListener);
-                if (editTextWatcher != null) ((EditText) valueView).addTextChangedListener(editTextWatcher);
+                if (editTextWatcher != null)
+                    ((EditText) valueView).addTextChangedListener(editTextWatcher);
             }
 
             valueViewLabelViewMap.put(valueView, labelView);
@@ -184,9 +184,9 @@ public class CoreUtils {
 
             if (labelView != null) {
                 if (labelView instanceof TextView) {
-                    bindLabelTextView((TextView) labelView,  cursor.getColumnName(columnIndex));
+                    bindLabelTextView((TextView) labelView, cursor.getColumnName(columnIndex));
                 } else if (labelView instanceof TextInputLayout) {
-                    bindTextInputLayout((TextInputLayout)labelView, cursor.getColumnName(columnIndex));
+                    bindTextInputLayout((TextInputLayout) labelView, cursor.getColumnName(columnIndex));
                 } else {
                     throw new IllegalStateException(valueView.getClass().getName() + " is not a view that can be bounds by this CoreCursorRecyclerViewAdapter");
                 }
@@ -244,13 +244,13 @@ public class CoreUtils {
         if (textWatcher != null) editText.addTextChangedListener(textWatcher);
 
         switch (SQLiteDataType.SQLiteDataTypes.values()[columnType]) {
-            case INTEGER :
+            case INTEGER:
                 editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED);
                 break;
-            case FLOAT :
+            case FLOAT:
                 editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED | InputType.TYPE_NUMBER_FLAG_DECIMAL);
                 break;
-            case STRING :
+            case STRING:
                 editText.setInputType(InputType.TYPE_CLASS_TEXT);
                 break;
         }
@@ -265,5 +265,52 @@ public class CoreUtils {
                 textInputLayout.setHintAnimationEnabled(true);
             }
         });
+    }
+
+    public static void requestSync(@NonNull Context context, @NonNull Account account,
+                                   @NonNull final String authority, @NonNull BaseSyncService.TypeTask typeTask) {
+        ContentResolver.requestSync(account, authority, BaseSyncService.getTaskBundle(typeTask));
+    }
+
+    public static boolean requestSync(@NonNull View view, final @NonNull Account account,
+                                      @NonNull final String authority) {
+        final Context context = view.getContext().getApplicationContext();
+        final BasicSyncStatusNotifier syncStatusNotifier = new BasicSyncStatusNotifier(authority);
+
+        if (syncStatusNotifier.isSyncActive(account) || syncStatusNotifier.isSyncPending(account)) {
+            Snackbar.make(view, context.getString(R.string.sync_already_running), Snackbar.LENGTH_LONG).show();
+            return false;
+        }
+        runWithRetry(view, context.getString(R.string.network_unavailable), new Callback() {
+            @Override
+            public boolean run() {
+                if (CoreNetworkInfo.isNetworkAvailable(context)) {
+                    if (!syncStatusNotifier.isSyncActive(account) && !syncStatusNotifier.isSyncPending(account)) {
+                        ContentResolver.requestSync(BasicAccountHelper.getSelectedAccount(context),
+                                authority, BaseSyncService.getTaskBundle(BaseSyncService.TypeTask.FOREGROUND));
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+        return CoreNetworkInfo.isNetworkAvailable(context);
+    }
+
+    public static void runWithRetry(@NonNull final View view, @NonNull final String retryMessage, @NonNull final Callback callback) {
+        if (!callback.run()) {
+            Snackbar.make(view, retryMessage, Snackbar.LENGTH_LONG)
+                    .setAction(view.getContext().getString(R.string.retry), new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            runWithRetry(view, retryMessage, callback);
+                        }
+                    })
+                    .show();
+        }
+    }
+
+    public interface Callback {
+        boolean run();
     }
 }

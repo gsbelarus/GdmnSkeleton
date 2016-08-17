@@ -3,7 +3,6 @@ package com.gsbelarus.gedemin.skeleton.app.view.activity;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
@@ -15,6 +14,7 @@ import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.app.service.SyncService;
 import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
 import com.gsbelarus.gedemin.skeleton.core.util.CoreNetworkInfo;
+import com.gsbelarus.gedemin.skeleton.core.util.CoreUtils;
 import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 import com.gsbelarus.gedemin.skeleton.core.view.CoreAccountAuthenticatorActivity;
 
@@ -22,6 +22,8 @@ public class LoginActivity extends CoreAccountAuthenticatorActivity {
 
     public static final String TAG_SERVER_URL = "server_url";
     private static final String URL_ADDRESS = "http://services.odata.org/V4/(S(5i2qvfszd0uktnpibrgfu2qs))/OData/OData.svc/";
+
+    private AlertDialog progressDialog;
 
     @Override
     protected int getLayoutResource() {
@@ -50,12 +52,7 @@ public class LoginActivity extends CoreAccountAuthenticatorActivity {
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CoreNetworkInfo.runWithNetworkConnection(findViewById(R.id.content), new Runnable() {
-                    @Override
-                    public void run() {
-                        login(URL_ADDRESS, loginEt.getText().toString(), passwordEt.getText().toString(), null);
-                    }
-                });
+                login(URL_ADDRESS, loginEt.getText().toString(), passwordEt.getText().toString(), null);
             }
         });
     }
@@ -63,11 +60,15 @@ public class LoginActivity extends CoreAccountAuthenticatorActivity {
     @Override
     protected void onSignInProgress() {
         Logger.d();
+        showProgressDialog();
     }
 
     @Override
     protected void onSignInSuccess(Account account) {
         Logger.d(account);
+
+        cancelProgressDialog();
+
         String authority = getString(R.string.authority);
         ContentResolver.removePeriodicSync(account, authority, Bundle.EMPTY);
 
@@ -83,10 +84,26 @@ public class LoginActivity extends CoreAccountAuthenticatorActivity {
     @Override
     protected void onSignInError(Exception error) {
         Logger.d(error);
+
+        cancelProgressDialog();
+
         new AlertDialog.Builder(this)
                 .setTitle("Error")
                 .setMessage(error.getMessage())
                 .setPositiveButton("Скрыть", null)
                 .show();
+    }
+
+    private void showProgressDialog() {
+        progressDialog = new AlertDialog.Builder(this)
+                .setMessage("Подождите...")
+                .setCancelable(false)
+                .show();
+    }
+
+    private void cancelProgressDialog() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.cancel();
+        }
     }
 }

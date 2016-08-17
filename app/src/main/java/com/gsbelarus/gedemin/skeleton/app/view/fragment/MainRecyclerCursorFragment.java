@@ -2,7 +2,6 @@ package com.gsbelarus.gedemin.skeleton.app.view.fragment;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,16 +12,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.gsbelarus.gedemin.skeleton.R;
-import com.gsbelarus.gedemin.skeleton.app.service.SyncService;
 import com.gsbelarus.gedemin.skeleton.app.view.RequestCode;
 import com.gsbelarus.gedemin.skeleton.app.view.activity.DetailActivity;
 import com.gsbelarus.gedemin.skeleton.app.view.activity.EditActivity;
-import com.gsbelarus.gedemin.skeleton.base.BaseSyncService;
 import com.gsbelarus.gedemin.skeleton.base.BasicAccountHelper;
 import com.gsbelarus.gedemin.skeleton.base.BasicSyncStatusNotifier;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.listener.OnRecyclerItemClickListener;
 import com.gsbelarus.gedemin.skeleton.core.data.CoreContract;
-import com.gsbelarus.gedemin.skeleton.core.util.CoreNetworkInfo;
+import com.gsbelarus.gedemin.skeleton.core.util.CoreUtils;
 import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 import com.gsbelarus.gedemin.skeleton.core.view.fragment.CoreSearchableRecyclerCursorFragment;
 
@@ -31,6 +28,9 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
         View.OnClickListener,
         SwipeRefreshLayout.OnRefreshListener {
 
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private BasicSyncStatusNotifier syncStatusNotifier;
+
     /**
      * Configuration
      */
@@ -38,11 +38,6 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
     protected int getLayoutResource() {
         return R.layout.fragment_main;
     }
-
-
-    private SwipeRefreshLayout swipeRefreshLayout;
-    private BasicSyncStatusNotifier syncStatusNotifier;
-
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -61,27 +56,32 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
     protected void onCreateView(ViewGroup rootView, @Nullable Bundle savedInstanceState) {
         super.onCreateView(rootView, savedInstanceState);
 
-        FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab_add);
-        fab.setOnClickListener(this);
-
-        initRefreshLayout(rootView);
-
         syncStatusNotifier = new BasicSyncStatusNotifier(getString(R.string.authority));
         syncStatusNotifier.addSyncStatusListenerForAll(getContext(), new BasicSyncStatusNotifier.Callback() {
             @Override
             public void onStartSync(Account account) {
                 Logger.d();
+                if (account.equals(BasicAccountHelper.getSelectedAccount(getContext()))) {
+                    swipeRefreshLayout.setRefreshing(syncStatusNotifier.isSyncActive(account));
+                }
             }
 
             @Override
             public void onFinishSync(Account account) {
                 Logger.d();
-                if (getDataCursor() == null) {
-                    restartLoader();            //TODO temp
+                if (account.equals(BasicAccountHelper.getSelectedAccount(getContext()))) {
+                    if (getDataCursor() == null) {
+                        restartLoader();            //TODO temp
+                    }
+                    swipeRefreshLayout.setRefreshing(false);
                 }
-                swipeRefreshLayout.setRefreshing(false);
             }
         });
+
+        FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab_add);
+        fab.setOnClickListener(this);
+
+        initRefreshLayout(rootView);
     }
 
     @Override
@@ -95,19 +95,27 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
         swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_refresh_layout);
         swipeRefreshLayout.setColorSchemeColors(getContext().getResources().getIntArray(R.array.swipe_refresh));
         swipeRefreshLayout.setOnRefreshListener(this);
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {     //TODO workaround for https://code.google.com/p/android/issues/detail?id=77712
+                if (getContext() != null) {
+                    Account account = BasicAccountHelper.getSelectedAccount(getContext());
+                    if (account != null) {
+                        swipeRefreshLayout.setRefreshing(syncStatusNotifier.isSyncActive(account));
+                    }
+                }
+            }
+        });
     }
 
     @Override
     public void onRefresh() {
-        if (!CoreNetworkInfo.isNetworkAvailable(getContext()))
-            swipeRefreshLayout.setRefreshing(false);
-        CoreNetworkInfo.runWithNetworkConnection(getView(), new Runnable() {
-            @Override
-            public void run() {
-                ContentResolver.requestSync(BasicAccountHelper.getSelectedAccount(getContext()),
-                        getString(R.string.authority), SyncService.getTaskBundle(BaseSyncService.TypeTask.FOREGROUND));
+        Account account = BasicAccountHelper.getSelectedAccount(getContext());
+        if (getView() != null && account != null) {
+            if (!CoreUtils.requestSync(getView(), account, getString(R.string.authority))) {
+                swipeRefreshLayout.setRefreshing(false);
             }
-        });
+        }
     }
 
     @Override
@@ -134,5 +142,4 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
             }
         }
     }
-
 }

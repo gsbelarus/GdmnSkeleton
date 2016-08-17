@@ -4,17 +4,17 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
-import android.accounts.AuthenticatorException;
 import android.accounts.OnAccountsUpdateListener;
-import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,13 +24,13 @@ import android.widget.TextView;
 
 import com.gsbelarus.gedemin.skeleton.R;
 import com.gsbelarus.gedemin.skeleton.base.view.adapter.BaseSimpleAdapter;
+import com.gsbelarus.gedemin.skeleton.core.util.Logger;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class BasicAccountHelper {
+public final class BasicAccountHelper {
 
     public static final String KEY_SELECTED_ACCOUNT = "selected_account";
 
@@ -85,7 +85,7 @@ public class BasicAccountHelper {
         @Override
         public void onDestroy() {
             lifeCycleDelegate.onDestroy();
-            cancelChooseAccount();
+            cancelAccountManager();
         }
 
         @Override
@@ -97,7 +97,7 @@ public class BasicAccountHelper {
         }
 
         @Override
-        public void setSelectedAccount(Account selectedAccount) {
+        public void setSelectedAccount(@Nullable Account selectedAccount) {
             Account oldAccount = getSelectedAccount(context);
             if (BasicAccountHelper.setSelectedAccount(context, selectedAccount)) {
                 oldSelectedAccount = selectedAccount;
@@ -106,7 +106,7 @@ public class BasicAccountHelper {
         }
 
         @Override
-        public void chooseAccount(final Activity activity, final String accountType) {
+        public void showAccountManager(@NonNull final Activity activity, @NonNull final String accountType) {
             final AccountManager accountManager = AccountManager.get(context);
             final Account[] accounts = accountManager.getAccounts();
             final List<String> list = new ArrayList<>();
@@ -119,18 +119,11 @@ public class BasicAccountHelper {
                 list.add(accounts[i].name);
             }
 
-            cancelChooseAccount();
+            cancelAccountManager();
             chooseDialog = new AlertDialog.Builder(activity)
-                    .setTitle("Choose account")
-//                    .setSingleChoiceItems(list.toArray(new String[list.size()]), checkedItem, new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            accountChangeManager.setSelectedAccount(accounts[which]);
-//                            dialog.cancel();
-//                        }
-//                    })
-                    .setNegativeButton("Cancel", null)
-                    .setNeutralButton("New", new DialogInterface.OnClickListener() {
+                    .setTitle(context.getString(R.string.choose_account))
+                    .setNegativeButton(context.getString(R.string.action_cancel), null)
+                    .setNeutralButton(context.getString(R.string.action_new), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             AccountManager.get(context).addAccount(accountType, accountType, null, null,
@@ -139,16 +132,15 @@ public class BasicAccountHelper {
                                         public void run(AccountManagerFuture<Bundle> future) {
                                             try {
                                                 Bundle bundle = future.getResult();
-                                                Account account = new Account(
-                                                        bundle.getString(AccountManager.KEY_ACCOUNT_NAME),
-                                                        bundle.getString(AccountManager.KEY_ACCOUNT_TYPE));
-                                                setSelectedAccount(account);
-                                            } catch (OperationCanceledException e) {
-                                                e.printStackTrace();
-                                            } catch (IOException e) {
-                                                e.printStackTrace();
-                                            } catch (AuthenticatorException e) {
-                                                e.printStackTrace();
+                                                String errorMessage = bundle.getString(AccountManager.KEY_ERROR_MESSAGE);
+                                                if (TextUtils.isEmpty(errorMessage)) {
+                                                    Account account = new Account(
+                                                            bundle.getString(AccountManager.KEY_ACCOUNT_NAME),
+                                                            bundle.getString(AccountManager.KEY_ACCOUNT_TYPE));
+                                                    setSelectedAccount(account);
+                                                }
+                                            } catch (Exception e) {
+                                                Logger.e(e);
                                             }
                                         }
                                     }, null);
@@ -159,7 +151,7 @@ public class BasicAccountHelper {
             RecyclerView recyclerView = new RecyclerView(activity.getBaseContext());
             recyclerView.setLayoutManager(new LinearLayoutManager(activity.getBaseContext()));
             recyclerView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-            recyclerView.setPadding(0, dpToPixel(8, context), 0, dpToPixel(8, context));
+            recyclerView.setPadding(0, BasicUtils.dpToPixel(8, context), 0, BasicUtils.dpToPixel(8, context));
 
             final Adapter adapter = new Adapter();
             adapter.setCheckedPosition(checkedItem);
@@ -187,15 +179,10 @@ public class BasicAccountHelper {
         }
 
         @Override
-        public void cancelChooseAccount() {
+        public void cancelAccountManager() {
             if (chooseDialog != null && chooseDialog.isShowing()) {
                 chooseDialog.cancel();
             }
-        }
-
-        private int dpToPixel(float dp, Context context) {
-            return (int) (dp * ((float) context.getResources().
-                    getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT));
         }
     };
 
@@ -203,6 +190,7 @@ public class BasicAccountHelper {
         this.context = context;
     }
 
+    @Nullable
     public static Account getSelectedAccount(Context context) {
         AccountManager accountManager = AccountManager.get(context);
         for (Account account : accountManager.getAccounts()) {
@@ -213,7 +201,7 @@ public class BasicAccountHelper {
         return null;
     }
 
-    public static boolean setSelectedAccount(Context context, Account selectedAccount) {
+    public static boolean setSelectedAccount(Context context, @Nullable Account selectedAccount) {
         Account oldAccount = getSelectedAccount(context);
         if (oldAccount == null || !oldAccount.equals(selectedAccount)) {
             AccountManager accountManager = AccountManager.get(context);
@@ -268,11 +256,11 @@ public class BasicAccountHelper {
     }
 
     public interface OnChangedListener {
-        void onChanged(Account oldAccount, Account newAccount);
+        void onChanged(@Nullable Account oldAccount, @Nullable Account newAccount);
     }
 
     public interface OnDeletedListener {
-        void onDeleted(Account account);
+        void onDeleted(@NonNull Account account);
     }
 
     public interface LifeCycleDelegate {
@@ -284,11 +272,11 @@ public class BasicAccountHelper {
     public interface AccountChangeManager extends LifeCycleDelegate {
         void onResume();
 
-        void setSelectedAccount(Account selectedAccount);
+        void setSelectedAccount(@Nullable Account selectedAccount);
 
-        void chooseAccount(Activity activity, String accountType);
+        void showAccountManager(@NonNull Activity activity, @NonNull String accountType);
 
-        void cancelChooseAccount();
+        void cancelAccountManager();
     }
 
     private class Adapter extends BaseSimpleAdapter<String, Adapter.ItemVH> {

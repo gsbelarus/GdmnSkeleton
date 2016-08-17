@@ -1,8 +1,10 @@
 package com.gsbelarus.gedemin.skeleton.base;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.Nullable;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -56,4 +58,8 @@ public class BasicUtils {
         }
     }
 
+    public static int dpToPixel(float dp, Context context) {
+        return (int) (dp * ((float) context.getResources().
+                getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT));
+    }
 }
