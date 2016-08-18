@@ -95,17 +95,10 @@ public class MainRecyclerCursorFragment extends CoreSearchableRecyclerCursorFrag
         swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_refresh_layout);
         swipeRefreshLayout.setColorSchemeColors(getContext().getResources().getIntArray(R.array.swipe_refresh));
         swipeRefreshLayout.setOnRefreshListener(this);
-        swipeRefreshLayout.post(new Runnable() {
-            @Override
-            public void run() {     //TODO workaround for https://code.google.com/p/android/issues/detail?id=77712
-                if (getContext() != null) {
-                    Account account = BasicAccountHelper.getSelectedAccount(getContext());
-                    if (account != null) {
-                        swipeRefreshLayout.setRefreshing(syncStatusNotifier.isSyncActive(account));
-                    }
-                }
-            }
-        });
+        Account account = BasicAccountHelper.getSelectedAccount(getContext());
+        if (account != null) {
+            swipeRefreshLayout.setRefreshing(syncStatusNotifier.isSyncActive(account));
+        }
     }
 
     @Override
