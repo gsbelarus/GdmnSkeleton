@@ -1,18 +1,18 @@
 package com.gsbelarus.gedemin.skeleton.app.view.activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
+import android.support.v7.app.AlertDialog;
 
-import com.google.android.gms.drive.DriveId;
-import com.google.android.gms.drive.OpenFileActivityBuilder;
 import com.gsbelarus.gedemin.skeleton.R;
-import com.gsbelarus.gedemin.skeleton.app.view.fragment.AuthFragment;
+import com.gsbelarus.gedemin.skeleton.app.view.fragment.AuthDriveFragment;
+import com.gsbelarus.gedemin.skeleton.app.view.fragment.AuthSignInFragment;
 import com.gsbelarus.gedemin.skeleton.base.view.BaseActivity;
+import com.gsbelarus.gedemin.skeleton.core.util.AuthDriveHelper;
 
-public class AuthActivity extends BaseActivity{
+public class AuthActivity extends BaseActivity {
 
     /**
      * Configuration
@@ -34,42 +34,93 @@ public class AuthActivity extends BaseActivity{
         return ActivityType.TITLED_SUB_LEVEL;
     }
 
-    private static final  int REQUEST_CODE_DRIVE_OPENER = 9002;
-
-    private AuthFragment fragment;
+    private AuthSignInFragment authFragment;
+    private AuthDriveFragment driveFragment;
+    private int posAuthItem = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (savedInstanceState == null) {
+        if(savedInstanceState != null) {
+            posAuthItem = savedInstanceState.getInt("posAuthItem");
+        }
 
-            fragment = new AuthFragment();
-            includeFragment(R.id.activity_content_fragment_place, fragment, AuthFragment.class.getCanonicalName());
+        if (posAuthItem == -1) {
+
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.choose_auth_api)
+                    .setItems(R.array.auth_api_list, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            switch (which) {
+                                case 0:
+                                    authFragment = new AuthSignInFragment();
+                                    includeFragment(R.id.activity_content_fragment_place, authFragment, AuthSignInFragment.class.getCanonicalName());
+                                    break;
+                                case 1:
+                                    driveFragment = new AuthDriveFragment();
+                                    includeFragment(R.id.activity_content_fragment_place, driveFragment, AuthDriveFragment.class.getCanonicalName());
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            posAuthItem = which;
+                        }
+                    }).show();
+
         } else {
-            fragment = findSupportFragment(AuthFragment.class.getCanonicalName());
+
+            switch (posAuthItem) {
+                case 0:
+                    authFragment = findSupportFragment(AuthSignInFragment.class.getCanonicalName());
+                    break;
+                case 1:
+                    driveFragment = findSupportFragment(AuthDriveFragment.class.getCanonicalName());
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
 
-        if(requestCode == REQUEST_CODE_DRIVE_OPENER) {
+        outState.putInt("posAuthItem", posAuthItem);
+    }
 
-            if(resultCode == RESULT_OK) {
+    /**
+     * Handle Response of selected file
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
+    @Override
+    protected void onActivityResult(final int requestCode,
+                                    final int resultCode, final Intent data) {
+        switch (requestCode) {
 
-                DriveId mFileId = data.getParcelableExtra(
-                        OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
+            case AuthDriveHelper.REQUEST_CODE_OPENER:
 
-                Log.e("file id", mFileId.getResourceId() + "");
+                if (resultCode == RESULT_OK) {
 
-                String url = "https://drive.google.com/open?id="+ mFileId.getResourceId();
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(url));
-                startActivity(intent);
-            }
+                    AuthDriveHelper authDriveHelper = new AuthDriveHelper();
 
+                    Intent i = authDriveHelper.openFileFromGoogleDriveResponse(data, "https://drive.google.com/open?id=");
+                    startActivity(i);
+                }
+
+                break;
+
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
         }
     }
+
 }

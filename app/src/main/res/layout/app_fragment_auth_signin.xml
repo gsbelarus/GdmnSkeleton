@@ -4,9 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingLeft="15dp"
-    android:paddingRight="15dp"
-    android:paddingTop="15dp">
+    android:paddingLeft="@dimen/standard_indent"
+    android:paddingRight="@dimen/standard_indent"
+    android:paddingTop="@dimen/standard_indent">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -19,8 +19,8 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:orientation="horizontal"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
+            android:paddingLeft="@dimen/standard_indent"
+            android:paddingRight="@dimen/standard_indent"
             android:visibility="gone"
             tools:visibility="visible">
 
@@ -48,21 +48,5 @@
             android:visibility="invisible" />
 
     </RelativeLayout>
-
-    <Button
-        android:id="@+id/google_drive_create_file"
-        android:layout_width="@dimen/google_drive_btn_size"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/google_drive_create_file"
-        android:visibility="invisible" />
-
-    <Button
-        android:id="@+id/google_drive_open_file"
-        android:layout_width="@dimen/google_drive_btn_size"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/google_drive_open_file"
-        android:visibility="invisible" />
 
 </LinearLayout>

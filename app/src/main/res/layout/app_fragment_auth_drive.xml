@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/standard_indent"
+    android:paddingRight="@dimen/standard_indent"
+    android:paddingTop="@dimen/standard_indent">
+
+    <Button
+        android:id="@+id/google_drive_open_file"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Open file from Google Drive" />
+
+    <Button
+        android:id="@+id/google_drive_create_file"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Create a file on Google Drive" />
+
+</LinearLayout>
