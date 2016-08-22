@@ -25,4 +25,17 @@ public class CoreNetworkInfo {
         }
         return false;
     }
+
+    public static void runIfNetworkAvailable(@NonNull final View view, @NonNull final Runnable runnable) {
+        CoreUtils.runWithRetry(view, view.getContext().getString(R.string.network_unavailable), new CoreUtils.Callback() {
+            @Override
+            public boolean run() {
+                if (isNetworkAvailable(view.getContext())) {
+                    runnable.run();
+                    return true;
+                }
+                return false;
+            }
+        });
+    }
 }

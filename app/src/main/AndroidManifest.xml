@@ -140,7 +140,9 @@
             android:name="search-engine"
             android:resource="@xml/noindex" />
 
-        <activity android:name=".app.view.activity.LoginActivity" />
+        <activity
+            android:name=".app.view.activity.LoginActivity"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>

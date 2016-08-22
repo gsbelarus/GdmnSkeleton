@@ -1,6 +1,7 @@
 <resources>
 
     <!-- APP -->
+    <string name="server_client_id">303114121834-j177l3c1m4v76k62ga7rd63aqt599ne0.apps.googleusercontent.com</string>
     <string name="app_name">GdmnSkeleton</string>
     <string name="account_type">com.gsbelarus.gedemin.skeleton.sync</string>
     <string name="authority">com.gsbelarus.gedemin.skeleton</string>
@@ -48,7 +49,6 @@
     <string name="signed_photo_fmt">User url photo: %s</string>
     <string name="id_token_fmt">ID Token: %s</string>
     <string name="auth_code_fmt">Auth Code: %s</string>
-    <string name="no_internet_connect">Отсутствует подключение к интернету</string>
 
     <string name="google_drive_create_file">Создать файл на Google Drive</string>
     <string name="google_drive_open_file">Открыть файл из Google Drive</string>
@@ -65,12 +65,5 @@
         <item>AuthAPI</item>
         <item>DriveAPI</item>
     </string-array>
-
-    <!-- TODO(user): replace with your real server client ID -->
-    <!-- Server Client ID.  This should be a valid Web OAuth 2.0 Client ID obtained
-         from https://console.developers.google.com/ -->
-    <!--Client ID: 884379891331-arnustr7ntb1doiav5rdm1244adehhr3.apps.googleusercontent.com
-        Secret client: fk2Nvwu7GwKmJCutFsxMGy3U-->
-    <string name="server_client_id">884379891331-arnustr7ntb1doiav5rdm1244adehhr3.apps.googleusercontent.com</string>
 
 </resources>

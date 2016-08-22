@@ -281,17 +281,13 @@ public class CoreUtils {
             Snackbar.make(view, context.getString(R.string.sync_already_running), Snackbar.LENGTH_LONG).show();
             return false;
         }
-        runWithRetry(view, context.getString(R.string.network_unavailable), new Callback() {
+        CoreNetworkInfo.runIfNetworkAvailable(view, new Runnable() {
             @Override
-            public boolean run() {
-                if (CoreNetworkInfo.isNetworkAvailable(context)) {
-                    if (!syncStatusNotifier.isSyncActive(account) && !syncStatusNotifier.isSyncPending(account)) {
-                        ContentResolver.requestSync(BasicAccountHelper.getSelectedAccount(context),
-                                authority, BaseSyncService.getTaskBundle(BaseSyncService.TypeTask.FOREGROUND));
-                    }
-                    return true;
+            public void run() {
+                if (!syncStatusNotifier.isSyncActive(account) && !syncStatusNotifier.isSyncPending(account)) {
+                    ContentResolver.requestSync(BasicAccountHelper.getSelectedAccount(context),
+                            authority, BaseSyncService.getTaskBundle(BaseSyncService.TypeTask.FOREGROUND));
                 }
-                return false;
             }
         });
         return CoreNetworkInfo.isNetworkAvailable(context);

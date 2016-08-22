@@ -9,8 +9,6 @@
     <string name="disconnect_btn">Disconnect</string>
     <string name="loading">Loading…</string>
 
-    <string name="no_internet_connect">No internet connection</string>
-
     <string name="google_drive_create_file">Create a file on Google Drive</string>
     <string name="google_drive_open_file">Open file from Google Drive</string>
 
